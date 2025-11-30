@@ -47,6 +47,7 @@
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; }
+      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
     </style>
 </head>
 <body>
@@ -65,7 +66,7 @@
                 Clock: <g><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g>,
                 Book: <g><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></g>,
                 BarChart2: <g><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></g>,
-                Settings: <g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>,
+                Settings: <g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>,
                 StopCircle: <g><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></g>,
                 RefreshCcw: <g><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></g>,
                 Briefcase: <g><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></g>,
@@ -174,6 +175,24 @@
             { id: 'waste', label: '浪費', color: 'bg-waste-500' },
             { id: 'rest', label: '休息', color: 'bg-rest-500' }
         ];
+
+        const NavButton = ({ active, onClick, icon, label, mobile }) => {
+            if (mobile) {
+                return (
+                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
+                        <IconByName name={icon} className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] font-bold">{label}</span>
+                    </button>
+                )
+            }
+            return (
+                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
+                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
+                    <span className="text-lg">{label}</span>
+                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
+                </button>
+            );
+        };
 
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
@@ -373,13 +392,6 @@
                 return days;
             };
 
-            // UI Components
-            const NavItem = ({ id, icon, label }) => (
-                <button onClick={() => setView(id)} className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${view === id ? 'bg-brand-100 text-brand-600 font-bold' : 'text-text-main hover:bg-cream'}`}>
-                    <IconByName name={icon} className="w-5 h-5" /> <span>{label}</span>
-                </button>
-            );
-
             return (
                 <div className="flex min-h-screen bg-cream font-sans">
                     {toastMessage && (
@@ -395,10 +407,10 @@
                             <span className="text-xl font-bold tracking-tight">MindfulTime</span>
                         </div>
                         <div className="space-y-2">
-                            <NavItem id="tracker" icon="Clock" label="時光花園" />
-                            <NavItem id="journal" icon="Book" label="心情日記" />
-                            <NavItem id="analysis" icon="BarChart2" label="成長洞察" />
-                            <NavItem id="settings" icon="Settings" label="設定" />
+                            <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光花園" />
+                            <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="心情日記" />
+                            <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon="BarChart2" label="成長洞察" />
+                            <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" />
                         </div>
                     </nav>
 
@@ -409,7 +421,7 @@
                             <button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button>
                         </header>
 
-                        {/* Active Timer */}
+                        {/* Active Timer Banner */}
                         {data.activeTimer && (
                             <div className="bg-text-main text-white rounded-3xl p-6 shadow-2xl flex items-center justify-between gap-6 mb-8 relative overflow-hidden">
                                 <div className="flex items-center gap-4 z-10">
@@ -468,7 +480,6 @@
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slide-up">
                                 <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col items-center">
                                     <h3 className="font-bold text-text-main mb-6 text-xl self-start flex gap-2"><IconByName name="BarChart2" className="w-5 h-5"/> 價值分佈</h3>
-                                    {/* 內建圓餅圖 */}
                                     <DonutChart data={chartData} />
                                 </div>
                                 <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col h-[500px]">
