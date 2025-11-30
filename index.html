@@ -47,7 +47,6 @@
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; }
-      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
     </style>
 </head>
 <body>
@@ -57,7 +56,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 內建圖示庫 (已修復所有 JSX 語法錯誤) ---
+        // --- 1. 內建圖示庫 (SVG) ---
         const IconComponent = (name) => ({ size, className }) => {
             const SVG_ATTRIBUTES = { fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" };
             const paths = {
@@ -67,16 +66,95 @@
                 Book: <g><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></g>,
                 BarChart2: <g><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></g>,
                 Settings: <g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>,
-                Briefcase: <g><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></g>},
+                StopCircle: <g><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></g>,
+                RefreshCcw: <g><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></g>,
+                Briefcase: <g><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></g>,
+                MonitorPlay: <g><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></g>,
+                Dumbbell: <g><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></g>,
+                Smartphone: <g><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></g>,
+                ShoppingBag: <g><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></g>,
+                Coffee: <g><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></g>,
+                Plus: <g><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></g>,
+                Save: <g><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></g>,
+                Send: <g><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></g>,
+                Calendar: <g><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></g>,
+                PieChart: <g><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></g>,
+                CheckSquare: <g><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></g>,
+                CheckCircle: <g><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></g>,
+                Trash2: <g><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></g>,
+                ChevronLeft: <path d="m15 18-6-6 6-6"/>,
+                ChevronRight: <path d="m9 18 6-6-6-6"/>,
+                X: <g><path d="M18 6 6 18"/><path d="m6 6 18 12"/></g>,
+                Sparkles: <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>,
+                Circle: <circle cx="12" cy="12" r="10"/>,
+                Star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+                Moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>,
+                AlertTriangle: <g><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></g>,
+                AlertCircle: <g><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></g>,
+                Clipboard: <g><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></g>,
+                Link: <g><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></g>,
+                ExternalLink: <g><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></g>,
+                HelpCircle: <g><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></g>
             };
             return <svg {...SVG_ATTRIBUTES} className={className} width={size || 24} height={size || 24} viewBox="0 0 24 24">{paths[name] || paths.HelpCircle}</svg>;
         };
 
-        const IconByName = ({ name, className }) => {
-            return <IconComponent name={name} className={className} />;
+        const IconByName = ({ name, className, size }) => {
+            const Component = IconComponent(name);
+            return <Component className={className} size={size} />;
         };
 
-        // --- 2. 邏輯核心 (簡化) ---
+        // --- 2. 內建手刻圓餅圖 (取代 Recharts) ---
+        const DonutChart = ({ data }) => {
+            const total = data.reduce((acc, cur) => acc + cur.value, 0);
+            if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
+
+            let cumulativePercent = 0;
+            const size = 200;
+            const center = size / 2;
+            const radius = 80;
+            const strokeWidth = 20;
+            const circumference = 2 * Math.PI * radius;
+
+            return (
+                <div className="relative flex justify-center items-center">
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+                        {data.map((item, index) => {
+                            const percent = item.value / total;
+                            const strokeDasharray = `${percent * circumference} ${circumference}`;
+                            const strokeDashoffset = -cumulativePercent * circumference;
+                            cumulativePercent += percent;
+                            
+                            // 對應 Tailwind 顏色
+                            let strokeColor = '#CBD5E1'; // default gray
+                            if (item.name === '成長') strokeColor = '#88D4AB';
+                            if (item.name === '浪費') strokeColor = '#FFB7B2';
+                            if (item.name === '休息') strokeColor = '#AECBFA';
+
+                            return (
+                                <circle
+                                    key={index}
+                                    cx={center}
+                                    cy={center}
+                                    r={radius}
+                                    fill="none"
+                                    stroke={strokeColor}
+                                    strokeWidth={strokeWidth}
+                                    strokeDasharray={strokeDasharray}
+                                    strokeDashoffset={strokeDashoffset}
+                                    className="transition-all duration-1000 ease-out"
+                                />
+                            );
+                        })}
+                    </svg>
+                    <div className="absolute text-center">
+                        <div className="text-3xl font-bold text-text-main">{Math.round(total/60)}</div>
+                        <div className="text-xs text-text-light font-bold">小時</div>
+                    </div>
+                </div>
+            );
+        };
+
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
@@ -105,44 +183,207 @@
             const [elapsedTime, setElapsedTime] = useState(0);
             const [isSyncing, setIsSyncing] = useState(false);
             const [localScriptUrl, setLocalScriptUrl] = useState(localStorage.getItem(GAS_URL_KEY) || GAS_URL);
-
-            // Review/Journal State (簡化)
+            
+            const [reviewRating, setReviewRating] = useState(3);
             const [reviewType, setReviewType] = useState('growth');
-            const [chatMessages, setChatMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。告訴我你現在的狀態吧！', timestamp: Date.now() }]);
+            const [reviewNote, setReviewNote] = useState('');
+            const [reviewSessionCache, setReviewSessionCache] = useState(null);
+
+            const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
+            const [calendarViewDate, setCalendarViewDate] = useState(new Date());
+            const [journalText, setJournalText] = useState('');
+            const [journalTodos, setJournalTodos] = useState([]);
+            const [newTodoText, setNewTodoText] = useState('');
+
+            const [chatMessages, setChatMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [chatInput, setChatInput] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
             const chatEndRef = useRef(null);
+            
             const [toastMessage, setToastMessage] = useState(null);
+            const [analysisDate, setAnalysisDate] = useState(new Date());
+            const [analysisViewMode, setAnalysisViewMode] = useState('day');
 
+            // Initialization
+            useEffect(() => {
+                if (!syncId) {
+                    const newId = Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem(SYNC_STORAGE_KEY, newId);
+                    setSyncId(newId);
+                }
+            }, [syncId]);
+
+            useEffect(() => {
+                const savedData = localStorage.getItem(`tm_data_${syncId}`);
+                if (savedData) setData(JSON.parse(savedData));
+            }, [syncId]);
+
+            const saveDataToLocal = (newData) => {
+                setData(newData);
+                localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData));
+            }
+
+            // Journal Logic
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
-            const formatDurationSimple = (s) => `${Math.round(s/60)}m`;
+            
+            useEffect(() => {
+                const dateStr = getLocalDateStr(journalSelectedDate);
+                setJournalText(data.journals[dateStr]?.content || '');
+                setJournalTodos(data.journals[dateStr]?.todos || []);
+            }, [journalSelectedDate, data.journals]);
 
-            const showToast = (text, type = 'success') => { setToastMessage({ text, type }); setTimeout(() => setToastMessage(null), 3000); };
-            const startTimer = (catId) => { if (data.activeTimer) return; setData({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
-            const stopTimer = () => { if (!data.activeTimer) return; setShowReviewModal(true); };
-            const submitReview = () => { showToast("紀錄成功！"); setShowReviewModal(false); };
-            const syncFromGoogleSheet = async () => { /* 這裡執行 GAS 匯入 */ };
+            // Timer Logic
+            useEffect(() => {
+                let interval;
+                if (data.activeTimer?.isRunning) {
+                    interval = setInterval(() => {
+                        setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000));
+                    }, 1000);
+                } else {
+                    setElapsedTime(0);
+                }
+                return () => clearInterval(interval);
+            }, [data.activeTimer]);
 
-            // Chart Data Prep (使用模擬數據以確保畫面顯示)
+            useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages, isAiTyping]);
+
+            const showToast = (msg, type='success') => {
+                setToastMessage({ text: msg, type });
+                setTimeout(() => setToastMessage(null), 3000);
+            };
+
+            const startTimer = (catId) => {
+                if (data.activeTimer) return;
+                saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } });
+            };
+
+            const stopTimer = () => {
+                if (!data.activeTimer) return;
+                setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category });
+                setShowReviewModal(true);
+            };
+
+            const submitReview = () => {
+                if (!reviewSessionCache) return;
+                const endTime = Date.now();
+                const startTime = reviewSessionCache.startTime;
+                const duration = Math.floor((endTime - startTime) / 1000);
+                const newSession = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    category: reviewSessionCache.category, startTime, endTime, duration,
+                    valueType: reviewType, rating: reviewRating, note: reviewNote,
+                    date: getLocalDateStr(new Date(startTime)), status: 'completed'
+                };
+                saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
+                setShowReviewModal(false);
+                setReviewNote('');
+                showToast("紀錄成功！⭐");
+                if (localScriptUrl) {
+                    fetch(localScriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' })
+                    }).catch(e => console.error(e));
+                }
+            };
+
+            const syncFromGoogleSheet = async () => {
+                const url = localScriptUrl;
+                if (!url) return showToast("請先設定 URL", 'error');
+                setIsSyncing(true);
+                try {
+                    const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`);
+                    const json = await res.json();
+                    if(Array.isArray(json)) showToast(`成功匯入 ${json.length} 筆資料`, 'success');
+                } catch(e) { showToast("連線失敗", 'error'); } 
+                finally { setIsSyncing(false); }
+            };
+
+            const formatTime = (s) => {
+                const m = Math.floor(s / 60);
+                const sec = s % 60;
+                return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+            };
+
+            const formatDurationSimple = (seconds) => {
+                if (seconds < 60) return `${seconds}秒`;
+                const totalMinutes = Math.round(seconds / 60);
+                const h = Math.floor(totalMinutes / 60);
+                const m = totalMinutes % 60;
+                if (h > 0) return `${h}小時 ${m}分`;
+                return `${m}分鐘`;
+            };
+
+            const handleChatSend = () => {
+                if (!chatInput.trim()) return;
+                const userMsg = { id: Date.now().toString(), role: 'user', text: chatInput, timestamp: Date.now() };
+                setChatMessages(prev => [...prev, userMsg]);
+                setChatInput('');
+                setIsAiTyping(true);
+                setTimeout(() => {
+                    const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: "收到！這是模擬的 AI 回覆。你的計畫聽起來不錯！🌱", timestamp: Date.now() };
+                    setChatMessages(prev => [...prev, aiMsg]);
+                    setIsAiTyping(false);
+                }, 1500);
+            };
+
             const chartData = useMemo(() => {
-                const today = getLocalDateStr(new Date());
-                const currentStats = { growth: 40, waste: 20, rest: 20 }; // 模擬數據
-                const total = 80;
+                const stats = { growth: 0, waste: 0, rest: 0 };
+                const today = getLocalDateStr(analysisDate);
+                const targetSessions = analysisViewMode === 'total' ? data.sessions : data.sessions.filter(s => s.date === today);
+                targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; });
+                return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0 }));
+            }, [data.sessions, analysisDate, analysisViewMode]);
 
-                return VALUE_TYPES.map(vt => ({ 
-                    id: vt.id,
-                    name: vt.label, 
-                    value: currentStats[vt.id] || 0,
-                    percent: (currentStats[vt.id] / total * 100).toFixed(0)
+            const groupedAggregatedSessions = useMemo(() => {
+                const groups = {};
+                data.sessions.forEach(session => {
+                    if (!groups[session.date]) groups[session.date] = {};
+                    if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0 };
+                    groups[session.date][session.category].duration += session.duration;
+                    groups[session.date][session.category].count += 1;
+                });
+                return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({
+                    date,
+                    categories: Object.entries(cats).map(([catId, stats]) => ({
+                        id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId)
+                    }))
                 }));
-            }, []);
+            }, [data.sessions]);
+
+            // Calendar
+            const renderCalendar = () => {
+                const year = calendarViewDate.getFullYear();
+                const month = calendarViewDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDay = new Date(year, month, 1).getDay();
+                const days = [];
+                for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>);
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = getLocalDateStr(new Date(year, month, d));
+                    const hasEntry = !!data.journals[dateStr]?.content;
+                    const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month;
+                    days.push(
+                        <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))}
+                            className={`h-10 w-10 rounded-xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}>
+                            <span className="text-sm font-bold">{d}</span>
+                            {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-waste-500 rounded-full absolute bottom-1.5"></span>}
+                        </button>
+                    );
+                }
+                return days;
+            };
+
+            // UI Components
+            const NavItem = ({ id, icon, label }) => (
+                <button onClick={() => setView(id)} className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${view === id ? 'bg-brand-100 text-brand-600 font-bold' : 'text-text-main hover:bg-cream'}`}>
+                    <IconByName name={icon} className="w-5 h-5" /> <span>{label}</span>
+                </button>
+            );
 
             return (
                 <div className="flex min-h-screen bg-cream font-sans">
-                    {/* Toast */}
                     {toastMessage && (
-                        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-2xl shadow-xl border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}>
+                        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-2xl shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}>
                             <div className="font-bold">{toastMessage.text}</div>
                         </div>
                     )}
@@ -161,96 +402,148 @@
                         </div>
                     </nav>
 
-                    {/* Main */}
+                    {/* Main Content */}
                     <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64">
-                        {/* Mobile Header */}
                         <header className="md:hidden flex justify-between items-center mb-6">
                             <span className="font-bold text-brand-900 flex items-center gap-2 text-lg"><IconByName name="Bot" className="w-6 h-6"/> MindfulTime</span>
                             <button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button>
                         </header>
 
-                        {/* Active Timer Banner */}
+                        {/* Active Timer */}
                         {data.activeTimer && (
                             <div className="bg-text-main text-white rounded-3xl p-6 shadow-2xl flex items-center justify-between gap-6 mb-8 relative overflow-hidden">
+                                <div className="flex items-center gap-4 z-10">
+                                    <div className="p-3 bg-white/10 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div>
+                                    <div>
+                                        <div className="text-brand-100 text-xs font-bold uppercase mb-1">正在專注</div>
+                                        <div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div>
+                                    </div>
+                                </div>
+                                <div className="font-mono text-5xl font-bold tracking-tight z-10 tabular-nums text-brand-100">{formatTime(elapsedTime)}</div>
                                 <button onClick={stopTimer} className="px-6 py-3 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-xl shadow-sm flex items-center gap-2 z-10"><IconByName name="StopCircle" className="w-5 h-5"/> <span>完成</span></button>
                             </div>
                         )}
 
                         {view === 'tracker' && (
-                            <div className="space-y-8">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {CATEGORIES.filter(c => c.id !== 'rest').map(cat => (
-                                        <button key={cat.id} onClick={() => startTimer(cat.id)} className="group bg-white border-b-4 border-r-4 border-cream-dark rounded-3xl p-6 h-40 hover:-translate-y-1">
-                                            <div className="p-4 bg-cream rounded-2xl"><IconByName name={cat.icon} className="w-8 h-8" /></div>
-                                            <span className="font-bold text-text-main">{cat.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                            <div className="space-y-8 animate-float">
+                                {!data.activeTimer && (
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {CATEGORIES.filter(c => c.id !== 'rest').map(cat => (
+                                            <button key={cat.id} onClick={() => startTimer(cat.id)} className="group bg-white border-b-4 border-r-4 border-cream-dark rounded-3xl p-6 flex flex-col items-center justify-center gap-4 h-40 hover:-translate-y-1 transition-all">
+                                                <div className="p-4 bg-cream rounded-2xl"><IconByName name={cat.icon} className="w-8 h-8" /></div>
+                                                <span className="font-bold text-text-main">{cat.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="bg-white rounded-3xl shadow-cute p-8">
                                     <h2 className="text-xl font-bold text-text-main flex items-center gap-3 mb-6"><IconByName name="Calendar" className="w-5 h-5 text-accent-purple" /> 時光足跡</h2>
-                                    <div className="text-center py-10 text-text-light bg-cream rounded-xl">還沒有紀錄喔 🍃</div>
+                                    {groupedAggregatedSessions.length === 0 ? <div className="text-center py-10 text-text-light bg-cream rounded-xl">還沒有紀錄喔 🍃</div> : 
+                                        <div className="space-y-8 relative">
+                                            <div className="absolute left-4 top-4 bottom-4 w-1 bg-cream-dark hidden md:block rounded-full"></div>
+                                            {groupedAggregatedSessions.map(group => (
+                                                <div key={group.date} className="relative pl-0 md:pl-12">
+                                                    <div className="hidden md:flex absolute left-0 top-1 w-9 h-9 rounded-full bg-brand-100 border-4 border-white items-center justify-center z-10 text-brand-500"><div className="w-3 h-3 bg-brand-500 rounded-full"></div></div>
+                                                    <h3 className="font-bold text-xl text-text-main mb-4">{group.date}</h3>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                        {group.categories.map(item => (
+                                                            <div key={item.id} className="bg-cream rounded-2xl p-4 flex items-center gap-4">
+                                                                <div className="p-3 rounded-xl bg-white text-text-main shadow-sm"><IconByName name={item.def?.icon} className="w-6 h-6" /></div>
+                                                                <div>
+                                                                    <div className="font-bold text-text-main">{item.def?.label}</div>
+                                                                    <div className="text-sm text-text-light font-mono font-bold">{formatDurationSimple(item.duration)}</div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         )}
 
                         {view === 'analysis' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col items-center justify-center">
-                                    <h3 className="font-bold text-text-main mb-6 text-xl self-start flex gap-2"><IconByName name="PieChart" className="w-5 h-5"/> 價值分佈</h3>
-                                    
-                                    {/* 圓餅圖替換為 CSS-BarChart */}
-                                    <div className="w-full space-y-4">
-                                        {chartData.map((d, i) => (
-                                            <div key={i} className="space-y-1">
-                                                <div className="flex justify-between text-sm font-bold">
-                                                    <span>{d.name}</span>
-                                                    <span>{d.percent}%</span>
-                                                </div>
-                                                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                                                    <div className="h-full rounded-full transition-all duration-1000 bg-brand-500" style={{ width: `${d.percent}%`, backgroundColor: d.color.replace('bg-','') }}></div>
-                                                </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slide-up">
+                                <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col items-center">
+                                    <h3 className="font-bold text-text-main mb-6 text-xl self-start flex gap-2"><IconByName name="BarChart2" className="w-5 h-5"/> 價值分佈</h3>
+                                    {/* 內建圓餅圖 */}
+                                    <DonutChart data={chartData} />
+                                </div>
+                                <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col h-[500px]">
+                                    <div className="font-bold text-text-main mb-4 flex items-center gap-2"><IconByName name="Bot" className="w-5 h-5 text-brand-600"/> AI 生活管家</div>
+                                    <div className="flex-1 bg-cream rounded-2xl p-4 overflow-y-auto space-y-4">
+                                        {chatMessages.map(m => (
+                                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-[80%] p-3 rounded-xl text-sm ${m.role === 'user' ? 'bg-brand-500 text-white' : 'bg-white text-text-main shadow-sm'}`}>{m.text}</div>
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                                
-                                <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col h-[500px]">
-                                    <div className="font-bold text-text-main mb-4 flex items-center gap-2"><IconByName name="Bot" className="w-5 h-5 text-brand-600"/> AI 生活管家</div>
-                                    <div className="flex-1 bg-cream rounded-2xl p-4 overflow-y-auto space-y-4">... 聊天內容 ...</div>
                                     <div className="mt-4 flex gap-2">
-                                        <input type="text" className="flex-1 p-3 bg-cream rounded-xl outline-none" placeholder="輸入訊息..." value={chatInput} onChange={e=>setChatInput(e.target.value)} />
+                                        <input className="flex-1 p-3 bg-cream rounded-xl outline-none" placeholder="輸入訊息..." value={chatInput} onChange={e=>setChatInput(e.target.value)} />
                                         <button onClick={handleChatSend} className="p-3 bg-brand-500 text-white rounded-xl"><IconByName name="Send" className="w-5 h-5"/></button>
                                     </div>
                                 </div>
                             </div>
                         )}
-                        
-                        {/* Journal View (簡化) */}
-                        {view === 'journal' && <div className="bg-white rounded-3xl shadow-cute p-8">心情日記頁面...</div>}
-                        
-                        {/* Settings View (簡化) */}
+
+                        {view === 'journal' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up">
+                                <div className="lg:col-span-1 bg-white rounded-3xl shadow-cute p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()-1)))}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
+                                        <span className="font-bold text-lg">{calendarViewDate.getFullYear()}年 {calendarViewDate.getMonth()+1}月</span>
+                                        <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()+1)))}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-y-3 justify-items-center">{renderCalendar()}</div>
+                                </div>
+                                <div className="lg:col-span-2 bg-white rounded-3xl shadow-cute overflow-hidden flex flex-col border-4 border-white ring-1 ring-gray-100 h-[600px]">
+                                    <div className="p-5 border-b border-gray-100 font-bold text-lg flex gap-2 items-center">{getLocalDateStr(journalSelectedDate)} <span className="text-xs bg-cream px-2 py-1 rounded">日記</span></div>
+                                    <textarea className="flex-1 w-full p-6 resize-none outline-none text-lg leading-relaxed bg-text-main text-white placeholder-gray-500" placeholder="今天過得怎麼樣？" value={journalText} onChange={e => setJournalText(e.target.value)} />
+                                    <div className="p-5 bg-white border-t border-gray-100 flex justify-end">
+                                        <button onClick={() => { saveDataToLocal({ ...data, journals: { ...data.journals, [getLocalDateStr(journalSelectedDate)]: { content: journalText } } }); showToast("日記已儲存"); }} className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-xl font-bold shadow-cute hover:bg-brand-600"><IconByName name="Save" className="w-5 h-5"/> 儲存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {view === 'settings' && (
-                            <div className="bg-white rounded-3xl shadow-cute p-8 space-y-6">
+                            <div className="bg-white rounded-3xl shadow-cute p-8 space-y-6 animate-slide-up">
                                 <h2 className="font-bold text-xl flex items-center gap-2"><IconByName name="Settings" className="w-6 h-6"/> 設定</h2>
-                                <div><input type="text" className="w-full p-3 border-2 border-cream-dark rounded-2xl outline-none" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="https://script.google.com/..." /></div>
-                                <button onClick={syncFromGoogleSheet} className="px-6 py-3 bg-text-main text-white rounded-2xl font-bold flex items-center gap-2"><IconByName name="RefreshCcw" className="w-4 h-4"/> 匯入</button>
+                                <div>
+                                    <label className="block font-bold text-text-main mb-3">GAS 連結</label>
+                                    <div className="flex gap-2">
+                                        <input type="text" className="flex-1 p-3 border-2 border-cream-dark rounded-2xl outline-none focus:border-brand-500" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="https://script.google.com/..." />
+                                        <button onClick={syncFromGoogleSheet} className="px-6 py-3 bg-text-main text-white rounded-2xl font-bold flex items-center gap-2"><IconByName name="RefreshCcw" className={`w-4 h-4 ${isSyncing?'animate-spin':''}`}/> 匯入</button>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </main>
 
                     {/* Mobile Bottom Nav */}
                     <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-cream-dark flex justify-around items-center p-3 pb-safe z-40 shadow-lg rounded-t-3xl">
-                        <NavItem id="tracker" icon="Clock" label="時光" mobile />
-                        <NavItem id="journal" icon="Book" label="日記" mobile />
-                        <NavItem id="analysis" icon="BarChart2" label="洞察" mobile />
-                        <NavItem id="settings" icon="Settings" label="設定" mobile />
+                        <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光" mobile />
+                        <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="日記" mobile />
+                        <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon="BarChart2" label="洞察" mobile />
+                        <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" mobile />
                     </nav>
 
                     {/* Review Modal */}
                     <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
-                        <div className="space-y-6"><button onClick={submitReview} className="w-full py-4 bg-brand-500 text-white rounded-2xl font-bold">確認並儲存 ✨</button></div>
+                        <div className="space-y-6">
+                            <div className="text-center bg-cream p-4 rounded-2xl border-2 border-cream-dark">
+                                <div className="text-4xl font-mono font-bold text-brand-600">{reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00'}</div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-3">
+                                {VALUE_TYPES.map(type => (
+                                    <button key={type.id} onClick={() => setReviewType(type.id)} className={`p-4 rounded-2xl border-2 font-bold ${reviewType === type.id ? 'border-brand-500 bg-brand-50' : 'border-cream-dark'}`}>{type.label}</button>
+                                ))}
+                            </div>
+                            <button onClick={submitReview} className="w-full py-4 bg-brand-500 text-white rounded-2xl font-bold shadow-cute hover:translate-y-[1px] hover:shadow-none transition-all">確認並儲存 ✨</button>
+                        </div>
                     </Modal>
-
                 </div>
             );
         };
