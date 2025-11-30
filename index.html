@@ -4,14 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
+    
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -21,7 +24,8 @@
               cream: '#FFF9F5', 'cream-dark': '#F5EBE0',
               text: { main: '#5D5F71', light: '#8E91A0' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, 
+              rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Quicksand', 'sans-serif'] },
@@ -36,13 +40,13 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
       body { font-family: 'Quicksand', sans-serif; background-color: #FFF9F5; color: #5D5F71; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; }
-      input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     </style>
 </head>
 <body>
@@ -52,47 +56,49 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 內建圖示庫 ---
-        const SvgBase = ({ children, className, size = 24 }) => (
+        // --- 1. 內建圖示庫 (最先定義，防止 ReferenceError) ---
+        // 使用簡單的 SVG 元件，避免複雜邏輯
+        const SvgIcon = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
+        
         const Icons = {
-            Bot: (p) => <SvgBase {...p}><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></SvgBase>,
-            Clock: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgBase>,
-            Book: (p) => <SvgBase {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></SvgBase>,
-            BarChart2: (p) => <SvgBase {...p}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></SvgBase>,
-            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
-            StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
-            RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
-            Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
-            MonitorPlay: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></SvgBase>,
-            Dumbbell: (p) => <SvgBase {...p}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></SvgBase>,
-            Smartphone: (p) => <SvgBase {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgBase>,
-            ShoppingBag: (p) => <SvgBase {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></SvgBase>,
-            Coffee: (p) => <SvgBase {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgBase>,
-            Plus: (p) => <SvgBase {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></SvgBase>,
-            Save: (p) => <SvgBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></SvgBase>,
-            Send: (p) => <SvgBase {...p}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></SvgBase>,
-            Calendar: (p) => <SvgBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></SvgBase>,
-            PieChart: (p) => <SvgBase {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></SvgBase>,
-            CheckSquare: (p) => <SvgBase {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></g></SvgBase>,
-            CheckCircle: (p) => <SvgBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></SvgBase>,
-            Trash2: (p) => <SvgBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SvgBase>,
-            ChevronLeft: (p) => <SvgBase {...p}><path d="m15 18-6-6 6-6"/></SvgBase>,
-            ChevronRight: (p) => <SvgBase {...p}><path d="m9 18 6-6-6-6"/></SvgBase>,
-            X: (p) => <SvgBase {...p}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></SvgBase>,
-            Sparkles: (p) => <SvgBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></SvgBase>,
-            Circle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/></SvgBase>,
-            Star: (p) => <SvgBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></SvgBase>,
-            Moon: (p) => <SvgBase {...p}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></SvgBase>,
-            AlertTriangle: (p) => <SvgBase {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
-            AlertCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></SvgBase>,
-            Clipboard: (p) => <SvgBase {...p}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></SvgBase>,
-            Link: (p) => <SvgBase {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></SvgBase>,
-            ExternalLink: (p) => <SvgBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></SvgBase>,
-            HelpCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
-            MoreHorizontal: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgBase>,
-            Zap: (p) => <SvgBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgBase>
+            Bot: (p) => <SvgIcon {...p}><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></SvgIcon>,
+            Clock: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgIcon>,
+            Book: (p) => <SvgIcon {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></SvgIcon>,
+            BarChart2: (p) => <SvgIcon {...p}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></SvgIcon>,
+            Settings: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgIcon>,
+            StopCircle: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgIcon>,
+            RefreshCcw: (p) => <SvgIcon {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgIcon>,
+            Briefcase: (p) => <SvgIcon {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgIcon>,
+            MonitorPlay: (p) => <SvgIcon {...p}><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></SvgIcon>,
+            Dumbbell: (p) => <SvgIcon {...p}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></SvgIcon>,
+            Smartphone: (p) => <SvgIcon {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgIcon>,
+            ShoppingBag: (p) => <SvgIcon {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></SvgIcon>,
+            Coffee: (p) => <SvgIcon {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgIcon>,
+            Plus: (p) => <SvgIcon {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></SvgIcon>,
+            Save: (p) => <SvgIcon {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></SvgIcon>,
+            Send: (p) => <SvgIcon {...p}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></SvgIcon>,
+            Calendar: (p) => <SvgIcon {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></SvgIcon>,
+            PieChart: (p) => <SvgIcon {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></SvgIcon>,
+            CheckSquare: (p) => <SvgIcon {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></SvgIcon>,
+            CheckCircle: (p) => <SvgIcon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></SvgIcon>,
+            Trash2: (p) => <SvgIcon {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SvgIcon>,
+            ChevronLeft: (p) => <SvgIcon {...p}><path d="m15 18-6-6 6-6"/></SvgIcon>,
+            ChevronRight: (p) => <SvgIcon {...p}><path d="m9 18 6-6-6-6"/></SvgIcon>,
+            X: (p) => <SvgIcon {...p}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></SvgIcon>,
+            Sparkles: (p) => <SvgIcon {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></SvgIcon>,
+            Circle: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/></SvgIcon>,
+            Star: (p) => <SvgIcon {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></SvgIcon>,
+            Moon: (p) => <SvgIcon {...p}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></SvgIcon>,
+            AlertTriangle: (p) => <SvgIcon {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgIcon>,
+            AlertCircle: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></SvgIcon>,
+            Clipboard: (p) => <SvgIcon {...p}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></SvgIcon>,
+            Link: (p) => <SvgIcon {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></SvgIcon>,
+            ExternalLink: (p) => <SvgIcon {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></SvgIcon>,
+            HelpCircle: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgIcon>,
+            MoreHorizontal: (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgIcon>,
+            Zap: (p) => <SvgIcon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgIcon>
         };
 
         const IconByName = ({ name, className, size }) => {
@@ -100,6 +106,7 @@
             return <Component className={className} size={size} />;
         };
 
+        // --- 2. 內建手刻圓餅圖 (取代 Recharts) ---
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
             if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
@@ -123,14 +130,30 @@
                                 if (item.name === '休息') strokeColor = '#AECBFA';
                                 return <circle key={index} cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />;
                             }
+                            
                             const strokeDasharray = `${percent * circumference} ${circumference}`;
                             const strokeDashoffset = -cumulativePercent * circumference;
                             cumulativePercent += percent;
+                            
                             let strokeColor = '#CBD5E1'; 
                             if (item.name === '成長') strokeColor = '#88D4AB';
                             if (item.name === '浪費') strokeColor = '#FFB7B2';
                             if (item.name === '休息') strokeColor = '#AECBFA';
-                            return <circle key={index} cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} className="transition-all duration-1000 ease-out" />;
+
+                            return (
+                                <circle
+                                    key={index}
+                                    cx={center}
+                                    cy={center}
+                                    r={radius}
+                                    fill="none"
+                                    stroke={strokeColor}
+                                    strokeWidth={strokeWidth}
+                                    strokeDasharray={strokeDasharray}
+                                    strokeDashoffset={strokeDashoffset}
+                                    className="transition-all duration-1000 ease-out"
+                                />
+                            );
                         })}
                     </svg>
                     <div className="absolute text-center">
@@ -141,9 +164,23 @@
             );
         };
 
+        // --- 3. UI 元件 (先定義) ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
-            if (mobile) return <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>;
-            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span>{active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}</button>;
+            if (mobile) {
+                return (
+                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
+                        <IconByName name={icon} className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] font-bold">{label}</span>
+                    </button>
+                )
+            }
+            return (
+                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
+                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
+                    <span className="text-lg">{label}</span>
+                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
+                </button>
+            );
         };
 
         const Modal = ({ isOpen, onClose, title, children }) => {
@@ -152,10 +189,17 @@
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream">
-                            <h3 className="text-xl font-bold text-text-main flex items-center gap-2"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-5 h-5" />{title}</h3>
-                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light"><IconByName name="X" className="w-5 h-5" /></button>
+                            <h3 className="text-xl font-bold text-text-main flex items-center gap-2">
+                                <IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-5 h-5" />
+                                {title}
+                            </h3>
+                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light">
+                                <IconByName name="X" className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="p-6 overflow-y-auto bg-white">{children}</div>
+                        <div className="p-6 overflow-y-auto bg-white">
+                            {children}
+                        </div>
                     </div>
                 </div>
             );
@@ -165,12 +209,27 @@
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
 
+        // 領域專家分類設定 (新增詳細欄位)
         const CATEGORY_FIELDS = {
-            ai: [ { key: 'tool', label: '使用工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot', 'Perplexity', 'Gemini'] }, { key: 'goal', label: '應用目標', type: 'text', placeholder: '例如：寫程式, 翻譯, 腦力激盪' } ],
-            knowledge: [ { key: 'topic', label: '學習主題', type: 'text', placeholder: '例如：Python, 歷史, 投資理財' }, { key: 'method', label: '學習方式', type: 'select', options: ['閱讀書籍', '線上課程', '實作練習', '聽 Podcast', '看影片'] } ],
-            entertainment: [ { key: 'content', label: '內容名稱', type: 'text', placeholder: '劇名/遊戲名/書名' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲', '漫畫', '綜藝', '音樂'] } ],
-            sports: [ { key: 'activity', label: '運動項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球', '游泳', '瑜珈', '散步', '騎腳踏車'] }, { key: 'detail', label: '紀錄 (公里數/重量)', type: 'text', placeholder: '例如：5km, 深蹲 100kg' } ],
-            others: [ { key: 'activity', label: '活動內容', type: 'text', placeholder: '例如：整理房間, 繳費...' } ]
+            knowledge: [
+                { key: 'topic', label: '學習主題', type: 'text', placeholder: '例如：Python, 歷史, 投資理財' },
+                { key: 'method', label: '學習方式', type: 'select', options: ['閱讀書籍', '線上課程', '實作練習', '聽 Podcast', '看影片'] }
+            ],
+            ai: [
+                { key: 'tool', label: '使用工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot', 'Perplexity', 'Gemini'] },
+                { key: 'goal', label: '應用目標', type: 'text', placeholder: '例如：寫程式, 翻譯, 腦力激盪' }
+            ],
+            sports: [
+                { key: 'activity', label: '運動項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球', '游泳', '瑜珈', '散步', '騎腳踏車'] },
+                { key: 'detail', label: '紀錄 (公里數/重量)', type: 'text', placeholder: '例如：5km, 深蹲 100kg' }
+            ],
+            entertainment: [
+                { key: 'content', label: '內容名稱', type: 'text', placeholder: '劇名/遊戲名/書名' },
+                { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲', '漫畫', '綜藝', '音樂'] }
+            ],
+            others: [
+                { key: 'activity', label: '活動內容', type: 'text', placeholder: '例如：整理房間, 繳費...' }
+            ]
         };
 
         const CATEGORIES = [
@@ -182,13 +241,38 @@
         ];
 
         const VALUE_TYPES = [
-            { id: 'growth', label: '成長', color: 'bg-brand-500' },
-            { id: 'waste', label: '浪費', color: 'bg-waste-500' },
-            { id: 'rest', label: '休息', color: 'bg-rest-500' }
+            { id: 'growth', label: '成長 (Growth)', color: 'bg-brand-500' },
+            { id: 'waste', label: '浪費 (Waste)', color: 'bg-waste-500' },
+            { id: 'rest', label: '休息 (Rest)', color: 'bg-rest-500' }
         ];
 
-        const generateAIResponse = (input, contextData, type) => { /* AI 邏輯 (同上) */ return "我是你的生活管家 🤖。"; };
+        // --- 4. AI 邏輯 ---
+        const generateAIResponse = (input, contextData, type) => {
+            const text = input.toLowerCase();
+            
+            if (type === 'journal') {
+                if (text.includes('累') || text.includes('煩') || text.includes('難過')) return "聽起來你今天過得不容易 🫂。允許自己休息一下吧，這不是偷懶，是為了走更長遠的路。想聊聊發生什麼事嗎？";
+                if (text.includes('開心') || text.includes('棒') || text.includes('好')) return "太棒了！這種正向的能量很珍貴 ✨。記錄下來，未來回頭看會是很好的養分喔！";
+                if (text.includes('迷惘') || text.includes('不知道')) return "迷惘是成長的副作用 🌱。試著寫下目前最困擾你的一件事，我們一步一步來拆解？";
+                return "我在聽。寫作是與自己對話最好的方式。這件事對你來說，意味著什麼呢？";
+            }
 
+            const { sessions } = contextData;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todaySessions = sessions.filter(s => s.date === todayStr);
+            const growthDuration = todaySessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0);
+
+            if (text.includes('行程') || text.includes('計畫') || text.includes('安排')) {
+                if (growthDuration > 7200) return `你今天已經投入了 ${Math.round(growthDuration/60)} 分鐘在自我成長上，非常驚人！🚀 建議接下來安排一些「低耗能」的活動，比如看部電影或散步，讓大腦重組一下資訊。`;
+                return `今天還有一大半時間呢！目前紀錄顯示你的成長時間較少。要不要現在設定一個 25 分鐘的「番茄鐘」，專注在最重要的那件事上？`;
+            }
+            if (text.includes('無聊')) return "無聊是大腦在求救訊號 📡！既然你這週在「知識學習」上投入不少，不如換個口味，去「運動健身」流流汗？或者整理一下房間？";
+            if (text.includes('改') || text.includes('變動')) return "沒問題，彈性是生活的必備技能。我們可以把原本的學習時段移到明天早上，今晚就好好休息，如何？";
+            
+            return "我是你的生活管家 🤖。根據你的紀錄，我能幫你檢視時間分配，或者給你一些行動建議。告訴我你現在的感覺吧！";
+        };
+
+        // --- 5. App 主程式 ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {} });
@@ -197,14 +281,18 @@
             const [elapsedTime, setElapsedTime] = useState(0);
             const [isSyncing, setIsSyncing] = useState(false);
             const [localScriptUrl, setLocalScriptUrl] = useState(localStorage.getItem(GAS_URL_KEY) || GAS_URL);
+            
             const [reviewRating, setReviewRating] = useState(3);
             const [reviewType, setReviewType] = useState('growth');
             const [reviewNote, setReviewNote] = useState('');
             const [reviewMetaData, setReviewMetaData] = useState({});
             const [reviewSessionCache, setReviewSessionCache] = useState(null);
+
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
+            const [calendarViewDate, setCalendarViewDate] = useState(new Date());
             const [journalText, setJournalText] = useState('');
-            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
+            
+            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。告訴我你現在的狀態吧！', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
@@ -213,47 +301,255 @@
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
 
-            useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
-            useEffect(() => { const savedData = localStorage.getItem(`tm_data_${syncId}`); if (savedData) setData(JSON.parse(savedData)); }, [syncId]);
-            const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
+            useEffect(() => {
+                if (!syncId) {
+                    const newId = Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem(SYNC_STORAGE_KEY, newId);
+                    setSyncId(newId);
+                }
+            }, [syncId]);
+
+            useEffect(() => {
+                const savedData = localStorage.getItem(`tm_data_${syncId}`);
+                if (savedData) setData(JSON.parse(savedData));
+            }, [syncId]);
+
+            const saveDataToLocal = (newData) => {
+                setData(newData);
+                localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData));
+            }
+
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals[dateStr]?.content || ''); }, [journalSelectedDate, data.journals]);
-            useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
-            useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
-            const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
-            const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
-            const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setReviewMetaData({}); setShowReviewModal(true); };
-            const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); setReviewNote(''); setReviewRating(3); setReviewMetaData({}); showToast("紀錄成功！⭐"); if (localScriptUrl) { fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(e => console.error(e)); } };
-            const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { let catId = 'others'; const name = (item.appName || '').toLowerCase(); if(name.includes('學習') || name.includes('book')) catId = 'knowledge'; else if(name.includes('ai') || name.includes('gpt')) catId = 'ai'; else if(name.includes('運動') || name.includes('gym')) catId = 'sports'; else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment'; else if(name.includes('社群')) catId = 'social'; else if(name.includes('購物')) catId = 'shopping'; const dateStr = item.date.replace(/\//g, '-'); return { id: Math.random().toString(36).substr(2,9), category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; }).filter(s => s.duration > 0); saveDataToLocal({ ...data, sessions: [...data.sessions, ...newSessions] }); showToast(`成功匯入 ${newSessions.length} 筆資料`, 'success'); } } catch(e) { showToast("連線失敗，請檢查網址", 'error'); } finally { setIsSyncing(false); } };
-            const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
-            const formatDurationSimple = (seconds) => { if (seconds < 60) return `${seconds}秒`; const totalMinutes = Math.round(seconds / 60); const h = Math.floor(totalMinutes / 60); const m = totalMinutes % 60; if (h > 0) return `${h}小時 ${m}分`; return `${m}分鐘`; };
-            const handleManagerChat = () => { if (!managerInput.trim()) return; const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() }; setManagerMessages(prev => [...prev, userMsg]); setManagerInput(''); setIsAiTyping(true); setTimeout(() => { const responseText = generateAIResponse(userMsg.text, data, 'manager'); const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; setManagerMessages(prev => [...prev, aiMsg]); setIsAiTyping(false); }, 1000); };
-            const handleJournalAI = () => { if (!journalText.trim()) return; setIsAiTyping(true); setTimeout(() => { const responseText = generateAIResponse(journalText, data, 'journal'); setJournalAiResponse(responseText); setIsAiTyping(false); }, 1000); };
             
+            useEffect(() => {
+                const dateStr = getLocalDateStr(journalSelectedDate);
+                setJournalText(data.journals[dateStr]?.content || '');
+            }, [journalSelectedDate, data.journals]);
+
+            useEffect(() => {
+                let interval;
+                if (data.activeTimer?.isRunning) {
+                    interval = setInterval(() => {
+                        setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000));
+                    }, 1000);
+                } else {
+                    setElapsedTime(0);
+                }
+                return () => clearInterval(interval);
+            }, [data.activeTimer]);
+
+            useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
+
+            const showToast = (msg, type='success') => {
+                setToastMessage({ text: msg, type });
+                setTimeout(() => setToastMessage(null), 3000);
+            };
+
+            const startTimer = (catId) => {
+                if (data.activeTimer) return;
+                saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } });
+            };
+
+            const stopTimer = () => {
+                if (!data.activeTimer) return;
+                setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category });
+                const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category);
+                if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType);
+                setReviewMetaData({});
+                setShowReviewModal(true);
+            };
+
+            const submitReview = () => {
+                if (!reviewSessionCache) return;
+                const endTime = Date.now();
+                const startTime = reviewSessionCache.startTime;
+                const duration = Math.floor((endTime - startTime) / 1000);
+                const newSession = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    category: reviewSessionCache.category, startTime, endTime, duration,
+                    valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData,
+                    date: getLocalDateStr(new Date(startTime)), status: 'completed'
+                };
+                saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
+                setShowReviewModal(false);
+                setReviewNote('');
+                setReviewRating(3);
+                setReviewMetaData({});
+                showToast("紀錄成功！⭐");
+                if (localScriptUrl) {
+                    fetch(localScriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' })
+                    }).catch(e => console.error(e));
+                }
+            };
+
+            // --- 修正後的匯入邏輯 (去重) ---
+            const syncFromGoogleSheet = async () => {
+                const url = localScriptUrl;
+                if (!url) return showToast("請先設定 URL", 'error');
+                setIsSyncing(true);
+                try {
+                    const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`);
+                    const json = await res.json();
+                    if(Array.isArray(json)) {
+                        // 1. 資料映射 (Mapping)
+                        const mappedSessions = json.map(item => {
+                            let catId = 'others';
+                            const name = (item.appName || '').toLowerCase();
+                            if(name.includes('學習') || name.includes('book')) catId = 'knowledge';
+                            else if(name.includes('ai') || name.includes('gpt')) catId = 'ai';
+                            else if(name.includes('運動') || name.includes('gym')) catId = 'sports';
+                            else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment';
+                            else if(name.includes('社群')) catId = 'social';
+                            else if(name.includes('購物')) catId = 'shopping';
+                            const dateStr = item.date.replace(/\//g, '-');
+                            return {
+                                id: `imported-${dateStr}-${item.appName}-${item.duration}`, // 產生唯一ID以供去重參考
+                                category: catId,
+                                duration: parseInt(item.duration) || 0,
+                                date: dateStr,
+                                valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest',
+                                note: item.appName,
+                                status: 'completed'
+                            };
+                        }).filter(s => s.duration > 0);
+
+                        // 2. 去重邏輯 (De-duplication)
+                        const uniqueNewSessions = mappedSessions.filter(newS => {
+                            const isDuplicate = data.sessions.some(oldS => 
+                                oldS.date === newS.date && 
+                                oldS.note === newS.note && 
+                                Math.abs(oldS.duration - newS.duration) < 5 // 容許 5 秒誤差
+                            );
+                            return !isDuplicate;
+                        });
+
+                        if (uniqueNewSessions.length === 0) {
+                            showToast("沒有新的資料需匯入", 'success');
+                        } else {
+                            saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] });
+                            showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success');
+                        }
+                    }
+                } catch(e) { showToast("連線失敗，請檢查網址", 'error'); } 
+                finally { setIsSyncing(false); }
+            };
+
+            const formatTime = (s) => {
+                const m = Math.floor(s / 60);
+                const sec = s % 60;
+                return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+            };
+
+            const formatDurationSimple = (seconds) => {
+                if (seconds < 60) return `${seconds}秒`;
+                const totalMinutes = Math.round(seconds / 60);
+                const h = Math.floor(totalMinutes / 60);
+                const m = totalMinutes % 60;
+                if (h > 0) return `${h}小時 ${m}分`;
+                return `${m}分鐘`;
+            };
+
+            const handleManagerChat = () => {
+                if (!managerInput.trim()) return;
+                const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() };
+                setManagerMessages(prev => [...prev, userMsg]);
+                setManagerInput('');
+                setIsAiTyping(true);
+                setTimeout(() => {
+                    const responseText = generateAIResponse(userMsg.text, data, 'manager');
+                    const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() };
+                    setManagerMessages(prev => [...prev, aiMsg]);
+                    setIsAiTyping(false);
+                }, 1000);
+            };
+
+            const handleJournalAI = () => {
+                if (!journalText.trim()) return;
+                setIsAiTyping(true);
+                setTimeout(() => {
+                    const responseText = generateAIResponse(journalText, data, 'journal');
+                    setJournalAiResponse(responseText);
+                    setIsAiTyping(false);
+                }, 1000);
+            };
+
             const chartData = useMemo(() => {
-                const targetSessions = analysisViewMode === 'total' ? data.sessions : data.sessions.filter(s => s.date === getLocalDateStr(analysisDate));
                 const stats = { growth: 0, waste: 0, rest: 0 };
+                const today = getLocalDateStr(analysisDate);
+                const targetSessions = analysisViewMode === 'total' ? data.sessions : data.sessions.filter(s => s.date === today);
                 targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; });
-                const total = Object.values(stats).reduce((a,b) => a+b, 0);
-                return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0 }));
+                return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0 }));
             }, [data.sessions, analysisDate, analysisViewMode]);
 
-            // --- 儀表板計算邏輯 ---
+            const groupedAggregatedSessions = useMemo(() => {
+                const groups = {};
+                data.sessions.forEach(session => {
+                    if (!groups[session.date]) groups[session.date] = {};
+                    if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] };
+                    groups[session.date][session.category].duration += session.duration;
+                    groups[session.date][session.category].count += 1;
+                    if(session.meta && Object.keys(session.meta).length > 0) {
+                        const metaStr = Object.values(session.meta).join(', ');
+                        if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr);
+                    }
+                });
+                return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({
+                    date,
+                    categories: Object.entries(cats).map(([catId, stats]) => ({
+                        id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId)
+                    }))
+                }));
+            }, [data.sessions]);
+
+            // Calendar
+            const renderCalendar = () => {
+                const year = calendarViewDate.getFullYear();
+                const month = calendarViewDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDay = new Date(year, month, 1).getDay();
+                const days = [];
+                for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>);
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = getLocalDateStr(new Date(year, month, d));
+                    const hasEntry = !!data.journals[dateStr]?.content;
+                    const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month;
+                    days.push(
+                        <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))}
+                            className={`h-10 w-10 rounded-xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}>
+                            <span className="text-sm font-bold">{d}</span>
+                            {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-waste-500 rounded-full absolute bottom-1.5"></span>}
+                        </button>
+                    );
+                }
+                return days;
+            };
+            
+            // Dashboard Stats Calculation
             const dashboardStats = useMemo(() => {
                 const targetDate = getLocalDateStr(analysisDate);
-                const sessions = data.sessions.filter(s => s.date === targetDate);
+                const sessions = analysisViewMode === 'total' ? data.sessions : data.sessions.filter(s => s.date === targetDate);
                 const totalDuration = sessions.reduce((acc, s) => acc + s.duration, 0);
                 const growthDuration = sessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0);
                 const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0;
                 return { totalDuration, growthDuration, growthPercent };
-            }, [data.sessions, analysisDate]);
+            }, [data.sessions, analysisDate, analysisViewMode]);
 
             return (
                 <div className="flex min-h-screen bg-cream font-sans">
-                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-2xl shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold">{toastMessage.text}</div></div>}
+                    {toastMessage && (
+                        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-2xl shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}>
+                            <div className="font-bold">{toastMessage.text}</div>
+                        </div>
+                    )}
 
+                    {/* Sidebar */}
                     <nav className="hidden md:flex flex-col w-64 h-screen border-r border-brand-50 p-6 bg-white fixed left-0 top-0 z-50">
-                        <div className="flex items-center gap-3 mb-10 text-brand-900 px-2"><div className="p-2 bg-brand-50 rounded-xl"><IconByName name="Bot" className="w-8 h-8"/></div><span className="text-xl font-bold tracking-tight">MindfulTime</span></div>
+                        <div className="flex items-center gap-3 mb-10 text-brand-900 px-2">
+                            <div className="p-2 bg-brand-50 rounded-xl"><IconByName name="Bot" className="w-8 h-8"/></div>
+                            <span className="text-xl font-bold tracking-tight">MindfulTime</span>
+                        </div>
                         <div className="space-y-2">
                             <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光花園" />
                             <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="心情日記" />
@@ -262,23 +558,77 @@
                         </div>
                     </nav>
 
+                    {/* Main Content */}
                     <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64">
-                        <header className="md:hidden flex justify-between items-center mb-6"><span className="font-bold text-brand-900 flex items-center gap-2 text-lg"><IconByName name="Bot" className="w-6 h-6"/> MindfulTime</span><button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button></header>
+                        <header className="md:hidden flex justify-between items-center mb-6">
+                            <span className="font-bold text-brand-900 flex items-center gap-2 text-lg"><IconByName name="Bot" className="w-6 h-6"/> MindfulTime</span>
+                            <button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button>
+                        </header>
 
-                        {/* Timer Banner */}
+                        {/* Active Timer Banner */}
                         {data.activeTimer && (
                             <div className="bg-text-main text-white rounded-3xl p-6 shadow-2xl flex items-center justify-between gap-6 mb-8 relative overflow-hidden">
-                                <div className="flex items-center gap-4 z-10"><div className="p-3 bg-white/10 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div><div><div className="text-brand-100 text-xs font-bold uppercase mb-1">正在專注</div><div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div></div></div><div className="font-mono text-5xl font-bold tracking-tight z-10 tabular-nums text-brand-100">{formatTime(elapsedTime)}</div><button onClick={stopTimer} className="px-6 py-3 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-xl shadow-sm flex items-center gap-2 z-10"><IconByName name="StopCircle" className="w-5 h-5"/> <span>完成</span></button>
+                                <div className="flex items-center gap-4 z-10">
+                                    <div className="p-3 bg-white/10 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div>
+                                    <div>
+                                        <div className="text-brand-100 text-xs font-bold uppercase mb-1">正在專注</div>
+                                        <div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div>
+                                    </div>
+                                </div>
+                                <div className="font-mono text-5xl font-bold tracking-tight z-10 tabular-nums text-brand-100">{formatTime(elapsedTime)}</div>
+                                <button onClick={stopTimer} className="px-6 py-3 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-xl shadow-sm flex items-center gap-2 z-10"><IconByName name="StopCircle" className="w-5 h-5"/> <span>完成</span></button>
                             </div>
                         )}
 
-                        {/* Analysis View (Dashboard Style) */}
+                        {view === 'tracker' && (
+                            <div className="space-y-8 animate-float">
+                                {!data.activeTimer && (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                        {CATEGORIES.map(cat => (
+                                            <button key={cat.id} onClick={() => startTimer(cat.id)} className="group bg-white border-b-4 border-r-4 border-cream-dark rounded-3xl p-6 flex flex-col items-center justify-center gap-4 h-40 hover:-translate-y-1 transition-all">
+                                                <div className="p-4 bg-cream rounded-2xl"><IconByName name={cat.icon} className="w-8 h-8" /></div>
+                                                <span className="font-bold text-text-main">{cat.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                <div className="bg-white rounded-3xl shadow-cute p-8">
+                                    <h2 className="text-xl font-bold text-text-main flex items-center gap-3 mb-6"><IconByName name="Calendar" className="w-5 h-5 text-accent-purple" /> 時光足跡</h2>
+                                    {groupedAggregatedSessions.length === 0 ? <div className="text-center py-10 text-text-light bg-cream rounded-xl">還沒有紀錄喔 🍃 (試試看去設定匯入資料)</div> : 
+                                        <div className="space-y-8 relative">
+                                            <div className="absolute left-4 top-4 bottom-4 w-1 bg-cream-dark hidden md:block rounded-full"></div>
+                                            {groupedAggregatedSessions.map(group => (
+                                                <div key={group.date} className="relative pl-0 md:pl-12">
+                                                    <div className="hidden md:flex absolute left-0 top-1 w-9 h-9 rounded-full bg-brand-100 border-4 border-white items-center justify-center z-10 text-brand-500"><div className="w-3 h-3 bg-brand-500 rounded-full"></div></div>
+                                                    <h3 className="font-bold text-xl text-text-main mb-4">{group.date}</h3>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                        {group.categories.map(item => (
+                                                            <div key={item.id} className="bg-cream rounded-2xl p-4 flex flex-col gap-2">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="p-3 rounded-xl bg-white text-text-main shadow-sm"><IconByName name={item.def?.icon} className="w-6 h-6" /></div>
+                                                                    <div>
+                                                                        <div className="font-bold text-text-main">{item.def?.label}</div>
+                                                                        <div className="text-sm text-text-light font-mono font-bold">{formatDurationSimple(item.duration)}</div>
+                                                                    </div>
+                                                                </div>
+                                                                {item.meta && item.meta.length > 0 && <div className="text-xs text-text-light bg-white/50 p-2 rounded-lg">{item.meta.join(', ')}</div>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        )}
+
                         {view === 'analysis' && (
                             <div className="animate-slide-up space-y-6">
-                                {/* Top Bar: Date Navigation */}
+                                {/* Top Bar */}
                                 <div className="bg-white rounded-3xl shadow-cute p-4 flex items-center justify-between">
                                     <div className="flex bg-cream p-1 rounded-xl">
-                                        <button onClick={() => setAnalysisViewMode('day')} className={`px-4 py-2 rounded-lg text-sm font-bold ${analysisViewMode==='day'?'bg-white shadow-sm text-brand-600':'text-text-light'}`}>📅 單日檢視</button>
+                                        <button onClick={() => setAnalysisViewMode('day')} className={`px-4 py-2 rounded-lg text-sm font-bold ${analysisViewMode==='day'?'bg-white shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
                                         <button onClick={() => setAnalysisViewMode('total')} className={`px-4 py-2 rounded-lg text-sm font-bold ${analysisViewMode==='total'?'bg-white shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
                                     </div>
                                     {analysisViewMode === 'day' && (
@@ -296,7 +646,7 @@
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {/* Left: Value Distribution */}
                                     <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col h-full">
-                                        <h3 className="font-bold text-text-main mb-6 text-xl flex items-center gap-2"><IconByName name="PieChart" className="w-5 h-5 text-rest-500"/> 價值分佈 <span className="text-sm bg-cream px-2 py-1 rounded-lg font-normal text-text-light">{analysisViewMode === 'day' ? '今日' : '全時段'}</span></h3>
+                                        <h3 className="font-bold text-text-main mb-6 text-xl flex items-center gap-2"><IconByName name="BarChart2" className="w-5 h-5 text-rest-500"/> 價值分佈</h3>
                                         <div className="flex-1 flex flex-col items-center justify-center">
                                             <DonutChart data={chartData} />
                                             <div className="w-full mt-8 space-y-3">
@@ -318,27 +668,13 @@
 
                                     {/* Right: Insights */}
                                     <div className="flex flex-col gap-6">
-                                        {/* Title */}
                                         <div className="flex items-center gap-2 font-bold text-xl text-text-main"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow"/> 今日洞察</div>
-
-                                        {/* Growth Energy Bar */}
+                                        
                                         <div className="bg-brand-50 border border-brand-100 p-6 rounded-3xl">
                                             <div className="flex items-center gap-2 font-bold text-brand-900 mb-3"><IconByName name="Zap" className="w-5 h-5"/> 成長能量條</div>
-                                            <p className="text-brand-900 leading-relaxed font-medium text-lg">
-                                                你花了 <span className="text-2xl font-bold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>
-                                                {dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}
-                                            </p>
+                                            <p className="text-brand-900 leading-relaxed font-medium text-lg">你花了 <span className="text-2xl font-bold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！</p>
                                         </div>
 
-                                        {/* Warm Reminder */}
-                                        <div className="bg-blue-50 border border-blue-100 p-6 rounded-3xl">
-                                            <div className="flex items-center gap-2 font-bold text-rest-500 mb-3"><IconByName name="Coffee" className="w-5 h-5"/> 溫馨小提醒</div>
-                                            <p className="text-text-main leading-relaxed">
-                                                {dashboardStats.growthPercent > 80 ? "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨" : "休息是為了走更長遠的路，別給自己太大壓力 💤"}
-                                            </p>
-                                        </div>
-
-                                        {/* AI Manager */}
                                         <div className="bg-white border border-brand-100 rounded-3xl shadow-sm flex flex-col flex-1 min-h-[300px] overflow-hidden">
                                             <div className="p-4 bg-brand-50 border-b border-brand-100 flex items-center gap-3">
                                                 <div className="p-2 bg-white rounded-xl"><IconByName name="Bot" className="w-5 h-5 text-brand-600"/></div>
@@ -359,38 +695,112 @@
                             </div>
                         )}
 
-                        {/* Tracker View */}
-                        {view === 'tracker' && (
-                            <div className="space-y-8 animate-float">
-                                {!data.activeTimer && (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                        {CATEGORIES.map(cat => (
-                                            <button key={cat.id} onClick={() => startTimer(cat.id)} className="group bg-white border-b-4 border-r-4 border-cream-dark rounded-3xl p-6 flex flex-col items-center justify-center gap-4 h-40 hover:-translate-y-1 transition-all">
-                                                <div className="p-4 bg-cream rounded-2xl"><IconByName name={cat.icon} className="w-8 h-8" /></div>
-                                                <span className="font-bold text-text-main">{cat.label}</span>
-                                            </button>
-                                        ))}
+                        {view === 'journal' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up">
+                                <div className="lg:col-span-1 bg-white rounded-3xl shadow-cute p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()-1)))}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
+                                        <span className="font-bold text-lg">{calendarViewDate.getFullYear()}年 {calendarViewDate.getMonth()+1}月</span>
+                                        <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()+1)))}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
                                     </div>
-                                )}
-                                {/* ... (Tracker history code preserved) ... */}
+                                    <div className="grid grid-cols-7 gap-y-3 justify-items-center">{renderCalendar()}</div>
+                                </div>
+                                <div className="lg:col-span-2 space-y-6">
+                                    <div className="bg-white rounded-3xl shadow-cute overflow-hidden flex flex-col border-4 border-white ring-1 ring-gray-100 h-[400px]">
+                                        <div className="p-5 border-b border-gray-100 font-bold text-lg flex gap-2 items-center">{getLocalDateStr(journalSelectedDate)} <span className="text-xs bg-cream px-2 py-1 rounded">日記</span></div>
+                                        <textarea className="flex-1 w-full p-6 resize-none outline-none text-lg leading-relaxed bg-text-main text-white placeholder-gray-500" placeholder="今天過得怎麼樣？" value={journalText} onChange={e => setJournalText(e.target.value)} />
+                                        <div className="p-5 bg-white border-t border-gray-100 flex justify-between items-center">
+                                            <button onClick={handleJournalAI} className="flex items-center gap-2 text-brand-600 text-sm font-bold hover:bg-brand-50 px-3 py-2 rounded-lg transition-colors"><IconByName name="Sparkles" className="w-4 h-4"/> 問問 AI</button>
+                                            <button onClick={() => { saveDataToLocal({ ...data, journals: { ...data.journals, [getLocalDateStr(journalSelectedDate)]: { content: journalText } } }); showToast("日記已儲存"); }} className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-xl font-bold shadow-cute hover:bg-brand-600"><IconByName name="Save" className="w-5 h-5"/> 儲存</button>
+                                        </div>
+                                    </div>
+                                    {journalAiResponse && (
+                                        <div className="bg-white rounded-3xl shadow-cute p-6 border-2 border-brand-100 animate-float">
+                                            <div className="flex items-center gap-2 text-brand-600 font-bold mb-2"><IconByName name="Bot" className="w-5 h-5"/> AI 陪伴回應</div>
+                                            <div className="text-text-main leading-relaxed">{journalAiResponse}</div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
-                        
-                        {/* (Other views: Journal, Settings preserved in full code) */}
+
+                        {view === 'settings' && (
+                            <div className="bg-white rounded-3xl shadow-cute p-8 space-y-6 animate-slide-up">
+                                <h2 className="font-bold text-xl flex items-center gap-2"><IconByName name="Settings" className="w-6 h-6"/> 設定</h2>
+                                <div>
+                                    <label className="block font-bold text-text-main mb-3">GAS 連結</label>
+                                    <div className="flex gap-2">
+                                        <input type="text" className="flex-1 p-3 border-2 border-cream-dark rounded-2xl outline-none focus:border-brand-500" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="https://script.google.com/..." />
+                                        <button onClick={syncFromGoogleSheet} className="px-6 py-3 bg-text-main text-white rounded-2xl font-bold flex items-center gap-2"><IconByName name="RefreshCcw" className={`w-4 h-4 ${isSyncing?'animate-spin':''}`}/> 匯入</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </main>
 
-                    {/* Mobile Nav */}
                     <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-cream-dark flex justify-around items-center p-3 pb-safe z-40 shadow-lg rounded-t-3xl">
                         <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光" mobile />
                         <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="日記" mobile />
                         <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon="BarChart2" label="洞察" mobile />
                         <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" mobile />
                     </nav>
-                    
-                    {/* ... (Modals preserved) ... */}
+
+                    {/* Review Modal */}
+                    <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
+                        <div className="space-y-6">
+                            <div className="text-center bg-cream p-4 rounded-2xl border-2 border-cream-dark">
+                                <div className="text-4xl font-mono font-bold text-brand-600">{reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00'}</div>
+                            </div>
+                            
+                            <div>
+                                <label className="block font-bold text-text-main mb-3">這段時間感覺如何？</label>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {VALUE_TYPES.map(type => (
+                                        <button key={type.id} onClick={() => setReviewType(type.id)} className={`p-4 rounded-2xl border-2 font-bold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white'}`}>
+                                            <span className={reviewType===type.id ? 'text-text-main' : 'text-text-light'}>{type.label}</span>
+                                            {reviewType === type.id && <IconByName name="CheckCircle" className={type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (
+                                <div className="bg-cream p-4 rounded-2xl border-2 border-cream-dark space-y-4">
+                                   <h4 className="font-bold text-sm text-text-main flex items-center gap-2"><IconByName name="Settings" className="w-4 h-4"/> 詳細紀錄</h4>
+                                   {CATEGORY_FIELDS[reviewSessionCache.category].map(field => (
+                                     <div key={field.key}>
+                                        <label className="block text-xs font-bold text-text-light mb-1">{field.label}</label>
+                                        {field.type === 'select' ? (
+                                            <select className="w-full p-2 rounded-xl border border-cream-dark bg-white text-sm outline-none focus:border-brand-500" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}>
+                                                <option value="">選擇...</option>
+                                                {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                            </select>
+                                        ) : (
+                                            <input type="text" className="w-full p-2 rounded-xl border border-cream-dark bg-white text-sm outline-none focus:border-brand-500" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />
+                                        )}
+                                     </div>
+                                   ))}
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block font-bold text-text-main mb-3">給自己幾顆星？</label>
+                                <div className="flex justify-center gap-3 bg-cream p-4 rounded-2xl border-2 border-cream-dark">
+                                    {[1, 2, 3, 4, 5].map(star => (
+                                        <button key={star} onClick={() => setReviewRating(star)} className="hover:scale-110 transition-transform">
+                                            <IconByName name="Star" className={`w-8 h-8 ${star <= reviewRating ? "text-accent-yellow fill-accent-yellow" : "text-gray-300"}`} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button onClick={submitReview} className="w-full py-4 bg-brand-500 text-white rounded-2xl font-bold shadow-cute hover:translate-y-[1px] hover:shadow-none transition-all">確認並儲存 ✨</button>
+                        </div>
+                    </Modal>
                 </div>
             );
         };
+
         const root = createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
