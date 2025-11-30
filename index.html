@@ -34,17 +34,6 @@
     
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "recharts": "https://esm.sh/recharts?external=react,react-dom",
-        "lucide-react": "https://esm.sh/lucide-react?external=react,react-dom"
-      }
-    }
-    </script>
-    
     <style>
       body { font-family: 'Quicksand', 'Noto Sans TC', sans-serif; background-color: #FFF9F5; color: #5D5F71; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { display: none; }
@@ -55,16 +44,14 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useMemo } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-        import { LayoutDashboard, Settings, BarChart2, Brain, Smartphone, Activity, RefreshCcw, ShoppingBag, Dumbbell, Clock, Briefcase, Monitor } from 'lucide-react';
+        /* 🔥🔥🔥 這裡才是重點！請確認貼上後，這裡是長長的一串網址 🔥🔥🔥 */
+        import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'https://esm.sh/recharts@2.12.0?external=react,react-dom';
+        import { LayoutDashboard, Settings, BarChart2, Brain, Smartphone, Activity, RefreshCcw, ShoppingBag, Dumbbell, Clock, Briefcase, Monitor } from 'https://esm.sh/lucide-react@0.263.1?external=react,react-dom';
 
-        // 🔥🔥🔥 【嫌疑點三】就在這裡！請把你截圖中的網址貼在下面引號內 🔥🔥🔥
-        // 網址結尾必須是 /exec
+        // 你的後端網址 (我已經幫你填好正確的了)
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
-        // 👆 請把上面這行換成你的網址 👆
-
         
         const CATEGORIES = [
           { id: '知識', label: '知識學習', icon: <Briefcase size={28}/>, color: 'bg-blue-100 text-blue-600', chartColor: '#3B82F6' },
@@ -94,7 +81,6 @@
 
           const fetchData = () => {
             setLoading(true);
-            // 使用 fetch 呼叫你的 GAS 後端 (JSON模式)
             const fetchUrl = GAS_URL + (GAS_URL.includes('?') ? '&mode=json' : '?mode=json') + `&t=${new Date().getTime()}`;
             
             fetch(fetchUrl)
@@ -144,7 +130,6 @@
             
             showToast(isStarting ? `開始：${category.label}` : `結束：${category.label}`, 'info');
 
-            // 傳送資料到後端
             fetch(GAS_URL, {
               method: 'POST',
               body: JSON.stringify({ appName: category.label, status: status })
@@ -160,7 +145,6 @@
             </button>
           );
 
-          // 計算統計數據
           const chartData = useMemo(() => {
              const stats = {};
              data.sessions.forEach(s => {
@@ -173,7 +157,6 @@
 
           return (
             <div className="flex flex-col h-screen max-w-md mx-auto bg-cream relative">
-              {/* 頂部標題列 */}
               <div className="flex justify-between items-center p-6 pb-2">
                  <div className="flex items-center gap-2 text-brand-900">
                     <Brain size={28} className="text-brand-600"/>
@@ -184,7 +167,6 @@
                  </button>
               </div>
 
-              {/* 主要內容區 */}
               <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6">
                 
                 {view === 'tracker' && (
@@ -246,7 +228,6 @@
                 )}
               </div>
 
-              {/* 底部導覽列 */}
               <nav className="fixed bottom-0 w-full max-w-md bg-white border-t border-brand-50 flex justify-around items-center p-3 pb-safe z-40 rounded-t-3xl shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
                 <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon={LayoutDashboard} label="追蹤" />
                 <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon={BarChart2} label="分析" />
