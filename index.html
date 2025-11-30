@@ -57,7 +57,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 內建圖示庫 (SVG) ---
+        // --- 1. 內建圖示庫 (最先定義) ---
         const SVG_ATTRIBUTES = { fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" };
         const IconComponent = (name) => ({ size, className }) => {
             const paths = {
@@ -66,7 +66,7 @@
                 Clock: <g><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g>,
                 Book: <g><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></g>,
                 BarChart2: <g><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></g>,
-                Settings: <g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>,
+                Settings: <g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>,
                 StopCircle: <g><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></g>,
                 RefreshCcw: <g><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></g>,
                 Briefcase: <g><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></g>,
@@ -105,7 +105,7 @@
             return <Component className={className} size={size} />;
         };
 
-        // --- 2. 內建手刻圓餅圖 (取代 Recharts) ---
+        // --- 2. 內建手刻圓餅圖 (其次定義) ---
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
             if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
@@ -122,7 +122,6 @@
                     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
                         {data.map((item, index) => {
                             const percent = item.value / total;
-                            // 修正：單一數據 100% 顯示
                             if (percent >= 0.999) {
                                 let strokeColor = '#CBD5E1';
                                 if (item.name === '成長') strokeColor = '#88D4AB';
@@ -135,8 +134,7 @@
                             const strokeDashoffset = -cumulativePercent * circumference;
                             cumulativePercent += percent;
                             
-                            // 對應 Tailwind 顏色
-                            let strokeColor = '#CBD5E1'; // default gray
+                            let strokeColor = '#CBD5E1'; 
                             if (item.name === '成長') strokeColor = '#88D4AB';
                             if (item.name === '浪費') strokeColor = '#FFB7B2';
                             if (item.name === '休息') strokeColor = '#AECBFA';
@@ -165,7 +163,7 @@
             );
         };
 
-        // --- 3. 元件定義區 (在 App 之前定義) ---
+        // --- 3. 元件 (接著定義) ---
         
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
             if (mobile) {
@@ -207,7 +205,6 @@
             );
         };
 
-        // --- 4. 邏輯核心與 App ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
@@ -228,6 +225,7 @@
             { id: 'rest', label: '休息', color: 'bg-rest-500' }
         ];
 
+        // --- 4. 主程式 App (最後定義) ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {} });
