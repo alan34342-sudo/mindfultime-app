@@ -8,242 +8,65 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
-    
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              cream: '#FFF9F5', 'cream-dark': '#F5EBE0',
-              text: { main: '#5D5F71', light: '#8E91A0' },
-              brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
-              accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
-            },
-            fontFamily: { sans: ['Quicksand', 'sans-serif'] }
-          }
-        }
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    
     <style>
-      body { font-family: 'Quicksand', 'Noto Sans TC', sans-serif; background-color: #FFF9F5; color: #5D5F71; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-      ::-webkit-scrollbar { display: none; }
-      .btn-card:active { transform: scale(0.96); transition: transform 0.1s; }
+      body { 
+          font-family: sans-serif; 
+          background-color: #FFF9F5; 
+          color: #5D5F71; 
+          display: flex; 
+          justify-content: center; 
+          align-items: center; 
+          height: 100vh; 
+          margin: 0; 
+      }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
-        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
-        import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'https://esm.sh/recharts@2.12.0?external=react,react-dom';
-        import { LayoutDashboard, Settings, BarChart2, Brain, Smartphone, Activity, RefreshCcw, ShoppingBag, Dumbbell, Clock, Briefcase, Monitor } from 'https://esm.sh/lucide-react@0.263.1?external=react,react-dom';
+    <script type="text/babel">
+        // 注意：這裡不再有 import 語法！
 
+        const { useState, useEffect } = window.React;
+        const { createRoot } = window.ReactDOM; 
+        
         // 你的後端網址
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
-        
-        const CATEGORIES = [
-          { id: '知識', label: '知識學習', icon: <Briefcase size={28}/>, color: 'bg-blue-100 text-blue-600', chartColor: '#3B82F6' },
-          { id: 'AI', label: 'AI 研究', icon: <Brain size={28}/>, color: 'bg-indigo-100 text-indigo-600', chartColor: '#6366F1' },
-          { id: '娛樂', label: '休閒娛樂', icon: <Monitor size={28}/>, color: 'bg-purple-100 text-purple-600', chartColor: '#8B5CF6' },
-          { id: '運動', label: '運動健身', icon: <Dumbbell size={28}/>, color: 'bg-emerald-100 text-emerald-600', chartColor: '#10B981' },
-          { id: '社群', label: '社群媒體', icon: <Smartphone size={28}/>, color: 'bg-pink-100 text-pink-600', chartColor: '#EC4899' },
-          { id: '購物', label: '購物消費', icon: <ShoppingBag size={28}/>, color: 'bg-rose-100 text-rose-600', chartColor: '#F43F5E' },
-        ];
 
-        function App() {
-          const [view, setView] = useState('tracker');
-          const [loading, setLoading] = useState(false);
-          const [data, setData] = useState({ sessions: [] });
-          const [activeTimer, setActiveTimer] = useState(null);
-          const [toast, setToast] = useState(null);
+        const App = () => {
+            const [message, setMessage] = useState("MindfulTime 正在檢查連線...");
 
-          // 初始化讀取資料
-          useEffect(() => {
-             fetchData();
-          }, []);
+            useEffect(() => {
+                // 執行連線檢查
+                fetch(GAS_URL + '?mode=json')
+                    .then(res => res.json())
+                    .then(() => {
+                        setMessage("✅ 前端架構成功！資料庫連線正常！");
+                    })
+                    .catch(() => {
+                        setMessage("⚠️ 前端架構成功，但資料庫連線失敗。");
+                    });
+            }, []);
 
-          const showToast = (msg, type='success') => {
-            setToast({msg, type});
-            setTimeout(() => setToast(null), 3000);
-          };
-
-          const fetchData = () => {
-            setLoading(true);
-            const fetchUrl = GAS_URL + (GAS_URL.includes('?') ? '&mode=json' : '?mode=json') + `&t=${new Date().getTime()}`;
-            
-            fetch(fetchUrl)
-             .then(res => res.json())
-             .then(json => {
-                processData(json);
-                setLoading(false);
-             })
-             .catch(err => {
-                console.error(err);
-                showToast("連線失敗，請檢查網址", 'error');
-                setLoading(false);
-             });
-          };
-
-          const processData = (rows) => {
-            if (!rows || rows.length === 0) return;
-            const validRows = rows.filter(r => r && r.length > 0);
-            const newSessions = validRows.map((row, index) => {
-                const name = row[1];
-                const duration = parseFloat(row[6]) || 0;
-                let categoryId = '知識'; 
-                const foundCat = CATEGORIES.find(c => c.label === name || c.id === name);
-                if (foundCat) categoryId = foundCat.id;
-
-                return {
-                    id: index,
-                    date: row[0],
-                    category: categoryId,
-                    duration: duration, 
-                    startTimeStr: row[3],
-                    appName: name,
-                    status: row[2]
-                };
-            }).reverse();
-            setData({ sessions: newSessions });
-          };
-
-          const toggleTimer = (category) => {
-            if (activeTimer && activeTimer !== category.id) {
-              showToast("請先停止當前活動", 'error');
-              return;
-            }
-            const isStarting = !activeTimer;
-            setActiveTimer(isStarting ? category.id : null);
-            const status = isStarting ? "Open" : "Close";
-            
-            showToast(isStarting ? `開始：${category.label}` : `結束：${category.label}`, 'info');
-
-            fetch(GAS_URL, {
-              method: 'POST',
-              body: JSON.stringify({ appName: category.label, status: status })
-            }).then(() => {
-               if (!isStarting) fetchData();
-            });
-          };
-
-          const NavButton = ({ active, onClick, icon: Icon, label }) => (
-            <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-900 bg-brand-100 scale-105' : 'text-text-light hover:text-text-main'}`}>
-                <Icon className="w-6 h-6 mb-1" />
-                <span className="text-[10px] font-bold">{label}</span>
-            </button>
-          );
-
-          const chartData = useMemo(() => {
-             const stats = {};
-             data.sessions.forEach(s => {
-                 const cat = CATEGORIES.find(c => c.id === s.category);
-                 const label = cat ? cat.label : s.appName;
-                 stats[label] = (stats[label] || 0) + s.duration;
-             });
-             return Object.entries(stats).map(([name, val]) => ({ name, value: Math.round(val/60) }));
-          }, [data.sessions]);
-
-          return (
-            <div className="flex flex-col h-screen max-w-md mx-auto bg-cream relative">
-              <div className="flex justify-between items-center p-6 pb-2">
-                 <div className="flex items-center gap-2 text-brand-900">
-                    <Brain size={28} className="text-brand-600"/>
-                    <span className="text-2xl font-bold tracking-tight">MindfulTime</span>
-                 </div>
-                 <button onClick={fetchData} className={`p-2 bg-white rounded-full shadow-cute border border-brand-100 text-brand-600 ${loading ? 'animate-spin' : ''}`}>
-                   <RefreshCcw size={20}/>
-                 </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6">
-                
-                {view === 'tracker' && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      {CATEGORIES.map(cat => {
-                        const isActive = activeTimer === cat.id;
-                        return (
-                          <button key={cat.id} onClick={() => toggleTimer(cat)}
-                            className={`btn-card relative p-4 rounded-3xl flex flex-col items-center gap-3 transition-all border-2 
-                              ${isActive ? 'bg-brand-600 text-white border-brand-900 shadow-inner' : 'bg-white border-brand-50 shadow-cute hover:shadow-cute-hover'}
-                              ${activeTimer && !isActive ? 'opacity-40 grayscale' : ''}
-                            `}>
-                            <div className={`p-3 rounded-2xl ${isActive ? 'bg-white/20' : cat.color}`}>{cat.icon}</div>
-                            <span className="font-bold text-lg">{cat.label}</span>
-                            {isActive && <span className="absolute top-3 right-3 animate-ping w-2 h-2 bg-white rounded-full"></span>}
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
-                        <Clock size={20} className="text-brand-500"/> 近期紀錄
-                      </h3>
-                      <div className="space-y-3">
-                        {data.sessions.slice(0, 10).map((s, i) => (
-                           <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-brand-50 flex justify-between items-center">
-                              <span className="font-bold text-text-main">{s.appName}</span>
-                              <div className="text-right">
-                                 <div className="text-xs text-text-light">{s.date}</div>
-                                 <div className="font-mono text-brand-600 font-bold">
-                                    {s.duration > 0 ? `${(s.duration/60).toFixed(1)} 分` : (s.status === 'Open' ? '進行中...' : '尚未結束')}
-                                 </div>
-                              </div>
-                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {view === 'analysis' && (
-                   <div className="bg-white p-6 rounded-3xl shadow-cute border border-brand-50 h-80 flex flex-col">
-                      <h3 className="font-bold text-text-main mb-4">專注分佈</h3>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                            {chartData.map((entry, index) => {
-                               const def = CATEGORIES.find(c => c.label === entry.name);
-                               return <Cell key={index} fill={def ? def.chartColor : '#94A3B8'} />
-                            })}
-                          </Pie>
-                          <Tooltip />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                   </div>
-                )}
-              </div>
-
-              <nav className="fixed bottom-0 w-full max-w-md bg-white border-t border-brand-50 flex justify-around items-center p-3 pb-safe z-40 rounded-t-3xl shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
-                <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon={LayoutDashboard} label="追蹤" />
-                <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon={BarChart2} label="分析" />
-                <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="設定" />
-              </nav>
-
-              {toast && (
-                <div className="fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-brand-900 text-white rounded-full shadow-lg z-50 animate-bounce text-sm font-bold">
-                   {toast.msg}
+            return (
+                <div style={{ padding: '20px', backgroundColor: '#E1F7E7', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                    <h1 style={{ color: '#6FC295', fontSize: '24px' }}>{message}</h1>
+                    <p style={{ color: '#5D5F71', fontSize: '14px' }}>如果您看到綠色訊息，恭喜您，問題已經修復！</p>
                 </div>
-              )}
-            </div>
-          );
-        }
-
+            );
+        };
+        
+        // 渲染 App
         const root = createRoot(document.getElementById('root'));
         root.render(<App />);
+
     </script>
 </body>
 </html>
