@@ -58,8 +58,8 @@
         const { createRoot } = ReactDOM;
 
         // --- 1. 內建圖示庫 (SVG) ---
+        const SVG_ATTRIBUTES = { fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" };
         const IconComponent = (name) => ({ size, className }) => {
-            const SVG_ATTRIBUTES = { fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" };
             const paths = {
                 Bot: <g><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></g>,
                 Brain: <g><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></g>,
@@ -122,6 +122,15 @@
                     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
                         {data.map((item, index) => {
                             const percent = item.value / total;
+                            // 修正：單一數據 100% 顯示
+                            if (percent >= 0.999) {
+                                let strokeColor = '#CBD5E1';
+                                if (item.name === '成長') strokeColor = '#88D4AB';
+                                if (item.name === '浪費') strokeColor = '#FFB7B2';
+                                if (item.name === '休息') strokeColor = '#AECBFA';
+                                return <circle key={index} cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />;
+                            }
+                            
                             const strokeDasharray = `${percent * circumference} ${circumference}`;
                             const strokeDashoffset = -cumulativePercent * circumference;
                             cumulativePercent += percent;
@@ -156,6 +165,49 @@
             );
         };
 
+        // --- 3. 元件定義區 (在 App 之前定義) ---
+        
+        const NavButton = ({ active, onClick, icon, label, mobile }) => {
+            if (mobile) {
+                return (
+                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
+                        <IconByName name={icon} className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] font-bold">{label}</span>
+                    </button>
+                )
+            }
+            return (
+                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
+                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
+                    <span className="text-lg">{label}</span>
+                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
+                </button>
+            );
+        };
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col">
+                        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream">
+                            <h3 className="text-xl font-bold text-text-main flex items-center gap-2">
+                                <IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-5 h-5" />
+                                {title}
+                            </h3>
+                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light">
+                                <IconByName name="X" className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto bg-white">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. 邏輯核心與 App ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
@@ -175,24 +227,6 @@
             { id: 'waste', label: '浪費', color: 'bg-waste-500' },
             { id: 'rest', label: '休息', color: 'bg-rest-500' }
         ];
-
-        const NavButton = ({ active, onClick, icon, label, mobile }) => {
-            if (mobile) {
-                return (
-                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
-                        <IconByName name={icon} className="w-6 h-6 mb-1" />
-                        <span className="text-[10px] font-bold">{label}</span>
-                    </button>
-                )
-            }
-            return (
-                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
-                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
-                    <span className="text-lg">{label}</span>
-                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
-                </button>
-            );
-        };
 
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
@@ -214,7 +248,7 @@
             const [journalTodos, setJournalTodos] = useState([]);
             const [newTodoText, setNewTodoText] = useState('');
 
-            const [chatMessages, setChatMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
+            const [chatMessages, setChatMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。告訴我你現在的狀態吧！', timestamp: Date.now() }]);
             const [chatInput, setChatInput] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
             const chatEndRef = useRef(null);
