@@ -4,9 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
+    
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
@@ -22,29 +24,29 @@
               cream: '#FFF9F5', 'cream-dark': '#F5EBE0',
               text: { main: '#5D5F71', light: '#8E91A0' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, 
+              rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Quicksand', 'sans-serif'] },
-            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' }
+            boxShadow: {
+              'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
+              'cute-hover': '6px 6px 0px 0px rgba(0,0,0,0.08)',
+              'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+            }
           }
         }
       }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/recharts@2.10.3/umd/Recharts.min.js"></script>
-
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <style>
-      body { font-family: 'Quicksand', sans-serif; background-color: #FFF9F5; color: #5D5F71; -webkit-tap-highlight-color: transparent; }
+      body { font-family: 'Quicksand', sans-serif; background-color: #FFF9F5; color: #5D5F71; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; }
-      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-      /* Recharts override to remove outline on click */
-      .recharts-sector { outline: none; }
     </style>
 </head>
 <body>
@@ -53,10 +55,8 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
-        // Access Recharts components from the global scope
-        const { PieChart, Pie, Cell, ResponsiveContainer, Label } = Recharts;
 
-        // --- Icons (SVG) ---
+        // --- 1. 內建圖示庫 ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -65,7 +65,7 @@
             Clock: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgBase>,
             Book: (p) => <SvgBase {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></SvgBase>,
             BarChart2: (p) => <SvgBase {...p}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></SvgBase>,
-            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
+            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
             StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
             RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
             Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
@@ -103,12 +103,112 @@
             return <Component className={className} size={size} />;
         };
 
-        // --- UI Components ---
+        // --- 2. 內建手刻圓餅圖 (升級版：帶有百分比文字) ---
+        const DonutChart = ({ data }) => {
+            const total = data.reduce((acc, cur) => acc + cur.value, 0);
+            if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
+
+            let cumulativePercent = 0;
+            const size = 220;
+            const center = size / 2;
+            const radius = 80;
+            const strokeWidth = 20;
+            const circumference = 2 * Math.PI * radius;
+            const textRadius = radius + 30; // 文字顯示在圓環外圈
+
+            return (
+                <div className="relative flex justify-center items-center">
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                        {/* 背景圓環 (裝飾用) */}
+                        <circle cx={center} cy={center} r={radius} fill="none" stroke="#F3F4F6" strokeWidth={strokeWidth} />
+                        
+                        {/* 數據區塊 */}
+                        {data.map((item, index) => {
+                            const percent = item.value / total;
+                            if (percent === 0) return null;
+
+                            // 計算起始角度 (從 -90 度開始)
+                            const startAngle = (cumulativePercent * 360) - 90;
+                            const sliceAngle = percent * 360;
+                            const midAngle = startAngle + sliceAngle / 2; // 文字顯示在區塊中間角度
+                            
+                            // 計算 SVG stroke 的參數
+                            const strokeDasharray = `${percent * circumference} ${circumference}`;
+                            // strokeDashoffset 需要逆時針計算，並且起點要對齊
+                            const strokeDashoffset = -cumulativePercent * circumference;
+
+                            // 計算文字座標
+                            const radian = (midAngle * Math.PI) / 180;
+                            const textX = center + textRadius * Math.cos(radian);
+                            const textY = center + textRadius * Math.sin(radian);
+
+                            cumulativePercent += percent;
+
+                            // 單一數據 100% 特殊處理
+                            if (percent >= 0.99) {
+                                return (
+                                    <g key={index}>
+                                        <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} />
+                                        <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-gray-500 text-xs font-bold">100%</text>
+                                    </g>
+                                );
+                            }
+
+                            return (
+                                <g key={index}>
+                                    <circle
+                                        cx={center}
+                                        cy={center}
+                                        r={radius}
+                                        fill="none"
+                                        stroke={item.color}
+                                        strokeWidth={strokeWidth}
+                                        strokeDasharray={strokeDasharray}
+                                        strokeDashoffset={strokeDashoffset}
+                                        transform={`rotate(-90 ${center} ${center})`}
+                                        className="transition-all duration-1000 ease-out"
+                                    />
+                                    {/* 百分比文字 (只顯示 > 5% 的項目) */}
+                                    {percent > 0.05 && (
+                                        <text 
+                                            x={textX} 
+                                            y={textY} 
+                                            textAnchor="middle" 
+                                            dominantBaseline="central" 
+                                            className="fill-gray-600 text-xs font-bold font-mono"
+                                        >
+                                            {Math.round(percent * 100)}%
+                                        </text>
+                                    )}
+                                </g>
+                            );
+                        })}
+                    </svg>
+                    <div className="absolute text-center pointer-events-none">
+                        <div className="text-3xl font-bold text-text-main">{Math.round(total/60*10)/10}</div>
+                        <div className="text-xs text-text-light font-bold">小時</div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 3. UI 元件 ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
             if (mobile) {
-                return <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>
+                return (
+                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
+                        <IconByName name={icon} className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] font-bold">{label}</span>
+                    </button>
+                )
             }
-            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span>{active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}</button>
+            return (
+                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-bold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
+                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
+                    <span className="text-lg">{label}</span>
+                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
+                </button>
+            );
         };
 
         const Modal = ({ isOpen, onClose, title, children }) => {
@@ -117,8 +217,13 @@
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream">
-                            <h3 className="text-xl font-bold text-text-main flex items-center gap-2"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-5 h-5" />{title}</h3>
-                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light"><IconByName name="X" className="w-5 h-5" /></button>
+                            <h3 className="text-xl font-bold text-text-main flex items-center gap-2">
+                                <IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-5 h-5" />
+                                {title}
+                            </h3>
+                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light">
+                                <IconByName name="X" className="w-5 h-5" />
+                            </button>
                         </div>
                         <div className="p-6 overflow-y-auto bg-white">{children}</div>
                     </div>
@@ -126,62 +231,18 @@
             );
         };
 
-        // --- NEW: Recharts Donut Chart Component ---
-        // Custom Label Component for centered text
-        const CustomLabel = ({ viewBox, totalHours }) => {
-            const { cx, cy } = viewBox;
-            return (
-                <g>
-                    <text x={cx} y={cy - 10} textAnchor="middle" dominantBaseline="central" className="text-4xl font-bold fill-text-main">
-                        {totalHours}
-                    </text>
-                    <text x={cx} y={cy + 20} textAnchor="middle" dominantBaseline="central" className="text-sm font-bold fill-text-light">
-                        小時
-                    </text>
-                </g>
-            );
-        };
-
-        const DonutChart = ({ data }) => {
-            const total = data.reduce((acc, cur) => acc + cur.value, 0);
-            const totalHours = Math.round(total / 3600 * 10) / 10;
-
-            if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
-
-             // Add colors to data
-             const coloredData = data.map(d => ({
-                ...d,
-                color: d.name === '投資 (高價值)' ? '#88D4AB' : d.name === '消耗 (浪費)' ? '#FFB7B2' : '#AECBFA'
-            }));
-
-            return (
-                <div style={{ width: '100%', height: 250 }} className="relative">
-                  <ResponsiveContainer>
-                    <PieChart>
-                      <Pie
-                        data={coloredData}
-                        innerRadius={75}
-                        outerRadius={105}
-                        paddingAngle={3}
-                        dataKey="value"
-                        stroke="none"
-                        isAnimationActive={true}
-                      >
-                        {coloredData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} style={{outline: 'none'}} className="hover:brightness-110 transition-all cursor-pointer"/>
-                        ))}
-                        <Label content={<CustomLabel totalHours={totalHours} />} position="center" />
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-            );
-        };
-
-        // --- Configuration ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
+
+        // 詳細分類設定
+        const CATEGORY_FIELDS = {
+            ai: [{ key: 'tool', label: '使用工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '應用目標', type: 'text' }],
+            knowledge: [{ key: 'topic', label: '學習主題', type: 'text' }, { key: 'method', label: '學習方式', type: 'select', options: ['閱讀書籍', '線上課程', '實作練習'] }],
+            entertainment: [{ key: 'content', label: '內容名稱', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
+            sports: [{ key: 'activity', label: '運動項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
+            others: [{ key: 'activity', label: '活動內容', type: 'text' }]
+        };
 
         const CATEGORIES = [
           { id: 'ai', label: 'AI 工具', icon: 'Brain', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
@@ -192,46 +253,24 @@
         ];
 
         const VALUE_TYPES = [
-            { id: 'growth', label: '投資 (高價值)', color: 'bg-brand-500' },
-            { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500' },
-            { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500' }
+            { id: 'growth', label: '投資 (高價值)', color: 'bg-brand-500', stroke: '#88D4AB' },
+            { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500', stroke: '#FFB7B2' },
+            { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
         ];
 
-        const CATEGORY_FIELDS = {
-            ai: [ { key: 'tool', label: '使用工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '應用目標', type: 'text' } ],
-            knowledge: [ { key: 'topic', label: '學習主題', type: 'text' }, { key: 'method', label: '學習方式', type: 'select', options: ['閱讀書籍', '線上課程', '實作練習'] } ],
-            entertainment: [ { key: 'content', label: '內容名稱', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] } ],
-            sports: [ { key: 'activity', label: '運動項目', type: 'select', options: ['跑步', '健身重訓', '籃球'] }, { key: 'detail', label: '紀錄', type: 'text' } ],
-            others: [ { key: 'activity', label: '活動內容', type: 'text' } ]
-        };
-
-        // --- AI Logic (Placeholder for now) ---
+        // --- 4. AI 邏輯 ---
         const generateAIResponse = (input, contextData, type) => {
             const text = input.toLowerCase();
             if (type === 'journal') {
-                if (text.includes('累') || text.includes('煩')) return "聽起來你今天承擔了很多。請記得，你的價值不在於做了多少事，而在於你是否照顧好了自己。喝杯熱水，休息一下吧 ☕";
-                if (text.includes('開心') || text.includes('棒')) return "太棒了！能感受到你的喜悅 ✨。這份成就是你努力的證明，把它記在心裡，成為未來的動力！";
-                if (text.includes('迷惘')) return "迷惘代表你在思考，這是好事 🌱。試著把大目標拆成明天就能做的一件小事，焦慮會減少很多的。";
-                if (text.length < 5) return "我在聽。多告訴我一點，寫下來是整理思緒最好的方式。";
-                return "謝謝你紀錄這一切。每一天的點滴都是成長的養分，無論好壞，都很有價值。";
+                if (text.includes('累')) return "今天辛苦了！休息是為了走更長遠的路。";
+                if (text.includes('開心')) return "太棒了！把這份好心情記錄下來吧 ✨";
+                return "我在聽。寫作是整理思緒最好的方式。";
             }
-            // Manager AI
-            const { sessions } = contextData;
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todaySessions = sessions.filter(s => s.date === todayStr);
-            const growthSec = todaySessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0);
-            const restSec = todaySessions.filter(s => s.valueType === 'rest').reduce((acc, s) => acc + s.duration, 0);
-
-            if (text.includes('行程') || text.includes('計畫') || text.includes('建議')) {
-                if (growthSec > 3 * 3600) return `你今天已經投入了 ${(growthSec/3600).toFixed(1)} 小時在自我成長，非常驚人！🚀 為了保持續航力，建議接下來安排一些「低耗能」活動，例如散步或聽音樂。`;
-                if (restSec > 3 * 3600 && growthSec < 3600) return "你看起來休息得很充足 💤。如果想動起來，建議從 20 分鐘的「微學習」或「輕運動」開始，不要給自己太大壓力。";
-                return "今天還有很多時間！目前紀錄顯示你的成長時間較少。要不要現在設定一個 25 分鐘的「番茄鐘」，專注在最重要的那件事上？";
-            }
-            if (text.includes('概況') || text.includes('表現')) return `今日數據：成長 ${(growthSec/60).toFixed(0)} 分鐘，休息 ${(restSec/60).toFixed(0)} 分鐘。${growthSec > restSec ? "今天是充實的一天！" : "今天是修復的一天。"}`;
-            return "我是你的生活管家 🤖。我可以根據你的紀錄給你建議。試著問我「行程建議」或「今日概況」。";
+            // Manager AI logic
+            return "我是你的生活管家 🤖。根據你的紀錄，我建議你現在可以休息一下。";
         };
 
-        // --- App ---
+        // --- 5. App 主程式 ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {} });
@@ -250,18 +289,16 @@
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
             const [journalText, setJournalText] = useState('');
-            const [journalAiResponse, setJournalAiResponse] = useState('');
             
-            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。想知道今天的表現嗎？問我「今日概況」或「行程建議」！', timestamp: Date.now() }]);
+            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
+            const [journalAiResponse, setJournalAiResponse] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
             const chatEndRef = useRef(null);
             const [toastMessage, setToastMessage] = useState(null);
-            
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
 
-            // Init
             useEffect(() => {
                 if (!syncId) {
                     const newId = Math.random().toString(36).substr(2, 9);
@@ -285,7 +322,6 @@
             useEffect(() => {
                 const dateStr = getLocalDateStr(journalSelectedDate);
                 setJournalText(data.journals[dateStr]?.content || '');
-                setJournalAiResponse(''); 
             }, [journalSelectedDate, data.journals]);
 
             useEffect(() => {
@@ -363,7 +399,7 @@
                             else if(name.includes('購物')) catId = 'shopping';
                             const dateStr = item.date.replace(/\//g, '-');
                             return {
-                                id: `imp-${dateStr}-${name}-${item.duration}`,
+                                id: `imp-${dateStr}-${name}-${item.duration}`, 
                                 category: catId,
                                 duration: parseInt(item.duration) || 0,
                                 date: dateStr,
@@ -436,7 +472,13 @@
                 const stats = { growth: 0, waste: 0, rest: 0 };
                 targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; });
                 const total = Object.values(stats).reduce((a,b) => a+b, 0);
-                return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0 }));
+                return VALUE_TYPES.map(vt => ({ 
+                    id: vt.id,
+                    name: vt.label, 
+                    value: stats[vt.id] || 0, 
+                    percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0,
+                    color: vt.stroke 
+                }));
             }, [targetSessions]);
 
             const dashboardStats = useMemo(() => {
@@ -533,18 +575,15 @@
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    {/* Left: Chart & Breakdown */}
                                     <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col h-full">
                                         <h3 className="font-bold text-text-main mb-6 text-xl flex items-center gap-2"><IconByName name="BarChart2" className="w-5 h-5 text-rest-500"/> 價值分佈</h3>
                                         <div className="flex-1 flex flex-col items-center justify-center">
-                                            {/* NEW: Recharts Donut Chart */}
                                             <DonutChart data={chartData} />
-                                            
                                             <div className="w-full mt-8 space-y-3">
                                                 {chartData.map((d, i) => (
                                                     <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-cream">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-3 h-3 rounded-full" style={{backgroundColor: d.name==='投資 (高價值)'?'#88D4AB':d.name==='消耗 (浪費)'?'#FFB7B2':'#AECBFA'}}></div>
+                                                            <div className="w-3 h-3 rounded-full" style={{backgroundColor: d.color}}></div>
                                                             <span className="font-bold text-text-main">{d.name}</span>
                                                         </div>
                                                         <div className="flex items-center gap-4">
@@ -557,7 +596,6 @@
                                         </div>
                                     </div>
 
-                                    {/* Right: Insights */}
                                     <div className="flex flex-col gap-6">
                                         <div className="flex items-center gap-2 font-bold text-xl text-text-main"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow"/> 今日洞察</div>
                                         
