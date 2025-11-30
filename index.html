@@ -17,8 +17,6 @@
     
     <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
     
-    <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.min.js"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -28,8 +26,6 @@
               cream: '#FFF9F5', 'cream-dark': '#F5EBE0',
               text: { main: '#5D5F71', light: '#8E91A0' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
-              accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Quicksand', 'sans-serif'] }
           }
@@ -50,21 +46,15 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 這裡將 UMD 全域變數轉為我們習慣的變數 ---
         const { useState, useEffect, useMemo } = React;
         const { createRoot } = ReactDOM;
-        // 從 window.Recharts 取出元件
         const { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } = Recharts;
-        // 從 window.LucideReact 取出圖示
-        const { LayoutDashboard, Settings, BarChart2, Brain, Smartphone, Activity, RefreshCcw, ShoppingBag, Dumbbell, Clock, Briefcase, Monitor } = LucideReact;
 
-        // 你的後端網址
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
-        
-        const CATEGORIES = [
-          { id: '知識', label: '知識學習', icon: <Briefcase size={28}/>, color: 'bg-blue-100 text-blue-600', chartColor: '#3B82F6' },
-          { id: 'AI', label: 'AI 研究', icon: <Brain size={28}/>, color: 'bg-indigo-100 text-indigo-600', chartColor: '#6366F1' },
-          { id: '娛樂', label: '休閒娛樂', icon: <Monitor size={28}/>, color: 'bg-purple-100 text-purple-600', chartColor: '#8B5CF6' },
-          { id: '運動', label: '運動健身', icon: <Dumbbell size={28}/>, color: 'bg-emerald-100 text-emerald-600', chartColor: '#10B981' },
-          { id: '社群', label: '社群媒體', icon: <Smartphone size={28}/>, color: 'bg-pink-100 text-pink-600', chartColor: '#EC4899' },
-          { id: '購物', label: '購物消費', icon: <ShoppingBag size={28}/>, color: 'bg-rose-100 text-rose-600', chartColor: '#F43F5E' },
+        // 🔥 內建圖示元件 (SVG)，解決外部庫載入失敗的問題
+        const Icons = {
+            Briefcase: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+            Brain: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>,
+            Monitor: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>,
+            Dumbbell: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>,
+            Smartphone: () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>,
+            ShoppingBag: () => <svg xmlns="http://www.
