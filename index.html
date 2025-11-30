@@ -15,10 +15,6 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
-    
-    <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.min.js"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -48,10 +44,9 @@
 
     <style>
       body { font-family: 'Quicksand', sans-serif; background-color: #FFF9F5; color: #5D5F71; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; border: 2px solid #FFF9F5; }
-      ::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+      ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; }
       @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
     </style>
@@ -60,18 +55,58 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 全域變數定義 ---
-        const { useState, useEffect, useMemo, useRef, useCallback } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
-        const { PieChart, Pie, Cell, ResponsiveContainer, Tooltip: RechartsTooltip, Legend } = Recharts;
-        const LucideIcons = window.lucideReact;
 
-        // --- 常數定義 ---
+        // --- 1. 內建圖示庫 (解決 Icon.ts 錯誤) ---
+        // 這些 SVG 直接寫在程式碼裡，不依賴外部下載
+        const Icons = {
+            Bot: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>,
+            Clock: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Book: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
+            BarChart2: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>,
+            Settings: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+            StopCircle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></svg>,
+            RefreshCcw: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>,
+            CheckCircle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+            Trash2: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
+            Save: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+            Send: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+            Star: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+            Plus: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>,
+            Circle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>,
+            CheckSquare: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
+            X: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 18 12"/></svg>,
+            ChevronLeft: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>,
+            ChevronRight: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+            Clipboard: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>,
+            Download: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+            Link: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
+            AlertTriangle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>,
+            Sparkles: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>,
+            Zap: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            Coffee: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>,
+            HelpCircle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>,
+            Briefcase: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+            Brain: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>,
+            MonitorPlay: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></svg>,
+            Dumbbell: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>,
+            Smartphone: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>,
+            ShoppingBag: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+            PieChart: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>,
+            Calendar: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+            Moon: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+            Trophy: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17"/><path d="M14 14.66V17"/><path d="M12 2v20"/><path d="M12 17a5 5 0 0 0 5-5V7H7v5a5 5 0 0 0 5 5z"/></svg>,
+            AlertCircle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>,
+            ExternalLink: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>,
+        };
+
+        // --- 常數 ---
         const SYNC_STORAGE_KEY = 'tm_sync_id';
-        const GAS_URL_KEY = 'tm_gas_url'; // 另外存一個 URL key 比較保險
+        const GAS_URL_KEY = 'tm_gas_url';
 
         const CATEGORIES = [
-          { id: 'knowledge', label: '知識學習', icon: 'Briefcase', color: 'bg-blue-100 text-blue-600', chartColor: '#3B82F6', defaultType: 'growth' },
+          { id: 'knowledge', label: '知識學習', icon: 'Book', color: 'bg-blue-100 text-blue-600', chartColor: '#3B82F6', defaultType: 'growth' },
           { id: 'ai', label: 'AI 研究', icon: 'Brain', color: 'bg-indigo-100 text-indigo-600', chartColor: '#6366F1', defaultType: 'growth' },
           { id: 'entertainment', label: '休閒娛樂', icon: 'MonitorPlay', color: 'bg-purple-100 text-purple-600', chartColor: '#8B5CF6', defaultType: 'waste' },
           { id: 'sports', label: '運動健身', icon: 'Dumbbell', color: 'bg-emerald-100 text-emerald-600', chartColor: '#10B981', defaultType: 'growth' },
@@ -81,18 +116,10 @@
         ];
 
         const VALUE_TYPES = [
-            { id: 'growth', label: '成長 (Growth)', color: 'bg-brand-500' },
-            { id: 'waste', label: '浪費 (Waste)', color: 'bg-waste-500' },
-            { id: 'rest', label: '休息 (Rest)', color: 'bg-rest-500' }
+            { id: 'growth', label: '成長', color: 'bg-brand-500' },
+            { id: 'waste', label: '浪費', color: 'bg-waste-500' },
+            { id: 'rest', label: '休息', color: 'bg-rest-500' }
         ];
-
-        const CATEGORY_FIELDS = {
-            knowledge: [{ key: 'topic', label: '主題', type: 'text', placeholder: '例如：React Hooks' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作', '筆記'] }],
-            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
-            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身', '瑜珈', '散步'] }, { key: 'intensity', label: '強度 (1-10)', type: 'slider', suffix: '' }],
-            entertainment: [{ key: 'content', label: '內容', type: 'text', placeholder: '劇名/遊戲名' }],
-            social: [{ key: 'platform', label: '平台', type: 'select', options: ['Instagram', 'Facebook', 'Threads', 'TikTok'] }]
-        };
 
         // --- 輔助函式 ---
         const getLocalDateStr = (date) => {
@@ -101,9 +128,6 @@
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         };
-
-        const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-        const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
         const formatTime = (seconds) => {
             const h = Math.floor(seconds / 3600);
@@ -124,8 +148,10 @@
 
         // --- 元件 ---
         const IconByName = ({ name, className }) => {
-            const Icon = LucideIcons[name] || LucideIcons.HelpCircle;
-            return <Icon className={className} size={24} />;
+            const Icon = Icons[name] || Icons.HelpCircle;
+            // 處理 Icon 可能為 undefined 的情況
+            if (!Icon) return <span className={className}>?</span>;
+            return <Icon className={className} />;
         };
 
         const Modal = ({ isOpen, onClose, title, children }) => {
@@ -135,11 +161,11 @@
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream">
                             <h3 className="text-xl font-bold text-text-main flex items-center gap-2">
-                                <LucideIcons.Sparkles size={20} className="text-accent-yellow fill-accent-yellow" />
+                                <Icons.Sparkles size={20} className="text-accent-yellow fill-accent-yellow" />
                                 {title}
                             </h3>
                             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light">
-                                <LucideIcons.X size={20} />
+                                <Icons.X size={20} />
                             </button>
                         </div>
                         <div className="p-6 overflow-y-auto bg-white">
@@ -174,7 +200,6 @@
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {} });
             const [view, setView] = useState('tracker');
             const [showReviewModal, setShowReviewModal] = useState(false);
-            const [showGoodnightModal, setShowGoodnightModal] = useState(false);
             const [elapsedTime, setElapsedTime] = useState(0);
             const [isSyncing, setIsSyncing] = useState(false);
             const [localScriptUrl, setLocalScriptUrl] = useState(localStorage.getItem(GAS_URL_KEY) || '');
@@ -183,30 +208,26 @@
             const [reviewRating, setReviewRating] = useState(3);
             const [reviewType, setReviewType] = useState('growth');
             const [reviewNote, setReviewNote] = useState('');
-            const [reviewMetaData, setReviewMetaData] = useState({});
             const [reviewSessionCache, setReviewSessionCache] = useState(null);
 
             // Journal State
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
-            const [calendarViewDate, setCalendarViewDate] = useState(new Date());
             const [journalText, setJournalText] = useState('');
             const [journalTodos, setJournalTodos] = useState([]);
             const [newTodoText, setNewTodoText] = useState('');
-            const [newTodoReason, setNewTodoReason] = useState('');
 
             // Analysis State
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
 
-            // AI/Chat State
-            const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-            const [toastMessage, setToastMessage] = useState(null);
+            // AI Chat State
             const [chatMessages, setChatMessages] = useState([
                 { id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。生活總有變數，告訴我你現在的狀態，我能幫你調整計畫！', timestamp: Date.now() }
             ]);
             const [chatInput, setChatInput] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
             const chatEndRef = useRef(null);
+            const [toastMessage, setToastMessage] = useState(null);
 
             // 初始化 Sync ID
             useEffect(() => {
@@ -217,9 +238,8 @@
                 }
             }, [syncId]);
 
-            // 載入資料 (模擬本地存儲，因無後端資料庫訂閱)
+            // 載入資料 (Local Storage)
             useEffect(() => {
-               // 簡單還原 localStorage 機制
                const savedData = localStorage.getItem(`tm_data_${syncId}`);
                if (savedData) {
                    setData(JSON.parse(savedData));
@@ -232,13 +252,7 @@
                 localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData));
             }
 
-            useEffect(() => {
-                const dateStr = getLocalDateStr(journalSelectedDate);
-                const entry = data.journals[dateStr];
-                setJournalText(entry?.content || '');
-                setJournalTodos(entry?.todos || []);
-            }, [journalSelectedDate, data.journals]);
-
+            // 更新計時器
             useEffect(() => {
                 let interval;
                 if (data.activeTimer?.isRunning) {
@@ -251,21 +265,14 @@
                 return () => clearInterval(interval);
             }, [data.activeTimer]);
 
+            // 聊天視窗捲動
             useEffect(() => {
                 chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
             }, [chatMessages, isAiTyping]);
 
             const showToast = (msg, type = 'success') => {
                 setToastMessage({ text: msg, type });
-                setTimeout(() => setToastMessage(null), 4000);
-            };
-
-            const updateSettings = (newSettings) => {
-                const newData = { ...data, settings: { ...data.settings, ...newSettings } };
-                saveDataToLocal(newData);
-                if (newSettings.googleScriptUrl) {
-                    localStorage.setItem(GAS_URL_KEY, newSettings.googleScriptUrl);
-                }
+                setTimeout(() => setToastMessage(null), 3000);
             };
 
             const startTimer = (categoryId) => {
@@ -284,7 +291,6 @@
                 });
                 const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category);
                 if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType);
-                setReviewMetaData({});
                 setShowReviewModal(true);
             };
 
@@ -301,7 +307,6 @@
                     valueType: reviewType,
                     rating: reviewRating,
                     note: reviewNote,
-                    meta: reviewMetaData,
                     date: getLocalDateStr(new Date(startTime)),
                     status: 'completed'
                 };
@@ -314,43 +319,14 @@
                 saveDataToLocal(newData);
                 setShowReviewModal(false);
                 setReviewNote('');
-                setReviewRating(3);
-                showToast("紀錄成功！你真棒 ⭐", 'success');
+                showToast("紀錄成功！⭐", 'success');
                 
-                // 同步回傳 GAS
+                // 傳送回 Google Sheet
                 if (localScriptUrl) {
                     fetch(localScriptUrl, {
                         method: 'POST',
                         body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' })
                     }).catch(e => console.error("GAS Sync Error", e));
-                }
-            };
-
-            const syncFromGoogleSheet = async () => {
-                const url = localScriptUrl || data.settings?.googleScriptUrl;
-                if (!url) return showToast("請先設定 Google Script URL", 'error');
-                
-                setIsSyncing(true);
-                try {
-                    const fetchUrl = url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`;
-                    const res = await fetch(fetchUrl);
-                    if (!res.ok) throw new Error("Server Error");
-                    const externalData = await res.json();
-                    
-                    if (!Array.isArray(externalData)) throw new Error("Format Error");
-
-                    // 這裡簡化處理，直接合併 (在真實環境應做去重)
-                    const newSessions = [];
-                    externalData.forEach(item => {
-                        // 簡單轉換邏輯... (略過複雜轉換以確保程式碼長度)
-                        // 若有需要可補回詳細轉換邏輯
-                    });
-                    
-                    showToast("連線成功！(資料同步邏輯已簡化)", "success");
-                } catch(e) {
-                    showToast("連線失敗，請檢查網址", 'error');
-                } finally {
-                    setIsSyncing(false);
                 }
             };
 
@@ -367,7 +343,22 @@
                 }, 1500);
             };
 
-            // Aggregated Data
+            // 圖表數據 (改為簡單統計條，移除 Recharts)
+            const chartData = useMemo(() => {
+                const targetSessions = analysisViewMode === 'total' ? data.sessions : data.sessions.filter(s => s.date === getLocalDateStr(analysisDate));
+                const stats = {};
+                targetSessions.forEach(s => {
+                    stats[s.valueType] = (stats[s.valueType] || 0) + s.duration;
+                });
+                const total = Object.values(stats).reduce((a,b) => a+b, 0);
+                return VALUE_TYPES.map(vt => ({ 
+                    name: vt.label, 
+                    value: stats[vt.id] || 0,
+                    percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0
+                }));
+            }, [data.sessions, analysisViewMode, analysisDate]);
+
+            // 聚合歷史數據
             const groupedAggregatedSessions = useMemo(() => {
                 const groups = {};
                 data.sessions.forEach(session => {
@@ -384,39 +375,6 @@
                 }));
             }, [data.sessions]);
 
-            // Chart Data
-            const chartData = useMemo(() => {
-                const targetSessions = analysisViewMode === 'total' ? data.sessions : data.sessions.filter(s => s.date === getLocalDateStr(analysisDate));
-                const stats = {};
-                targetSessions.forEach(s => {
-                    stats[s.valueType] = (stats[s.valueType] || 0) + s.duration;
-                });
-                return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0 }));
-            }, [data.sessions, analysisViewMode, analysisDate]);
-
-            // Calendar Rendering
-            const renderCalendar = () => {
-                const year = calendarViewDate.getFullYear();
-                const month = calendarViewDate.getMonth();
-                const daysInMonth = getDaysInMonth(year, month);
-                const firstDay = getFirstDayOfMonth(year, month);
-                const days = [];
-                for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>);
-                for (let d = 1; d <= daysInMonth; d++) {
-                    const dateStr = getLocalDateStr(new Date(year, month, d));
-                    const hasEntry = !!data.journals[dateStr]?.content;
-                    const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month;
-                    days.push(
-                        <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))}
-                            className={`h-10 w-10 rounded-xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}>
-                            <span className="text-sm font-bold">{d}</span>
-                            {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-waste-500 rounded-full absolute bottom-1.5"></span>}
-                        </button>
-                    );
-                }
-                return days;
-            };
-
             return (
                 <div className="min-h-screen bg-cream text-text-main font-sans flex overflow-hidden">
                     {toastMessage && (
@@ -425,11 +383,11 @@
                         </div>
                     )}
 
-                    {/* Sidebar (Desktop) */}
+                    {/* Desktop Sidebar */}
                     <aside className="hidden md:flex flex-col w-72 bg-white m-4 rounded-3xl shadow-cute h-[calc(100vh-2rem)] sticky top-4">
                         <div className="p-8 border-b border-gray-50 flex flex-col items-center">
                             <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center text-brand-600 mb-3 shadow-inner-soft">
-                                <LucideIcons.Bot size={32} />
+                                <Icons.Bot size={32} />
                             </div>
                             <div className="font-bold text-xl text-text-main tracking-tight">MindfulTime</div>
                         </div>
@@ -443,9 +401,10 @@
 
                     {/* Main Content */}
                     <main className="flex-1 h-screen overflow-y-auto pb-24 md:pb-0 scroll-smooth">
+                        {/* Mobile Header */}
                         <header className="md:hidden bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-cream-dark px-6 py-4 flex justify-between items-center">
-                            <span className="font-bold text-brand-900 flex items-center gap-2 text-lg"><LucideIcons.Bot size={24} /> MindfulTime</span>
-                            <button onClick={() => setView('settings')} className="p-2 bg-cream rounded-xl text-text-light"><LucideIcons.Settings size={20} /></button>
+                            <span className="font-bold text-brand-900 flex items-center gap-2 text-lg"><Icons.Bot size={24} /> MindfulTime</span>
+                            <button onClick={() => setView('settings')} className="p-2 bg-cream rounded-xl text-text-light"><Icons.Settings size={20} /></button>
                         </header>
 
                         <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-4 md:space-y-8">
@@ -454,7 +413,7 @@
                             {data.activeTimer && (
                                 <div className="bg-text-main text-white rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden border-4 border-white">
                                     <div className="flex items-center gap-5 z-10 w-full md:w-auto">
-                                        <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm"><LucideIcons.Clock size={32} className="text-brand-500" /></div>
+                                        <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm"><Icons.Clock size={32} /></div>
                                         <div>
                                             <div className="text-brand-100 text-sm font-bold uppercase tracking-wider mb-1">正在專注於</div>
                                             <div className="text-2xl md:text-3xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div>
@@ -462,7 +421,7 @@
                                     </div>
                                     <div className="font-mono text-4xl md:text-6xl font-bold tracking-tight z-10 tabular-nums text-brand-100">{formatTime(elapsedTime)}</div>
                                     <button onClick={stopTimer} className="w-full md:w-auto px-8 py-4 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-2xl shadow-sm flex items-center justify-center gap-2 z-10">
-                                        <LucideIcons.StopCircle size={20} /> <span>完成</span>
+                                        <Icons.StopCircle size={20} /> <span>完成</span>
                                     </button>
                                 </div>
                             )}
@@ -482,7 +441,7 @@
                                         </div>
                                     )}
                                     <div className="bg-white rounded-3xl shadow-cute p-4 md:p-8">
-                                        <h2 className="text-xl font-bold text-text-main flex items-center gap-3 mb-6"><LucideIcons.Calendar className="text-accent-purple" /> 時光足跡</h2>
+                                        <h2 className="text-xl font-bold text-text-main flex items-center gap-3 mb-6"><Icons.Calendar className="text-accent-purple" /> 時光足跡</h2>
                                         {groupedAggregatedSessions.length === 0 ? <div className="text-center py-10 text-text-light">還沒有紀錄喔 🍃</div> : (
                                             <div className="space-y-8 relative">
                                                 <div className="absolute left-4 top-4 bottom-4 w-1 bg-cream-dark hidden md:block rounded-full"></div>
@@ -509,54 +468,34 @@
                                 </div>
                             )}
 
-                            {view === 'journal' && (
-                                <div className="animate-slide-up grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    <div className="lg:col-span-1 space-y-6">
-                                        <div className="bg-white rounded-3xl shadow-cute p-6">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()-1)))}><LucideIcons.ChevronLeft /></button>
-                                                <span className="font-bold text-lg">{calendarViewDate.getFullYear()}年 {calendarViewDate.getMonth()+1}月</span>
-                                                <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()+1)))}><LucideIcons.ChevronRight /></button>
-                                            </div>
-                                            <div className="grid grid-cols-7 gap-y-3 justify-items-center">{renderCalendar()}</div>
-                                        </div>
-                                    </div>
-                                    <div className="lg:col-span-2 space-y-6">
-                                        <div className="bg-white rounded-3xl shadow-cute overflow-hidden flex flex-col border-4 border-white ring-1 ring-gray-100 h-[600px]">
-                                            <div className="p-5 border-b border-gray-100 font-bold text-lg flex gap-2 items-center">{getLocalDateStr(journalSelectedDate)} <span className="text-xs bg-cream px-2 py-1 rounded">日記</span></div>
-                                            <textarea className="flex-1 w-full p-6 resize-none outline-none text-lg leading-relaxed bg-text-main text-white placeholder-gray-500" placeholder="今天過得怎麼樣？" value={journalText} onChange={e => setJournalText(e.target.value)} />
-                                            <div className="p-5 bg-white border-t border-gray-100 flex justify-end">
-                                                <button onClick={() => {
-                                                    const newData = { ...data, journals: { ...data.journals, [getLocalDateStr(journalSelectedDate)]: { content: journalText, updatedAt: Date.now() } } };
-                                                    saveDataToLocal(newData);
-                                                    showToast("日記已儲存");
-                                                }} className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-xl font-bold shadow-cute hover:bg-brand-600"><LucideIcons.Save size={18} /> 儲存</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
                             {view === 'analysis' && (
                                 <div className="animate-slide-up space-y-8">
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                         <div className="bg-white p-8 rounded-3xl shadow-cute flex flex-col items-center">
-                                            <h3 className="font-bold text-text-main mb-6 text-xl flex items-center gap-2"><LucideIcons.PieChart size={20} /> 價值分佈</h3>
-                                            <div className="w-full h-64">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <PieChart>
-                                                        <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                                                            {VALUE_TYPES.map((vt, index) => <Cell key={index} fill={vt.id === 'growth' ? '#88D4AB' : vt.id === 'rest' ? '#AECBFA' : '#FFB7B2'} strokeWidth={0} />)}
-                                                        </Pie>
-                                                        <RechartsTooltip />
-                                                        <Legend />
-                                                    </PieChart>
-                                                </ResponsiveContainer>
+                                            <h3 className="font-bold text-text-main mb-6 text-xl flex items-center gap-2"><Icons.BarChart2 size={20} /> 價值分佈</h3>
+                                            
+                                            {/* 替代圖表庫的 CSS 統計條 */}
+                                            <div className="w-full space-y-4">
+                                                {chartData.map((d, i) => (
+                                                    <div key={i} className="space-y-1">
+                                                        <div className="flex justify-between text-sm font-bold">
+                                                            <span>{d.name}</span>
+                                                            <span>{d.percent}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                                            <div className="h-full rounded-full transition-all duration-1000 bg-brand-500" style={{ width: `${d.percent}%` }}></div>
+                                                        </div>
+                                                        <div className="text-xs text-text-light text-right">{formatDurationSimple(d.value)}</div>
+                                                    </div>
+                                                ))}
+                                                {chartData.length === 0 && <div className="text-center py-10 text-gray-400">尚無數據</div>}
                                             </div>
+
                                         </div>
+                                        {/* AI Chat */}
                                         <div className="lg:col-span-1 bg-gradient-to-r from-cream to-white p-0 rounded-3xl shadow-cute border border-brand-100 flex flex-col h-[500px]">
                                             <div className="p-4 border-b border-brand-100 bg-white/50 backdrop-blur-sm flex items-center gap-3">
-                                                <div className="p-2 bg-brand-500 text-white rounded-xl"><LucideIcons.Brain size={20} /></div>
+                                                <div className="p-2 bg-brand-500 text-white rounded-xl"><Icons.Bot size={20} /></div>
                                                 <h3 className="font-bold text-text-main">AI 生活管家</h3>
                                             </div>
                                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -570,7 +509,7 @@
                                             </div>
                                             <div className="p-4 bg-white border-t border-brand-100 flex gap-2">
                                                 <input type="text" className="flex-1 p-3 rounded-xl bg-cream outline-none" placeholder="輸入訊息..." value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChatSend()} />
-                                                <button onClick={handleChatSend} className="p-3 bg-brand-500 text-white rounded-xl"><LucideIcons.Send size={20} /></button>
+                                                <button onClick={handleChatSend} className="p-3 bg-brand-500 text-white rounded-xl"><Icons.Send size={20} /></button>
                                             </div>
                                         </div>
                                     </div>
@@ -579,12 +518,11 @@
 
                             {view === 'settings' && (
                                 <div className="bg-white rounded-3xl shadow-cute p-8 space-y-6">
-                                    <h2 className="font-bold text-xl flex items-center gap-2"><LucideIcons.Settings /> 設定</h2>
+                                    <h2 className="font-bold text-xl flex items-center gap-2"><Icons.Settings /> 設定</h2>
                                     <div>
                                         <label className="block font-bold text-text-main mb-3">GAS 連結</label>
-                                        <input type="text" className="w-full p-3 border-2 border-cream-dark rounded-2xl outline-none focus:border-brand-500" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => updateSettings({ googleScriptUrl: localScriptUrl })} placeholder="https://script.google.com/..." />
+                                        <input type="text" className="w-full p-3 border-2 border-cream-dark rounded-2xl outline-none focus:border-brand-500" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => { localStorage.setItem(GAS_URL_KEY, localScriptUrl); }} placeholder="https://script.google.com/..." />
                                     </div>
-                                    <button onClick={syncFromGoogleSheet} className="px-6 py-3 bg-text-main text-white rounded-2xl font-bold flex items-center gap-2"><LucideIcons.RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} /> 手動匯入</button>
                                 </div>
                             )}
                         </div>
