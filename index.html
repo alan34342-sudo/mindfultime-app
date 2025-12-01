@@ -4,11 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
-    
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -21,21 +19,14 @@
         theme: {
           extend: {
             colors: {
-              cream: 'var(--bg-color)',
-              'cream-dark': 'var(--border-color)',
+              cream: 'var(--bg-color)', 'cream-dark': 'var(--border-color)',
               text: { main: 'var(--text-main)', light: 'var(--text-light)' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, 
-              rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
-            boxShadow: {
-              'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
-              'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-            },
-            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
-            keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
+            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' }
           }
         }
       }
@@ -49,12 +40,9 @@
       .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
       body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-      .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+      .animate-float { animation: float 3s ease-in-out infinite; }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      
-      /* 關鍵修復：強制日記輸入框高度 */
-      .journal-container { min-height: 500px; display: flex; flex-direction: column; }
-      .journal-textarea { flex: 1; width: 100%; resize: none; outline: none; background: transparent; line-height: 1.6; min-height: 300px; }
+      .journal-textarea { min-height: 300px; }
     </style>
 </head>
 <body>
@@ -64,7 +52,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 圖示庫 (SVG) ---
+        // --- 1. 圖示庫 ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -107,7 +95,8 @@
             Mail: (p) => <SvgBase {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SvgBase>,
             Sun: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></SvgBase>,
             Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
+            Check: (p) => <SvgBase {...p}><polyline points="20 6 9 17 4 12"/></SvgBase>
         };
 
         const IconByName = ({ name, className, size }) => {
@@ -115,82 +104,10 @@
             return <Component className={className} size={size} />;
         };
 
-        // --- 2. 內建手刻圓餅圖 (修正百分比位置) ---
-        const DonutChart = ({ data }) => {
-            const total = data.reduce((acc, cur) => acc + cur.value, 0);
-            if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
-
-            let cumulativePercent = 0;
-            const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius; 
-
-            return (
-                <div className="relative flex justify-center items-center">
-                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                        <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border-color)" strokeWidth={strokeWidth} opacity="0.3" />
-                        {data.map((item, index) => {
-                            const percent = item.value / total;
-                            if (percent === 0) return null;
-                            const startAngle = (cumulativePercent * 360) - 90;
-                            const angle = percent * 360;
-                            const midAngle = startAngle + angle / 2;
-                            const strokeDasharray = `${percent * circumference} ${circumference}`;
-                            const strokeDashoffset = -cumulativePercent * circumference;
-                            
-                            const radian = (midAngle * Math.PI) / 180;
-                            const textX = center + textRadius * Math.cos(radian);
-                            const textY = center + textRadius * Math.sin(radian);
-
-                            cumulativePercent += percent;
-
-                            let strokeColor = item.name === '投資 (高價值)' ? '#88D4AB' : item.name === '消耗 (浪費)' ? '#FFB7B2' : '#AECBFA';
-
-                            if (percent >= 0.99) {
-                                return (
-                                    <g key={index}>
-                                        <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />
-                                        <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
-                                    </g>
-                                );
-                            }
-
-                            return (
-                                <g key={index}>
-                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {percent > 0.05 && (
-                                        <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>
-                                            {Math.round(percent * 100)}%
-                                        </text>
-                                    )}
-                                </g>
-                            );
-                        })}
-                    </svg>
-                    <div className="absolute text-center pointer-events-none">
-                        <div className="text-3xl font-extrabold text-text-main leading-none">{Math.round(total/3600*10)/10}</div>
-                        <div className="text-xs text-text-light font-bold mt-1">小時</div>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- 3. UI 元件 ---
+        // --- 2. UI Components ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
-            if (mobile) {
-                return (
-                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
-                        <IconByName name={icon} className="w-6 h-6 mb-1" />
-                        <span className="text-[10px] font-bold">{label}</span>
-                    </button>
-                )
-            }
-            return (
-                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
-                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
-                    <span className="text-lg">{label}</span>
-                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
-                </button>
-            );
+            if (mobile) return <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>;
+            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span></button>;
         };
 
         const Modal = ({ isOpen, onClose, title, children }) => {
@@ -208,21 +125,63 @@
             );
         };
 
-        // --- Constants ---
+        // --- 3. Donut Chart ---
+        const DonutChart = ({ data }) => {
+            const total = data.reduce((acc, cur) => acc + cur.value, 0);
+            if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold">尚無數據</div>;
+
+            let cumulativePercent = 0;
+            const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
+            const textRadius = radius - (strokeWidth / 4); 
+
+            return (
+                <div className="relative flex justify-center items-center">
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                        <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border-color)" strokeWidth={strokeWidth} opacity="0.3" />
+                        {data.map((item, index) => {
+                            const percent = item.value / total;
+                            if (percent === 0) return null;
+                            const startAngle = (cumulativePercent * 360) - 90;
+                            const angle = percent * 360;
+                            const midAngle = startAngle + angle / 2;
+                            const strokeDasharray = `${percent * circumference} ${circumference}`;
+                            const strokeDashoffset = -cumulativePercent * circumference;
+
+                            const radian = (midAngle * Math.PI) / 180;
+                            const textX = center + textRadius * Math.cos(radian);
+                            const textY = center + textRadius * Math.sin(radian);
+
+                            cumulativePercent += percent;
+
+                            let strokeColor = item.name === '投資 (高價值)' ? '#88D4AB' : item.name === '消耗 (浪費)' ? '#FFB7B2' : '#AECBFA';
+
+                            if (percent >= 0.99) {
+                                return <g key={index}><circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} /><text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text></g>;
+                            }
+
+                            return (
+                                <g key={index}>
+                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
+                                    {percent > 0.05 && <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>{Math.round(percent * 100)}%</text>}
+                                </g>
+                            );
+                        })}
+                    </svg>
+                    <div className="absolute text-center pointer-events-none">
+                        <div className="text-3xl font-extrabold text-text-main leading-none">{Math.round(total/3600*10)/10}</div>
+                        <div className="text-xs text-text-light font-bold mt-1">小時</div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. Constants ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
         const THEME_STORAGE_KEY = 'tm_theme';
         const GEMINI_KEY_STORAGE = 'tm_gemini_key';
         const GEMINI_MODEL_KEY = 'tm_gemini_model';
-
-        const CATEGORY_FIELDS = {
-            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
-            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
-            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
-            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
-            others: [{ key: 'activity', label: '內容', type: 'text' }]
-        };
 
         const CATEGORIES = [
           { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
@@ -238,7 +197,15 @@
             { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
         ];
 
-        // --- 4. AI 邏輯 ---
+        const CATEGORY_FIELDS = {
+            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
+            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
+            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
+            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
+            others: [{ key: 'activity', label: '內容', type: 'text' }]
+        };
+
+        // --- 5. AI Logic ---
         const callGeminiAPI = async (apiKey, prompt, model) => {
             const modelName = model || 'gemini-1.5-flash';
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
@@ -272,7 +239,7 @@
             return await callGeminiAPI(apiKey, systemPrompt, model);
         };
 
-        // --- 5. App 主程式 ---
+        // --- 6. App ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
@@ -315,9 +282,7 @@
             const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
             const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
 
-            // 日記讀取邏輯
             useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals?.[dateStr]?.content || ''); setJournalAiResponse(''); }, [journalSelectedDate, data.journals]);
-
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
 
@@ -329,52 +294,10 @@
             const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { let catId = 'others'; const name = (item.appName || '').toLowerCase(); if(name.includes('學習') || name.includes('book')) catId = 'knowledge'; else if(name.includes('ai') || name.includes('gpt')) catId = 'ai'; else if(name.includes('運動') || name.includes('gym')) catId = 'sports'; else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment'; else if(name.includes('社群')) catId = 'social'; else if(name.includes('購物')) catId = 'shopping'; const dateStr = item.date.replace(/\//g, '-'); return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; }).filter(s => s.duration > 0); const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } setLastSyncTime(new Date().toLocaleTimeString()); } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
             
             const saveKey = () => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey); showToast("API Key 已儲存！"); };
+            const detectModels = async () => { if (!geminiKey) return showToast("請先輸入 API Key", "error"); showToast("偵測模型中...", "warning"); try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`); const data = await res.json(); if (data.models) { const contentModels = data.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace('models/', '')); setAvailableModels(contentModels); if (contentModels.length > 0 && !contentModels.includes(selectedModel)) { setSelectedModel(contentModels[0]); } showToast(`找到 ${contentModels.length} 個可用模型`, "success"); } else { throw new Error(data.error?.message || "無回應"); } } catch (e) { showToast("偵測失敗: " + e.message, "error"); } };
+            const handleManagerChat = async () => { if (!managerInput.trim()) return; const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() }; setManagerMessages(prev => [...prev, userMsg]); setManagerInput(''); setIsAiTyping(true); const responseText = await generateAIResponse(userMsg.text, data, 'manager', geminiKey, selectedModel); const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; setManagerMessages(prev => [...prev, aiMsg]); setIsAiTyping(false); };
+            const handleJournalAI = async () => { if (!journalText.trim()) return; setIsAiTyping(true); const responseText = await generateAIResponse(journalText, data, 'journal', geminiKey, selectedModel); setJournalAiResponse(responseText); setIsAiTyping(false); };
             
-            // Model Detection Logic
-            const detectModels = async () => {
-                if (!geminiKey) return showToast("請先輸入 API Key", "error");
-                showToast("偵測模型中...", "warning");
-                try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
-                    const data = await res.json();
-                    if (data.models) {
-                        // Filter for generateContent models
-                        const contentModels = data.models
-                            .filter(m => m.supportedGenerationMethods.includes("generateContent"))
-                            .map(m => m.name.replace('models/', ''));
-                        setAvailableModels(contentModels);
-                        if (contentModels.length > 0 && !contentModels.includes(selectedModel)) {
-                             setSelectedModel(contentModels[0]); // Auto select first available
-                        }
-                        showToast(`找到 ${contentModels.length} 個可用模型`, "success");
-                    } else {
-                         throw new Error(data.error?.message || "無回應");
-                    }
-                } catch (e) {
-                    showToast("偵測失敗: " + e.message, "error");
-                }
-            };
-
-            const handleManagerChat = async () => {
-                if (!managerInput.trim()) return;
-                const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() };
-                setManagerMessages(prev => [...prev, userMsg]);
-                setManagerInput('');
-                setIsAiTyping(true);
-                const responseText = await generateAIResponse(userMsg.text, data, 'manager', geminiKey, selectedModel);
-                const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() };
-                setManagerMessages(prev => [...prev, aiMsg]);
-                setIsAiTyping(false);
-            };
-
-            const handleJournalAI = async () => {
-                if (!journalText.trim()) return;
-                setIsAiTyping(true);
-                const responseText = await generateAIResponse(journalText, data, 'journal', geminiKey, selectedModel);
-                setJournalAiResponse(responseText);
-                setIsAiTyping(false);
-            };
-
             const targetSessions = useMemo(() => { if (analysisViewMode === 'total') return data.sessions; const targetDate = getLocalDateStr(analysisDate); return data.sessions.filter(s => s.date === targetDate); }, [data.sessions, analysisDate, analysisViewMode]);
             const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); const total = Object.values(stats).reduce((a,b) => a+b, 0); return VALUE_TYPES.map(vt => ({ id: vt.id, name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke })); }, [targetSessions]);
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
@@ -384,7 +307,7 @@
 
             return (
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
-                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : toastMessage.type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
+                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
 
                     <nav className="hidden md:flex flex-col w-64 h-screen border-r border-cream-dark p-6 bg-card fixed left-0 top-0 z-50 transition-colors duration-300">
                         <div className="flex items-center gap-3 mb-10 px-2"><div className="p-2 bg-brand-50 rounded-2xl"><IconByName name="Bot" className="w-8 h-8 text-brand-600"/></div><span className="text-xl font-extrabold tracking-tight text-text-main">MindfulTime</span></div>
@@ -589,7 +512,7 @@
                                     <div className="flex gap-3">
                                         <input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." />
                                         <button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button>
-                                        <button onClick={testAI} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">測試</button>
+                                        <button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button>
                                     </div>
                                     
                                     {/* 模型選擇器 */}
