@@ -4,9 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
+    
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -49,7 +51,10 @@
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      .journal-textarea { min-height: 300px; }
+      
+      /* 關鍵修復：強制日記輸入框高度 */
+      .journal-container { min-height: 500px; display: flex; flex-direction: column; }
+      .journal-textarea { flex: 1; width: 100%; resize: none; outline: none; background: transparent; line-height: 1.6; min-height: 300px; }
     </style>
 </head>
 <body>
@@ -59,7 +64,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 內建圖示庫 ---
+        // --- 1. 圖示庫 (SVG) ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -102,8 +107,7 @@
             Mail: (p) => <SvgBase {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SvgBase>,
             Sun: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></SvgBase>,
             Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
-            Check: (p) => <SvgBase {...p}><polyline points="20 6 9 17 4 12"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
         };
 
         const IconByName = ({ name, className, size }) => {
@@ -111,14 +115,14 @@
             return <Component className={className} size={size} />;
         };
 
-        // --- 2. 內建圓餅圖 (百分比位置修正) ---
+        // --- 2. 內建手刻圓餅圖 (修正百分比位置) ---
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
-            if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold">尚無數據</div>;
+            if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
 
             let cumulativePercent = 0;
             const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius - (strokeWidth / 4); // 關鍵修正：文字壓在圓環上
+            const textRadius = radius; 
 
             return (
                 <div className="relative flex justify-center items-center">
@@ -141,10 +145,18 @@
 
                             let strokeColor = item.name === '投資 (高價值)' ? '#88D4AB' : item.name === '消耗 (浪費)' ? '#FFB7B2' : '#AECBFA';
 
+                            if (percent >= 0.99) {
+                                return (
+                                    <g key={index}>
+                                        <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />
+                                        <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
+                                    </g>
+                                );
+                            }
+
                             return (
                                 <g key={index}>
                                     <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {/* 百分比文字：壓在色條中心，且只顯示大於 5% 的項目 */}
                                     {percent > 0.05 && (
                                         <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>
                                             {Math.round(percent * 100)}%
@@ -173,7 +185,11 @@
                 )
             }
             return (
-                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span></button>
+                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
+                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
+                    <span className="text-lg">{label}</span>
+                    {active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}
+                </button>
             );
         };
 
@@ -198,6 +214,7 @@
         const GAS_URL_KEY = 'tm_gas_url';
         const THEME_STORAGE_KEY = 'tm_theme';
         const GEMINI_KEY_STORAGE = 'tm_gemini_key';
+        const GEMINI_MODEL_KEY = 'tm_gemini_model';
 
         const CATEGORY_FIELDS = {
             ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
@@ -280,7 +297,6 @@
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
             const [journalText, setJournalText] = useState('');
-            
             const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
@@ -438,9 +454,9 @@
                                 <div className="lg:col-span-1 bg-card rounded-[2.5rem] shadow-cute p-6 border border-cream-dark h-fit">
                                     <div className="flex justify-between items-center mb-6 px-2"><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronLeft" className="w-6 h-6"/></button><span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronRight" className="w-6 h-6"/></button></div><div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-light">{renderCalendar()}</div>
                                 </div>
-                                <div className="lg:col-span-2 flex flex-col h-full min-h-[600px] bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
+                                <div className="lg:col-span-2 flex flex-col h-full journal-container bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
                                     <div className="p-6 border-b border-cream-dark font-extrabold text-xl flex gap-3 items-center bg-cream/50 text-text-main">{getLocalDateStr(journalSelectedDate)} <span className="text-xs font-extrabold bg-brand-100 text-brand-600 px-3 py-1 rounded-full">日記</span></div>
-                                    <textarea className="journal-textarea p-8 text-xl text-text-main placeholder-text-light bg-transparent font-medium" placeholder="今天過得怎麼樣？寫下來吧..." value={journalText} onChange={e => setJournalText(e.target.value)} />
+                                    <textarea className="journal-textarea p-8 text-xl text-text-main placeholder-text-light" placeholder="今天過得怎麼樣？寫下來吧..." value={journalText} onChange={e => setJournalText(e.target.value)} />
                                     <div className="p-5 bg-cream/50 border-t border-cream-dark flex justify-end items-center">
                                         <button onClick={handleJournalAI} className="flex items-center gap-2 text-brand-600 text-base font-extrabold hover:bg-brand-100 px-5 py-3 rounded-2xl transition-colors mr-4"><IconByName name="Sparkles" className="w-5 h-5"/> 問問 AI</button>
                                         <button onClick={() => { saveDataToLocal({ ...data, journals: { ...data.journals, [getLocalDateStr(journalSelectedDate)]: { content: journalText } } }); showToast("日記已儲存 ✨"); }} className="flex items-center gap-2 px-10 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:scale-105 active:scale-95"><IconByName name="Save" className="w-6 h-6"/> 儲存</button>
@@ -573,7 +589,7 @@
                                     <div className="flex gap-3">
                                         <input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." />
                                         <button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button>
-                                        <button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button>
+                                        <button onClick={testAI} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">測試</button>
                                     </div>
                                     
                                     {/* 模型選擇器 */}
