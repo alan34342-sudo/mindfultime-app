@@ -9,7 +9,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
     
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -33,9 +32,10 @@
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
             boxShadow: {
               'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
-              'cute-hover': '6px 6px 0px 0px rgba(0,0,0,0.08)',
               'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-            }
+            },
+            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+            keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
           }
         }
       }
@@ -44,36 +44,15 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-      /* 定義主題變數 */
-      :root {
-        --bg-color: #FFF9F5;
-        --border-color: #F5EBE0;
-        --text-main: #5D5F71;
-        --text-light: #8E91A0;
-      }
-      .theme-dark {
-        --bg-color: #1E293B;
-        --border-color: #334155;
-        --text-main: #F1F5F9;
-        --text-light: #94A3B8;
-      }
-      .theme-paper {
-        --bg-color: #FEFBF6; /* 暖紙色 */
-        --border-color: #E5E0D8;
-        --text-main: #4A4A4A;
-        --text-light: #8C8C8C;
-      }
-
+      :root { --bg-color: #FFF9F5; --border-color: #F5EBE0; --text-main: #5D5F71; --text-light: #8E91A0; }
+      .theme-dark { --bg-color: #1E293B; --border-color: #334155; --text-main: #F1F5F9; --text-light: #94A3B8; }
+      .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
       body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-      .animate-float { animation: float 3s ease-in-out infinite; }
-      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-      
-      /* 卡片容器背景適配 */
-      .bg-card { background-color: white; }
-      .theme-dark .bg-card { background-color: #0F172A; border-color: #334155; }
-      .theme-dark .shadow-cute { box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.3); }
+      ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+      .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+      .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
+      /* 確保日記輸入框有足夠高度 */
+      .journal-textarea { min-height: 300px; }
     </style>
 </head>
 <body>
@@ -88,48 +67,31 @@
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
         const Icons = {
+            // Bot icon restored
             Bot: (p) => <SvgBase {...p}><rect x="4" y="10" width="16" height="12" rx="3" ry="3" /><path d="M12 4v6m-5-1a5 5 0 0 1 10 0m-9 5h.01m7.98 0h.01"/></SvgBase>,
             Clock: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgBase>,
             Book: (p) => <SvgBase {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></SvgBase>,
             BarChart2: (p) => <SvgBase {...p}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></SvgBase>,
-            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
+            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
             StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
             RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
-            Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
             MonitorPlay: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></SvgBase>,
             Dumbbell: (p) => <SvgBase {...p}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></SvgBase>,
-            Smartphone: (p) => <SvgBase {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgBase>,
-            ShoppingBag: (p) => <SvgBase {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></SvgBase>,
-            Coffee: (p) => <SvgBase {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgBase>,
-            Plus: (p) => <SvgBase {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></SvgBase>,
-            Save: (p) => <SvgBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></SvgBase>,
-            Send: (p) => <SvgBase {...p}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></SvgBase>,
+            MoreHorizontal: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgBase>,
             Calendar: (p) => <SvgBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></SvgBase>,
-            CheckSquare: (p) => <SvgBase {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></SvgBase>,
             CheckCircle: (p) => <SvgBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></SvgBase>,
             Trash2: (p) => <SvgBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SvgBase>,
             ChevronLeft: (p) => <SvgBase {...p}><path d="m15 18-6-6 6-6"/></SvgBase>,
             ChevronRight: (p) => <SvgBase {...p}><path d="m9 18 6-6-6-6"/></SvgBase>,
             X: (p) => <SvgBase {...p}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></SvgBase>,
-            Sparkles: (p) => <SvgBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></SvgBase>,
-            Circle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/></SvgBase>,
+            Sparkles: (p) => <SvgBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/></SvgBase>,
             Star: (p) => <SvgBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></SvgBase>,
-            Moon: (p) => <SvgBase {...p}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></SvgBase>,
-            AlertTriangle: (p) => <SvgBase {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
-            AlertCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></SvgBase>,
-            Clipboard: (p) => <SvgBase {...p}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></SvgBase>,
-            Link: (p) => <SvgBase {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></SvgBase>,
-            ExternalLink: (p) => <SvgBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></SvgBase>,
-            HelpCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
-            MoreHorizontal: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgBase>,
-            Zap: (p) => <SvgBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
+            Plus: (p) => <SvgBase {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></SvgBase>,
+            Coffee: (p) => <SvgBase {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgBase>,
+            HelpCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>
         };
-
-        const IconByName = ({ name, className, size }) => {
-            const Component = Icons[name] || Icons.HelpCircle;
-            return <Component className={className} size={size} />;
-        };
+        const IconByName = ({ name, className, size }) => { const Component = Icons[name] || Icons.HelpCircle; return <Component className={className} size={size} />; };
 
         // --- 2. UI 元件 ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
@@ -152,50 +114,58 @@
             );
         };
 
+        // 修正後的圓餅圖元件 (修復對稱與百分比位置問題)
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
-            if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold">尚無數據</div>;
-            let cumulativePercent = 0;
-            const size = 220; const center = size/2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius + 30;
+            if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold"><div className="w-48 h-48 rounded-full border-8 border-cream-dark flex items-center justify-center">尚無數據</div></div>;
+            
+            let startAngle = -90; // 從上方開始
+            const size = 220; const center = size/2; const radius = 80; const strokeWidth = 20;
+            const textRadius = radius + 30; // 文字所在的半徑圈
+
+            // 計算每個切片的 SVG 路徑與文字座標
+            const slices = data.map(item => {
+                const percent = item.value / total;
+                if (percent === 0) return null;
+                const angle = percent * 360;
+                const endAngle = startAngle + angle;
+                
+                // 計算文字座標 (使用切片的中間角度)
+                const midAngle = startAngle + angle / 2;
+                const radian = (midAngle * Math.PI) / 180;
+                const textX = center + textRadius * Math.cos(radian);
+                const textY = center + textRadius * Math.sin(radian);
+
+                // 生成 SVG 弧線路徑 (大弧/小弧判斷)
+                const x1 = center + radius * Math.cos(startAngle * Math.PI / 180);
+                const y1 = center + radius * Math.sin(startAngle * Math.PI / 180);
+                const x2 = center + radius * Math.cos(endAngle * Math.PI / 180);
+                const y2 = center + radius * Math.sin(endAngle * Math.PI / 180);
+                const largeArcFlag = angle > 180 ? 1 : 0;
+                const pathData = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`;
+                
+                startAngle = endAngle; // 更新下一個切片的起始角度
+                return { pathData, color: item.color, percent, textX, textY };
+            }).filter(Boolean);
 
             return (
-                <div className="relative flex justify-center items-center">
+                <div className="relative flex justify-center items-center my-6">
                     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                        <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border-color)" strokeWidth={strokeWidth} />
-                        {data.map((item, index) => {
-                            const percent = item.value / total;
-                            if (percent === 0) return null;
-                            const startAngle = (cumulativePercent * 360) - 90;
-                            const sliceAngle = percent * 360;
-                            const midAngle = startAngle + sliceAngle / 2;
-                            const strokeDasharray = `${percent * circumference} ${circumference}`;
-                            const strokeDashoffset = -cumulativePercent * circumference;
-                            cumulativePercent += percent;
-
-                            const radian = (midAngle * Math.PI) / 180;
-                            const textX = center + textRadius * Math.cos(radian);
-                            const textY = center + textRadius * Math.sin(radian);
-
-                            // 100% 特殊處理
-                            if (percent >= 0.99) {
-                                return <g key={index}>
-                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} transform={`rotate(-90 ${center} ${center})`} />
-                                    <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
-                                </g>;
-                            }
-
-                            return (
-                                <g key={index}>
-                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {percent > 0.05 && <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-text-main text-xs font-bold font-mono">{Math.round(percent * 100)}%</text>}
-                                </g>
-                            );
-                        })}
+                        {/* 底圈 */}
+                        <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border-color)" strokeWidth={strokeWidth} opacity="0.3" />
+                        {/* 數據切片 */}
+                        {slices.map((slice, index) => (
+                            <path key={index} d={slice.pathData} fill="none" stroke={slice.color} strokeWidth={strokeWidth} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                        ))}
+                        {/* 百分比文字 (壓在色塊上) */}
+                        {slices.map((slice, index) => (
+                            slice.percent > 0.03 && <text key={`text-${index}`} x={slice.textX} y={slice.textY} textAnchor="middle" dominantBaseline="central" className="fill-text-main text-sm font-extrabold font-mono bg-white/80 px-1 rounded">{Math.round(slice.percent * 100)}%</text>
+                        ))}
                     </svg>
+                    {/* 中心總時數 */}
                     <div className="absolute text-center pointer-events-none">
-                        <div className="text-3xl font-extrabold text-text-main">{Math.round(total/60*10)/10}</div>
-                        <div className="text-xs text-text-light font-bold">小時</div>
+                        <div className="text-3xl font-extrabold text-text-main leading-none">{Math.round(total/60*10)/10}</div>
+                        <div className="text-xs text-text-light font-bold mt-1">小時</div>
                     </div>
                 </div>
             );
@@ -208,7 +178,8 @@
         const THEME_STORAGE_KEY = 'tm_theme';
 
         const CATEGORIES = [
-          { id: 'ai', label: 'AI 工具', icon: 'Brain', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
+          // Icon changed back to Bot here
+          { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
           { id: 'knowledge', label: '知識學習', icon: 'Book', color: 'bg-blue-100 text-blue-600', defaultType: 'growth' },
           { id: 'entertainment', label: '娛樂放鬆', icon: 'MonitorPlay', color: 'bg-purple-100 text-purple-600', defaultType: 'rest' },
           { id: 'sports', label: '運動健康', icon: 'Dumbbell', color: 'bg-emerald-100 text-emerald-600', defaultType: 'growth' },
@@ -231,162 +202,47 @@
             const [isSyncing, setIsSyncing] = useState(false);
             const [localScriptUrl, setLocalScriptUrl] = useState(localStorage.getItem(GAS_URL_KEY) || GAS_URL);
             const [theme, setTheme] = useState(localStorage.getItem(THEME_STORAGE_KEY) || 'default');
-            
-            // Review State
             const [reviewRating, setReviewRating] = useState(3);
             const [reviewType, setReviewType] = useState('growth');
-            const [reviewNote, setReviewNote] = useState('');
             const [reviewSessionCache, setReviewSessionCache] = useState(null);
-
-            // Muse State
             const [newInspiration, setNewInspiration] = useState('');
-
             const [toastMessage, setToastMessage] = useState(null);
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
+            // 日記相關狀態
+            const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
+            const [journalText, setJournalText] = useState('');
 
-            // Theme Effect
-            useEffect(() => {
-                document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : '';
-                localStorage.setItem(THEME_STORAGE_KEY, theme);
-            }, [theme]);
-
-            // Data Init
-            useEffect(() => {
-                if (!syncId) {
-                    const newId = Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem(SYNC_STORAGE_KEY, newId);
-                    setSyncId(newId);
-                }
-            }, [syncId]);
-
-            useEffect(() => {
-                const savedData = localStorage.getItem(`tm_data_${syncId}`);
-                if (savedData) setData(JSON.parse(savedData));
-            }, [syncId]);
-
-            const saveDataToLocal = (newData) => {
-                setData(newData);
-                localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData));
-            }
-
-            const showToast = (msg, type='success') => {
-                setToastMessage({ text: msg, type });
-                setTimeout(() => setToastMessage(null), 3000);
-            };
-
-            // Helper
+            useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
+            useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
+            useEffect(() => { const savedData = localStorage.getItem(`tm_data_${syncId}`); if (savedData) setData(JSON.parse(savedData)); }, [syncId]);
+            const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
+            const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
             const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
 
-            // Timer
-            useEffect(() => {
-                let interval;
-                if (data.activeTimer?.isRunning) {
-                    interval = setInterval(() => {
-                        setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000));
-                    }, 1000);
-                } else {
-                    setElapsedTime(0);
-                }
-                return () => clearInterval(interval);
-            }, [data.activeTimer]);
+            // 日記讀取邏輯
+            useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals?.[dateStr]?.content || ''); }, [journalSelectedDate, data.journals]);
 
-            const startTimer = (catId) => {
-                if (data.activeTimer) return;
-                saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } });
-            };
+            // Timer & Review Logic (Same as before)
+            useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
+            const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
+            const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setShowReviewModal(true); };
+            const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); showToast("紀錄成功！⭐"); if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error); };
+            const syncFromGoogleSheet = async () => { /* (Sync logic preserved) */ const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { let catId = 'others'; const name = (item.appName || '').toLowerCase(); if(name.includes('學習') || name.includes('book')) catId = 'knowledge'; else if(name.includes('ai') || name.includes('gpt')) catId = 'ai'; else if(name.includes('運動') || name.includes('gym')) catId = 'sports'; else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment'; else if(name.includes('社群')) catId = 'social'; else if(name.includes('購物')) catId = 'shopping'; const dateStr = item.date.replace(/\//g, '-'); return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; }).filter(s => s.duration > 0); const uniqueNewSessions = newSessions.filter(newS => !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5)); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); }};
 
-            const stopTimer = () => {
-                if (!data.activeTimer) return;
-                setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category });
-                const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category);
-                if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType);
-                setShowReviewModal(true);
-            };
+            // Analysis Data & Stats
+            const targetSessions = useMemo(() => { if (analysisViewMode === 'total') return data.sessions; const targetDate = getLocalDateStr(analysisDate); return data.sessions.filter(s => s.date === targetDate); }, [data.sessions, analysisDate, analysisViewMode]);
+            const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); return VALUE_TYPES.map(vt => ({ id: vt.id, name: vt.label, value: stats[vt.id] || 0, color: vt.stroke })); }, [targetSessions]);
+            const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; return { totalDuration, growthDuration, growthPercent }; }, [targetSessions]);
+            
+            const groupedAggregatedSessions = useMemo(() => { /* (Aggregated list logic preserved) */ const groups = {}; data.sessions.forEach(session => { if (!groups[session.date]) groups[session.date] = {}; if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0 }; groups[session.date][session.category].duration += session.duration; groups[session.date][session.category].count += 1; }); return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) })); }, [data.sessions]);
 
-            const submitReview = () => {
-                if (!reviewSessionCache) return;
-                const endTime = Date.now();
-                const startTime = reviewSessionCache.startTime;
-                const duration = Math.floor((endTime - startTime) / 1000);
-                const newSession = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    category: reviewSessionCache.category, startTime, endTime, duration,
-                    valueType: reviewType, rating: reviewRating, note: reviewNote,
-                    date: getLocalDateStr(new Date(startTime)), status: 'completed'
-                };
-                saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
-                setShowReviewModal(false); setReviewNote(''); showToast("紀錄成功！⭐");
-                if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error);
-            };
+            const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
 
-            // Sync Logic
-            const syncFromGoogleSheet = async () => {
-                const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error');
-                setIsSyncing(true);
-                try {
-                    const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`);
-                    const json = await res.json();
-                    if(Array.isArray(json)) {
-                        const newSessions = json.map(item => {
-                            let catId = 'others';
-                            const name = (item.appName || '').toLowerCase();
-                            if(name.includes('學習') || name.includes('book')) catId = 'knowledge';
-                            else if(name.includes('ai') || name.includes('gpt')) catId = 'ai';
-                            else if(name.includes('運動') || name.includes('gym')) catId = 'sports';
-                            else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment';
-                            else if(name.includes('社群')) catId = 'social';
-                            else if(name.includes('購物')) catId = 'shopping';
-                            const dateStr = item.date.replace(/\//g, '-');
-                            return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' };
-                        }).filter(s => s.duration > 0);
-                        const uniqueNewSessions = newSessions.filter(newS => !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5));
-                        if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success');
-                        else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); }
-                    }
-                } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); }
-            };
-
-            // Analysis Data
-            const targetSessions = useMemo(() => {
-                if (analysisViewMode === 'total') return data.sessions;
-                const targetDate = getLocalDateStr(analysisDate);
-                return data.sessions.filter(s => s.date === targetDate);
-            }, [data.sessions, analysisDate, analysisViewMode]);
-
-            const chartData = useMemo(() => {
-                const stats = { growth: 0, waste: 0, rest: 0 };
-                targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; });
-                const total = Object.values(stats).reduce((a,b) => a+b, 0);
-                return VALUE_TYPES.map(vt => ({ 
-                    id: vt.id, name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke 
-                }));
-            }, [targetSessions]);
-
-            // Aggregated List
-            const groupedAggregatedSessions = useMemo(() => {
-                const groups = {};
-                data.sessions.forEach(session => {
-                    if (!groups[session.date]) groups[session.date] = {};
-                    if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] };
-                    groups[session.date][session.category].duration += session.duration;
-                    groups[session.date][session.category].count += 1;
-                    if(session.meta && Object.keys(session.meta).length > 0) { const metaStr = Object.values(session.meta).join(', '); if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr); }
-                });
-                return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) }));
-            }, [data.sessions]);
-
-            // Muse Logic
-            const addInspiration = () => {
-                if(!newInspiration.trim()) return;
-                const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) };
-                const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] };
-                saveDataToLocal(newData);
-                setNewInspiration('');
-                showToast("靈感已捕捉 ✨");
-            };
+            // 日曆渲染
+            const renderCalendar = () => { const year = journalSelectedDate.getFullYear(); const month = journalSelectedDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDay = new Date(year, month, 1).getDay(); const days = []; for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>); for (let d = 1; d <= daysInMonth; d++) { const dateStr = getLocalDateStr(new Date(year, month, d)); const hasEntry = !!data.journals?.[dateStr]?.content; const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month; days.push( <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))} className={`h-10 w-10 rounded-xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-cream'}`}> <span className="text-sm font-bold">{d}</span> {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-brand-500 rounded-full absolute bottom-1.5"></span>} </button> ); } return days; };
 
             return (
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
@@ -403,7 +259,7 @@
                         </div>
                     </nav>
 
-                    <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64 transition-colors duration-300">
+                    <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64 transition-colors duration-300 min-h-screen">
                         <header className="md:hidden flex justify-between items-center mb-6"><span className="font-extrabold text-brand-900 flex items-center gap-2 text-xl"><IconByName name="Bot" className="w-7 h-7"/> MindfulTime</span><button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button></header>
 
                         {data.activeTimer && <div className="bg-card text-text-main border-2 border-brand-100 rounded-[2.5rem] p-6 shadow-2xl flex items-center justify-between gap-6 mb-8 relative overflow-hidden"><div className="flex items-center gap-4 z-10"><div className="p-3 bg-brand-50 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div><div><div className="text-brand-600 text-xs font-bold uppercase mb-1">正在專注</div><div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div></div></div><div className="font-mono text-5xl font-extrabold tracking-tight z-10 tabular-nums text-brand-600">{formatTime(elapsedTime)}</div><button onClick={stopTimer} className="px-8 py-4 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-3xl shadow-sm flex items-center gap-2 z-10 transition-colors"><IconByName name="StopCircle" className="w-6 h-6"/> <span>完成</span></button></div>}
@@ -453,6 +309,24 @@
                             </div>
                         )}
 
+                        {/* --- 心情日記修復重點區 --- */}
+                        {view === 'journal' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up h-full">
+                                <div className="lg:col-span-1 bg-card rounded-[2.5rem] shadow-cute p-6 border border-cream-dark h-fit">
+                                    <div className="flex justify-between items-center mb-6 px-2"><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronLeft" className="w-6 h-6"/></button><span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronRight" className="w-6 h-6"/></button></div><div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-light">{renderCalendar()}</div>
+                                </div>
+                                {/* 關鍵修復：確保右側容器有最小高度，並使用 flex-col 和 flex-1 撐開 */}
+                                <div className="lg:col-span-2 flex flex-col h-full min-h-[600px] bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
+                                    <div className="p-6 border-b border-cream-dark font-extrabold text-xl flex gap-3 items-center bg-cream/50 text-text-main">{getLocalDateStr(journalSelectedDate)} <span className="text-xs font-extrabold bg-brand-100 text-brand-600 px-3 py-1 rounded-full">日記</span></div>
+                                    <textarea className="flex-1 w-full p-8 resize-none outline-none text-lg leading-relaxed text-text-main placeholder-text-light bg-transparent font-medium journal-textarea" placeholder="今天過得怎麼樣？寫下來吧..." value={journalText} onChange={e => setJournalText(e.target.value)} />
+                                    <div className="p-5 bg-cream/50 border-t border-cream-dark flex justify-end items-center">
+                                        <button onClick={() => { saveDataToLocal({ ...data, journals: { ...data.journals, [getLocalDateStr(journalSelectedDate)]: { content: journalText } } }); showToast("日記已儲存 ✨"); }} className="flex items-center gap-2 px-10 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:scale-105 active:scale-95"><IconByName name="Save" className="w-6 h-6"/> 儲存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- 成長洞察修復重點區 --- */}
                         {view === 'analysis' && (
                             <div className="animate-slide-up space-y-6">
                                 <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
@@ -461,7 +335,7 @@
                                         <button onClick={() => setAnalysisViewMode('total')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='total'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
                                     </div>
                                     {analysisViewMode === 'day' && (
-                                        <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative">
+                                        <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative text-text-main">
                                             <button onClick={() => { const prev = new Date(analysisDate); prev.setDate(prev.getDate()-1); setAnalysisDate(prev); }}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
                                             <div className="font-extrabold text-lg min-w-[120px] text-center relative">{getLocalDateStr(analysisDate)}<input type="date" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setAnalysisDate(new Date(e.target.value))} /></div>
                                             <button onClick={() => { const next = new Date(analysisDate); next.setDate(next.getDate()+1); setAnalysisDate(next); }}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
@@ -473,6 +347,7 @@
                                     <div className="bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col h-full border border-cream-dark">
                                         <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
                                         <div className="flex-1 flex flex-col items-center justify-center">
+                                            {/* 使用修復後的圓餅圖元件 */}
                                             <DonutChart data={chartData} />
                                             <div className="w-full mt-10 space-y-4">
                                                 {chartData.map((d, i) => (
@@ -483,18 +358,31 @@
                                                         </div>
                                                         <div className="flex items-center gap-4">
                                                             <span className="font-mono font-extrabold text-lg text-text-main">{formatDurationSimple(d.value)}</span>
-                                                            {/* % removed from here */}
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
-                                    {/* ... Right side insights ... */}
                                     <div className="flex flex-col gap-6">
-                                        <div className="bg-card border border-cream-dark p-8 rounded-[2.5rem] shadow-cute flex-1">
-                                           <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="Sparkles" className="w-6 h-6 text-accent-yellow"/> 今日洞察</h3>
-                                           <p className="text-text-main text-lg leading-relaxed">這裡可以放更多詳細的洞察文字...</p>
+                                        {/* 關鍵修復：確保數據為 0 時仍顯示內容 */}
+                                        <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
+                                           <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
+                                           <p className="text-brand-900 text-lg leading-relaxed font-medium">
+                                               {dashboardStats.totalDuration > 0 ? 
+                                               (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
+                                               ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
+                                               }
+                                           </p>
+                                        </div>
+                                        <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
+                                            <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
+                                            <p className="text-text-main text-lg leading-relaxed font-medium">
+                                                {dashboardStats.totalDuration > 0 ?
+                                                (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，機器人也是需要充電的喔 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨") :
+                                                ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")
+                                                }
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -503,17 +391,17 @@
 
                         {view === 'muse' && (
                             <div className="animate-slide-up space-y-6">
-                                <div className="bg-card rounded-[2.5rem] shadow-cute p-8 border border-cream-dark">
+                                <div className="bg-card rounded-[2.5rem] shadow-cute p-8 border border-cream-dark min-h-[600px]">
                                     <h2 className="text-2xl font-extrabold text-text-main mb-6 flex items-center gap-3"><IconByName name="Lightbulb" className="w-8 h-8 text-accent-yellow"/> 靈感碎片</h2>
                                     <div className="flex gap-4 mb-8">
-                                        <input className="flex-1 p-4 bg-cream rounded-3xl outline-none text-lg font-bold focus:ring-2 focus:ring-brand-200 transition-all" placeholder="捕捉一個想法..." value={newInspiration} onChange={e=>setNewInspiration(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addInspiration()} />
-                                        <button onClick={addInspiration} className="p-4 bg-brand-500 text-white rounded-3xl hover:scale-105 transition-transform shadow-cute"><IconByName name="Plus" className="w-6 h-6"/></button>
+                                        <input className="flex-1 p-4 bg-cream rounded-[2rem] outline-none text-lg font-bold focus:ring-2 focus:ring-brand-200 transition-all text-text-main placeholder-text-light" placeholder="捕捉一個想法..." value={newInspiration} onChange={e=>setNewInspiration(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addInspiration()} />
+                                        <button onClick={addInspiration} className="p-4 bg-brand-500 text-white rounded-[2rem] hover:scale-105 transition-transform shadow-cute"><IconByName name="Plus" className="w-6 h-6"/></button>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
                                         {(data.inspirations || []).map((item) => (
-                                            <div key={item.id} className="bg-cream p-6 rounded-[2rem] hover:-translate-y-1 transition-transform border-2 border-transparent hover:border-brand-100 group relative">
+                                            <div key={item.id} className="bg-cream p-6 rounded-[2rem] hover:-translate-y-1 transition-transform border-2 border-transparent hover:border-brand-100 group relative h-fit">
                                                 <div className="text-xs text-text-light font-bold mb-2">{item.date}</div>
-                                                <div className="text-lg font-bold text-text-main leading-relaxed">{item.text}</div>
+                                                <div className="text-lg font-bold text-text-main leading-relaxed whitespace-pre-wrap">{item.text}</div>
                                                 <button onClick={()=>{const newInspirations=data.inspirations.filter(i=>i.id!==item.id); saveDataToLocal({...data, inspirations: newInspirations});}} className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-waste-500 hover:bg-white p-2 rounded-full transition-all"><IconByName name="Trash2" className="w-4 h-4"/></button>
                                             </div>
                                         ))}
@@ -525,7 +413,7 @@
 
                         {view === 'settings' && (
                             <div className="bg-card rounded-[2.5rem] shadow-cute p-10 space-y-8 animate-slide-up border border-cream-dark">
-                                <h2 className="font-extrabold text-2xl flex items-center gap-3"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
+                                <h2 className="font-extrabold text-2xl flex items-center gap-3 text-text-main"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
                                 
                                 <div>
                                     <label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label>
@@ -539,15 +427,15 @@
                                 <div>
                                     <label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label>
                                     <div className="flex gap-3">
-                                        <input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-3xl outline-none focus:border-brand-500 font-bold text-text-main transition-colors" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." />
-                                        <button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-3xl font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button>
+                                        <input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." />
+                                        <button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button>
                                     </div>
                                 </div>
                             </div>
                         )}
                     </main>
 
-                    <nav className="md:hidden fixed bottom-0 w-full bg-card border-t-2 border-cream-dark flex justify-around items-center p-3 pb-safe z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-[2rem]">
+                    <nav className="md:hidden fixed bottom-0 w-full bg-card border-t-2 border-cream-dark flex justify-around items-center p-3 pb-safe z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-[2rem] transition-colors duration-300">
                         <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光" mobile />
                         <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="日記" mobile />
                         <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon="BarChart2" label="洞察" mobile />
@@ -558,7 +446,7 @@
                     <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
                          <div className="space-y-8">
                             <div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark"><div className="text-5xl font-mono font-extrabold text-brand-600">{reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00'}</div></div>
-                            <div><label className="block font-extrabold text-lg text-text-main mb-4">這段時間感覺如何？</label><div className="grid grid-cols-1 gap-4">{VALUE_TYPES.map(type => (<button key={type.id} onClick={() => setReviewType(type.id)} className={`p-5 rounded-3xl border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}><span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>{reviewType === type.id && <IconByName name="CheckCircle" className={`w-7 h-7 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}</button>))}</div></div>
+                            <div><label className="block font-extrabold text-lg text-text-main mb-4">這段時間感覺如何？</label><div className="grid grid-cols-1 gap-4">{VALUE_TYPES.map(type => (<button key={type.id} onClick={() => setReviewType(type.id)} className={`p-5 rounded-[2rem] border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}><span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>{reviewType === type.id && <IconByName name="CheckCircle" className={`w-7 h-7 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}</button>))}</div></div>
                             <button onClick={submitReview} className="w-full py-5 bg-brand-500 text-white rounded-[2rem] font-extrabold text-xl shadow-cute hover:translate-y-[2px] hover:shadow-none transition-all active:scale-95">確認並儲存 ✨</button>
                         </div>
                     </Modal>
