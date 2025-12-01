@@ -4,9 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
+    
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -19,14 +21,21 @@
         theme: {
           extend: {
             colors: {
-              cream: 'var(--bg-color)', 'cream-dark': 'var(--border-color)',
+              cream: 'var(--bg-color)',
+              'cream-dark': 'var(--border-color)',
               text: { main: 'var(--text-main)', light: 'var(--text-light)' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, 
+              rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
-            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' }
+            boxShadow: {
+              'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
+              'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+            },
+            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+            keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
           }
         }
       }
@@ -40,9 +49,11 @@
       .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
       body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-      .animate-float { animation: float 3s ease-in-out infinite; }
+      .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      .journal-textarea { min-height: 300px; }
+      /* 強制日記區塊高度 */
+      .journal-container { min-height: 500px; display: flex; flex-direction: column; }
+      .journal-textarea { flex: 1; width: 100%; resize: none; outline: none; background: transparent; line-height: 1.6; min-height: 300px; }
     </style>
 </head>
 <body>
@@ -52,7 +63,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 圖示庫 ---
+        // --- 1. 內建圖示庫 (SVG) ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -95,8 +106,7 @@
             Mail: (p) => <SvgBase {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SvgBase>,
             Sun: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></SvgBase>,
             Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
-            Check: (p) => <SvgBase {...p}><polyline points="20 6 9 17 4 12"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
         };
 
         const IconByName = ({ name, className, size }) => {
@@ -106,8 +116,20 @@
 
         // --- 2. UI Components ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
-            if (mobile) return <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>;
-            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span></button>;
+            if (mobile) {
+                return (
+                    <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}>
+                        <IconByName name={icon} className="w-6 h-6 mb-1" />
+                        <span className="text-[10px] font-bold">{label}</span>
+                    </button>
+                )
+            }
+            return (
+                <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
+                    <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
+                    <span className="text-lg">{label}</span>
+                </button>
+            );
         };
 
         const Modal = ({ isOpen, onClose, title, children }) => {
@@ -132,7 +154,7 @@
 
             let cumulativePercent = 0;
             const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius - (strokeWidth / 4); 
+            const textRadius = radius; // Text centered on the ring
 
             return (
                 <div className="relative flex justify-center items-center">
@@ -146,7 +168,7 @@
                             const midAngle = startAngle + angle / 2;
                             const strokeDasharray = `${percent * circumference} ${circumference}`;
                             const strokeDashoffset = -cumulativePercent * circumference;
-
+                            
                             const radian = (midAngle * Math.PI) / 180;
                             const textX = center + textRadius * Math.cos(radian);
                             const textY = center + textRadius * Math.sin(radian);
@@ -156,13 +178,22 @@
                             let strokeColor = item.name === '投資 (高價值)' ? '#88D4AB' : item.name === '消耗 (浪費)' ? '#FFB7B2' : '#AECBFA';
 
                             if (percent >= 0.99) {
-                                return <g key={index}><circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} /><text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text></g>;
+                                return (
+                                    <g key={index}>
+                                        <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />
+                                        <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
+                                    </g>
+                                );
                             }
 
                             return (
                                 <g key={index}>
                                     <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {percent > 0.05 && <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>{Math.round(percent * 100)}%</text>}
+                                    {percent > 0.05 && (
+                                        <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>
+                                            {Math.round(percent * 100)}%
+                                        </text>
+                                    )}
                                 </g>
                             );
                         })}
@@ -175,13 +206,21 @@
             );
         };
 
-        // --- 4. Constants ---
+        // --- 4. Constants & Logic ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
         const THEME_STORAGE_KEY = 'tm_theme';
         const GEMINI_KEY_STORAGE = 'tm_gemini_key';
         const GEMINI_MODEL_KEY = 'tm_gemini_model';
+
+        const CATEGORY_FIELDS = {
+            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
+            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
+            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
+            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
+            others: [{ key: 'activity', label: '內容', type: 'text' }]
+        };
 
         const CATEGORIES = [
           { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
@@ -197,15 +236,6 @@
             { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
         ];
 
-        const CATEGORY_FIELDS = {
-            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
-            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
-            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
-            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
-            others: [{ key: 'activity', label: '內容', type: 'text' }]
-        };
-
-        // --- 5. AI Logic ---
         const callGeminiAPI = async (apiKey, prompt, model) => {
             const modelName = model || 'gemini-1.5-flash';
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
@@ -239,7 +269,7 @@
             return await callGeminiAPI(apiKey, systemPrompt, model);
         };
 
-        // --- 6. App ---
+        // --- 5. App ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
@@ -291,23 +321,43 @@
             const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setReviewMetaData({}); setShowReviewModal(true); };
             const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); setReviewNote(''); setReviewMetaData({}); showToast("紀錄成功！⭐"); if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error); };
             
-            const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { let catId = 'others'; const name = (item.appName || '').toLowerCase(); if(name.includes('學習') || name.includes('book')) catId = 'knowledge'; else if(name.includes('ai') || name.includes('gpt')) catId = 'ai'; else if(name.includes('運動') || name.includes('gym')) catId = 'sports'; else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment'; else if(name.includes('社群')) catId = 'social'; else if(name.includes('購物')) catId = 'shopping'; const dateStr = item.date.replace(/\//g, '-'); return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; }).filter(s => s.duration > 0); const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } setLastSyncTime(new Date().toLocaleTimeString()); } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
+            // 嚴格過濾匯入資料
+            const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { 
+                // 關鍵字精準匹配
+                let catId = null;
+                const name = (item.appName || '').toLowerCase();
+                if(name.includes('學習') || name.includes('book') || name.includes('知識')) catId = 'knowledge';
+                else if(name.includes('ai') || name.includes('gpt')) catId = 'ai';
+                else if(name.includes('運動') || name.includes('gym') || name.includes('健身')) catId = 'sports';
+                else if(name.includes('娛樂') || name.includes('youtube') || name.includes('netflix')) catId = 'entertainment';
+                else if(name.includes('社群') || name.includes('social') || name.includes('line') || name.includes('instagram')) catId = 'others'; 
+                else if(name.includes('購物') || name.includes('shopping')) catId = 'others';
+                
+                if (!catId) return null; // 嚴格過濾：不符合任何分類則丟棄
+
+                const dateStr = item.date.replace(/\//g, '-'); 
+                return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; 
+            }).filter(s => s && s.duration > 0); 
+            
+            const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } setLastSyncTime(new Date().toLocaleTimeString()); } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
             
             const saveKey = () => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey); showToast("API Key 已儲存！"); };
             const detectModels = async () => { if (!geminiKey) return showToast("請先輸入 API Key", "error"); showToast("偵測模型中...", "warning"); try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`); const data = await res.json(); if (data.models) { const contentModels = data.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace('models/', '')); setAvailableModels(contentModels); if (contentModels.length > 0 && !contentModels.includes(selectedModel)) { setSelectedModel(contentModels[0]); } showToast(`找到 ${contentModels.length} 個可用模型`, "success"); } else { throw new Error(data.error?.message || "無回應"); } } catch (e) { showToast("偵測失敗: " + e.message, "error"); } };
             const handleManagerChat = async () => { if (!managerInput.trim()) return; const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() }; setManagerMessages(prev => [...prev, userMsg]); setManagerInput(''); setIsAiTyping(true); const responseText = await generateAIResponse(userMsg.text, data, 'manager', geminiKey, selectedModel); const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; setManagerMessages(prev => [...prev, aiMsg]); setIsAiTyping(false); };
             const handleJournalAI = async () => { if (!journalText.trim()) return; setIsAiTyping(true); const responseText = await generateAIResponse(journalText, data, 'journal', geminiKey, selectedModel); setJournalAiResponse(responseText); setIsAiTyping(false); };
-            
+            const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
+
+            // Calculations
             const targetSessions = useMemo(() => { if (analysisViewMode === 'total') return data.sessions; const targetDate = getLocalDateStr(analysisDate); return data.sessions.filter(s => s.date === targetDate); }, [data.sessions, analysisDate, analysisViewMode]);
             const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); const total = Object.values(stats).reduce((a,b) => a+b, 0); return VALUE_TYPES.map(vt => ({ id: vt.id, name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke })); }, [targetSessions]);
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
             const groupedAggregatedSessions = useMemo(() => { const groups = {}; data.sessions.forEach(session => { if (!groups[session.date]) groups[session.date] = {}; if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] }; groups[session.date][session.category].duration += session.duration; groups[session.date][session.category].count += 1; if(session.meta && Object.keys(session.meta).length > 0) { const metaStr = Object.values(session.meta).join(', '); if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr); } }); return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) })); }, [data.sessions]);
-            const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
             const renderCalendar = () => { const year = calendarViewDate.getFullYear(); const month = calendarViewDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDay = new Date(year, month, 1).getDay(); const days = []; for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>); for (let d = 1; d <= daysInMonth; d++) { const dateStr = getLocalDateStr(new Date(year, month, d)); const hasEntry = !!data.journals?.[dateStr]?.content; const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month; days.push( <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))} className={`h-10 w-10 rounded-2xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}> <span className="text-sm font-bold">{d}</span> {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-brand-500 rounded-full absolute bottom-1.5"></span>} </button> ); } return days; };
 
             return (
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
-                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
+                    {/* ... (Toast, Nav, Main Structure preserved) ... */}
+                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : toastMessage.type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
 
                     <nav className="hidden md:flex flex-col w-64 h-screen border-r border-cream-dark p-6 bg-card fixed left-0 top-0 z-50 transition-colors duration-300">
                         <div className="flex items-center gap-3 mb-10 px-2"><div className="p-2 bg-brand-50 rounded-2xl"><IconByName name="Bot" className="w-8 h-8 text-brand-600"/></div><span className="text-xl font-extrabold tracking-tight text-text-main">MindfulTime</span></div>
@@ -321,8 +371,8 @@
                     </nav>
 
                     <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64 transition-colors duration-300 min-h-screen">
+                        {/* ... (Header & Timer Banner) ... */}
                         <header className="md:hidden flex justify-between items-center mb-6"><span className="font-extrabold text-brand-900 flex items-center gap-2 text-xl"><IconByName name="Bot" className="w-7 h-7"/> MindfulTime</span><button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button></header>
-
                         {data.activeTimer && <div className="bg-card text-text-main border-2 border-brand-100 rounded-[2.5rem] p-6 shadow-2xl flex items-center justify-between gap-6 mb-8 relative overflow-hidden"><div className="flex items-center gap-4 z-10"><div className="p-3 bg-brand-50 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div><div><div className="text-brand-600 text-xs font-bold uppercase mb-1">正在專注</div><div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div></div></div><div className="font-mono text-5xl font-extrabold tracking-tight z-10 tabular-nums text-brand-600">{formatTime(elapsedTime)}</div><button onClick={stopTimer} className="px-8 py-4 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-3xl shadow-sm flex items-center gap-2 z-10 transition-colors"><IconByName name="StopCircle" className="w-6 h-6"/> <span>完成</span></button></div>}
 
                         {view === 'tracker' && (
@@ -361,6 +411,7 @@
                                                                         <div className="text-sm text-text-light font-mono font-extrabold">{formatDurationSimple(item.duration)}</div>
                                                                     </div>
                                                                 </div>
+                                                                {item.meta && item.meta.length > 0 && <div className="text-xs font-bold text-text-light bg-white p-3 rounded-xl leading-relaxed">{item.meta.join(', ')}</div>}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -377,7 +428,7 @@
                                 <div className="lg:col-span-1 bg-card rounded-[2.5rem] shadow-cute p-6 border border-cream-dark h-fit">
                                     <div className="flex justify-between items-center mb-6 px-2"><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronLeft" className="w-6 h-6"/></button><span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronRight" className="w-6 h-6"/></button></div><div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-light">{renderCalendar()}</div>
                                 </div>
-                                <div className="lg:col-span-2 flex flex-col h-full journal-container bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
+                                <div className="lg:col-span-2 flex flex-col h-full min-h-[600px] bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
                                     <div className="p-6 border-b border-cream-dark font-extrabold text-xl flex gap-3 items-center bg-cream/50 text-text-main">{getLocalDateStr(journalSelectedDate)} <span className="text-xs font-extrabold bg-brand-100 text-brand-600 px-3 py-1 rounded-full">日記</span></div>
                                     <textarea className="journal-textarea p-8 text-xl text-text-main placeholder-text-light" placeholder="今天過得怎麼樣？寫下來吧..." value={journalText} onChange={e => setJournalText(e.target.value)} />
                                     <div className="p-5 bg-cream/50 border-t border-cream-dark flex justify-end items-center">
@@ -425,6 +476,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {/* ... Insights & AI Manager ... */}
                                     <div className="flex flex-col gap-6">
                                         <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
                                            <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
@@ -466,6 +518,7 @@
 
                         {view === 'muse' && (
                             <div className="animate-slide-up space-y-6">
+                                {/* Muse Content (Preserved) */}
                                 <div className="bg-card rounded-[2.5rem] shadow-cute p-8 border border-cream-dark min-h-[600px]">
                                     <h2 className="text-2xl font-extrabold text-text-main mb-6 flex items-center gap-3"><IconByName name="Lightbulb" className="w-8 h-8 text-accent-yellow"/> 靈感碎片</h2>
                                     <div className="flex gap-4 mb-8">
@@ -489,51 +542,19 @@
                         {view === 'settings' && (
                             <div className="bg-card rounded-[2.5rem] shadow-cute p-10 space-y-8 animate-slide-up border border-cream-dark">
                                 <h2 className="font-extrabold text-2xl flex items-center gap-3 text-text-main"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
-                                
-                                <div>
-                                    <label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label>
-                                    <div className="flex gap-4">
-                                        <button onClick={()=>setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button>
-                                        <button onClick={()=>setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button>
-                                        <button onClick={()=>setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button>
+                                {/* ... (Settings Preserved) ... */}
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label><div className="flex gap-4"><button onClick={()=>setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button><button onClick={()=>setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button><button onClick={()=>setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button></div></div>
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label><div className="flex gap-3"><input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." /><button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button></div></div>
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">Gemini API Key (大腦)</label><div className="flex gap-3"><input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." /><button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button><button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button></div>
+                                {availableModels.length > 0 && (
+                                    <div className="mt-4">
+                                        <label className="block font-bold text-sm text-text-light mb-2">選擇模型 (Model)</label>
+                                        <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem(GEMINI_MODEL_KEY, e.target.value); }} className="w-full p-4 rounded-[2rem] border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500">
+                                            {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label>
-                                    <div className="flex gap-3">
-                                        <input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." />
-                                        <button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block font-extrabold text-lg text-text-main mb-4">Gemini API Key (大腦)</label>
-                                    <div className="flex gap-3">
-                                        <input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." />
-                                        <button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button>
-                                        <button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button>
-                                    </div>
-                                    
-                                    {/* 模型選擇器 */}
-                                    {availableModels.length > 0 && (
-                                        <div className="mt-4">
-                                            <label className="block font-bold text-sm text-text-light mb-2">選擇模型 (Model)</label>
-                                            <select 
-                                                value={selectedModel} 
-                                                onChange={(e) => {
-                                                    setSelectedModel(e.target.value);
-                                                    localStorage.setItem(GEMINI_MODEL_KEY, e.target.value);
-                                                }}
-                                                className="w-full p-4 rounded-[2rem] border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500"
-                                            >
-                                                {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
-                                            </select>
-                                        </div>
-                                    )}
-                                    
-                                    <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p>
-                                </div>
+                                )}
+                                <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p></div>
                             </div>
                         )}
                     </main>
@@ -546,10 +567,9 @@
                         <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" mobile />
                     </nav>
 
-                    {/* Review Modal */}
-                    {/* ... (Modal preserved) ... */}
                     <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
-                         <div className="space-y-8">
+                        {/* ... (Modal content preserved) ... */}
+                        <div className="space-y-8">
                             <div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark"><div className="text-5xl font-mono font-extrabold text-brand-600">{reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00'}</div></div>
                             <div><label className="block font-extrabold text-lg text-text-main mb-4">這段時間感覺如何？</label><div className="grid grid-cols-1 gap-4">{VALUE_TYPES.map(type => (<button key={type.id} onClick={() => setReviewType(type.id)} className={`p-5 rounded-[2rem] border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}><span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>{reviewType === type.id && <IconByName name="CheckCircle" className={`w-7 h-7 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}</button>))}</div></div>
                             {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (<div className="bg-cream p-6 rounded-[2rem] border-4 border-cream-dark space-y-5"><h4 className="font-extrabold text-base text-text-main flex items-center gap-2"><IconByName name="Settings" className="w-5 h-5"/> 詳細紀錄</h4>{CATEGORY_FIELDS[reviewSessionCache.category].map(field => (<div key={field.key}><label className="block text-sm font-extrabold text-text-light mb-2 pl-1">{field.label}</label>{field.type === 'select' ? (<select className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}><option value="">選擇...</option>{field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>) : (<input type="text" className="w-full p-4 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />)}</div>))}</div>)}
