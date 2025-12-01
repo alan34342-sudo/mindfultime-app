@@ -11,7 +11,6 @@
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -19,21 +18,14 @@
         theme: {
           extend: {
             colors: {
-              cream: 'var(--bg-color)',
-              'cream-dark': 'var(--border-color)',
+              cream: 'var(--bg-color)', 'cream-dark': 'var(--border-color)',
               text: { main: 'var(--text-main)', light: 'var(--text-light)' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, 
-              rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
-            boxShadow: {
-              'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
-              'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-            },
-            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
-            keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
+            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' }
           }
         }
       }
@@ -45,7 +37,7 @@
       :root { --bg-color: #FFF9F5; --border-color: #F5EBE0; --text-main: #5D5F71; --text-light: #8E91A0; }
       .theme-dark { --bg-color: #1E293B; --border-color: #334155; --text-main: #F1F5F9; --text-light: #94A3B8; }
       .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
-      body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
+      body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
@@ -59,7 +51,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 內建圖示庫 ---
+        // --- 1. Icons ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -71,6 +63,7 @@
             Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
             StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
             RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
+            Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
             MonitorPlay: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></SvgBase>,
             Dumbbell: (p) => <SvgBase {...p}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></SvgBase>,
             Smartphone: (p) => <SvgBase {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgBase>,
@@ -100,28 +93,22 @@
             Zap: (p) => <SvgBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgBase>,
             Mail: (p) => <SvgBase {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SvgBase>,
             Sun: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></SvgBase>,
-            Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
+            Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>
         };
+        const IconByName = ({ name, className, size }) => { const Component = Icons[name] || Icons.HelpCircle; return <Component className={className} size={size} />; };
 
-        const IconByName = ({ name, className, size }) => {
-            const Component = Icons[name] || Icons.HelpCircle;
-            return <Component className={className} size={size} />;
-        };
-
-        // --- 2. 內建手刻圓餅圖 (百分比位置修正) ---
+        // --- 2. Donut Chart ---
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
             if (total === 0) return <div className="flex h-full items-center justify-center text-gray-300 font-bold">尚無數據</div>;
-
             let cumulativePercent = 0;
-            const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius; // 文字壓在圓環上
-
+            const size = 220; const center = size/2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
+            const textRadius = radius; 
             return (
                 <div className="relative flex justify-center items-center">
-                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                        <circle cx={center} cy={center} r={radius} fill="none" stroke="#F3F4F6" strokeWidth={strokeWidth} opacity="0.3" />
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+                        <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border-color)" strokeWidth={strokeWidth} opacity="0.3" />
                         {data.map((item, index) => {
                             const percent = item.value / total;
                             if (percent === 0) return null;
@@ -130,77 +117,35 @@
                             const midAngle = startAngle + angle / 2;
                             const strokeDasharray = `${percent * circumference} ${circumference}`;
                             const strokeDashoffset = -cumulativePercent * circumference;
-
                             const radian = (midAngle * Math.PI) / 180;
                             const textX = center + textRadius * Math.cos(radian);
                             const textY = center + textRadius * Math.sin(radian);
-
                             cumulativePercent += percent;
-
-                            if (percent >= 0.99) {
-                                return (
-                                    <g key={index}>
-                                        <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} />
-                                        <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
-                                    </g>
-                                );
-                            }
-
-                            return (
-                                <g key={index}>
-                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {percent > 0.05 && (
-                                        <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 3px rgba(0,0,0,0.5)' }}>
-                                            {Math.round(percent * 100)}%
-                                        </text>
-                                    )}
-                                </g>
-                            );
+                            if (percent >= 0.99) return <g key={index}><circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} /><text x={center} y={center+radius+35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text></g>;
+                            return <g key={index}><circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />{percent > 0.05 && <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.3)' }}>{Math.round(percent*100)}%</text>}</g>;
                         })}
                     </svg>
-                    <div className="absolute text-center pointer-events-none">
-                        <div className="text-3xl font-extrabold text-text-main leading-none">{Math.round(total/60*10)/10}</div>
-                        <div className="text-xs text-text-light font-bold mt-1">小時</div>
-                    </div>
+                    <div className="absolute text-center pointer-events-none"><div className="text-3xl font-extrabold text-text-main leading-none">{Math.round(total/60*10)/10}</div><div className="text-xs text-text-light font-bold mt-1">小時</div></div>
                 </div>
             );
         };
 
-        // --- 3. UI 元件 ---
+        // --- 3. UI Components ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
-            if (mobile) return <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>;
-            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span></button>;
+            if (mobile) return <button onClick={onClick} className={`flex flex-col items-center p-2 transition-all ${active ? 'text-brand-600 scale-110' : 'text-text-light'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>;
+            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span></button>;
         };
-
         const Modal = ({ isOpen, onClose, title, children }) => {
             if (!isOpen) return null;
-            return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-card rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream">
-                            <h3 className="text-xl font-extrabold text-text-main flex items-center gap-2"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-6 h-6" />{title}</h3>
-                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light"><IconByName name="X" className="w-5 h-5" /></button>
-                        </div>
-                        <div className="p-6 overflow-y-auto bg-card">{children}</div>
-                    </div>
-                </div>
-            );
+            return <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-card rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col"><div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream"><h3 className="text-xl font-extrabold text-text-main flex items-center gap-2"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-6 h-6" />{title}</h3><button onClick={onClose}><IconByName name="X" className="w-5 h-5 text-text-light" /></button></div><div className="p-6 overflow-y-auto bg-card">{children}</div></div></div>;
         };
 
-        // --- 設定與常數 ---
+        // --- Constants ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
         const THEME_STORAGE_KEY = 'tm_theme';
         const GEMINI_KEY_STORAGE = 'tm_gemini_key';
-
-        const CATEGORY_FIELDS = {
-            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
-            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
-            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
-            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
-            others: [{ key: 'activity', label: '內容', type: 'text' }]
-        };
 
         const CATEGORIES = [
           { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
@@ -209,14 +154,20 @@
           { id: 'sports', label: '運動健康', icon: 'Dumbbell', color: 'bg-emerald-100 text-emerald-600', defaultType: 'growth' },
           { id: 'others', label: '其他', icon: 'MoreHorizontal', color: 'bg-gray-100 text-gray-600', defaultType: 'waste' }
         ];
-
         const VALUE_TYPES = [
             { id: 'growth', label: '投資 (高價值)', color: 'bg-brand-500', stroke: '#88D4AB' },
             { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500', stroke: '#FFB7B2' },
             { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
         ];
+        const CATEGORY_FIELDS = {
+            ai: [{ key: 'tool', label: '使用工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney'] }, { key: 'goal', label: '應用目標', type: 'text' }],
+            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
+            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
+            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身', '球類'] }, { key: 'detail', label: '紀錄', type: 'text' }],
+            others: [{ key: 'activity', label: '內容', type: 'text' }]
+        };
 
-        // --- 4. 真實 AI 邏輯 (Gemini API) ---
+        // --- AI API Logic ---
         const callGeminiAPI = async (apiKey, prompt) => {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }] }] };
@@ -227,41 +178,30 @@
                 return data.candidates[0].content.parts[0].text;
             } catch (error) {
                 console.error("AI Error:", error);
-                return "AI 連線出了點問題，請檢查 Key 是否正確。";
+                return `連線失敗: ${error.message}`;
             }
         };
 
         const generateAIResponse = async (input, contextData, type, apiKey) => {
-            if (!apiKey) return "請先到設定頁面填入 Gemini API Key，我才能變聰明喔！🤖";
-
-            const text = input;
+            if (!apiKey) return "請先到設定頁面填入並儲存 Gemini API Key 喔！🔑";
             let systemPrompt = "";
-            
             if (type === 'journal') {
-                systemPrompt = `你是一個溫柔、有同理心的心理諮商師與日記伴侶。使用者正在寫日記。
-                使用者的日記內容："${text}"。
-                請給予溫暖、支持性的回應，摘要他們的情緒，並給出一個小小的、容易執行的建議。語氣要像朋友一樣親切。限 100 字以內。`;
+                systemPrompt = `你是一個溫柔的心理諮商師。使用者日記："${input}"。請給予同理心回應與簡短建議，限80字。`;
             } else {
-                // Manager AI
-                const { sessions } = contextData;
+                // Manager Context
                 const todayStr = new Date().toISOString().split('T')[0];
-                const todaySessions = sessions.filter(s => s.date === todayStr);
+                const todaySessions = contextData.sessions.filter(s => s.date === todayStr);
                 const stats = {
-                    growth: todaySessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0) / 60,
-                    rest: todaySessions.filter(s => s.valueType === 'rest').reduce((acc, s) => acc + s.duration, 0) / 60,
-                    waste: todaySessions.filter(s => s.valueType === 'waste').reduce((acc, s) => acc + s.duration, 0) / 60
+                    growth: Math.round(todaySessions.filter(s => s.valueType === 'growth').reduce((a,s)=>a+s.duration,0)/60),
+                    rest: Math.round(todaySessions.filter(s => s.valueType === 'rest').reduce((a,s)=>a+s.duration,0)/60),
+                    waste: Math.round(todaySessions.filter(s => s.valueType === 'waste').reduce((a,s)=>a+s.duration,0)/60)
                 };
-                
-                systemPrompt = `你是一個專業、幽默且嚴格的時間管理教練。
-                這是使用者今天的數據（分鐘）：${JSON.stringify(stats)}。
-                使用者問："${text}"。
-                請根據數據回答。如果成長時間少，就鞭策他；如果休息少，就提醒他休息。如果他問行程，請根據剩餘時間給出建議。限 100 字以內。`;
+                systemPrompt = `你是嚴格又幽默的時間管理教練。使用者問："${input}"。今日數據(分)：成長${stats.growth}, 休息${stats.rest}, 浪費${stats.waste}。請根據數據給建議，限80字。`;
             }
-
             return await callGeminiAPI(apiKey, systemPrompt);
         };
 
-        // --- 5. App 主程式 ---
+        // --- App ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
@@ -271,8 +211,6 @@
             const [isSyncing, setIsSyncing] = useState(false);
             const [localScriptUrl, setLocalScriptUrl] = useState(localStorage.getItem(GAS_URL_KEY) || GAS_URL);
             const [theme, setTheme] = useState(localStorage.getItem(THEME_STORAGE_KEY) || 'default');
-            
-            // API Key State
             const [geminiKey, setGeminiKey] = useState(localStorage.getItem(GEMINI_KEY_STORAGE) || '');
 
             const [reviewRating, setReviewRating] = useState(3);
@@ -280,30 +218,25 @@
             const [reviewNote, setReviewNote] = useState('');
             const [reviewMetaData, setReviewMetaData] = useState({});
             const [reviewSessionCache, setReviewSessionCache] = useState(null);
-            const [newInspiration, setNewInspiration] = useState('');
-
-            const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
-            const [calendarViewDate, setCalendarViewDate] = useState(new Date());
-            const [journalText, setJournalText] = useState('');
             
-            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。只要設定好 API Key，我就能讀懂你的心！', timestamp: Date.now() }]);
+            const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
+            const [journalText, setJournalText] = useState('');
+            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
             const chatEndRef = useRef(null);
             const [toastMessage, setToastMessage] = useState(null);
+            const [newInspiration, setNewInspiration] = useState('');
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
 
+            // Effects
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
             useEffect(() => { const savedData = localStorage.getItem(`tm_data_${syncId}`); if (savedData) setData(JSON.parse(savedData)); }, [syncId]);
             const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
-            const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
-
-            // 確保日記容器有內容時更新
             useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals?.[dateStr]?.content || ''); setJournalAiResponse(''); }, [journalSelectedDate, data.journals]);
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
@@ -313,34 +246,20 @@
             const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setReviewMetaData({}); setShowReviewModal(true); };
             const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); setReviewNote(''); setReviewMetaData({}); showToast("紀錄成功！⭐"); if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error); };
             
-            // Sync Logic
-            const syncFromGoogleSheet = async () => {
-                const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error');
-                setIsSyncing(true);
-                try {
-                    const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`);
-                    const json = await res.json();
-                    if(Array.isArray(json)) {
-                        const newSessions = json.map(item => {
-                            let catId = 'others';
-                            const name = (item.appName || '').toLowerCase();
-                            if(name.includes('學習') || name.includes('book')) catId = 'knowledge';
-                            else if(name.includes('ai') || name.includes('gpt')) catId = 'ai';
-                            else if(name.includes('運動') || name.includes('gym')) catId = 'sports';
-                            else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment';
-                            else if(name.includes('社群')) catId = 'social';
-                            else if(name.includes('購物')) catId = 'shopping';
-                            const dateStr = item.date.replace(/\//g, '-');
-                            return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' };
-                        }).filter(s => s.duration > 0);
-                        const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5); });
-                        if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success');
-                        else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); }
-                    }
-                } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); }
+            const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { let catId = 'others'; const name = (item.appName || '').toLowerCase(); if(name.includes('學習') || name.includes('book')) catId = 'knowledge'; else if(name.includes('ai') || name.includes('gpt')) catId = 'ai'; else if(name.includes('運動') || name.includes('gym')) catId = 'sports'; else if(name.includes('娛樂') || name.includes('youtube')) catId = 'entertainment'; else if(name.includes('社群')) catId = 'social'; else if(name.includes('購物')) catId = 'shopping'; const dateStr = item.date.replace(/\//g, '-'); return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; }).filter(s => s.duration > 0); const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 5); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
+            
+            const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
+            const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
+            
+            // AI Actions
+            const saveKey = () => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey); showToast("API Key 已儲存！"); };
+            const testAI = async () => { 
+                showToast("測試連線中...", "warning");
+                const res = await callGeminiAPI(geminiKey, "Hello, just testing connection. Reply with 'OK'.");
+                if(res.includes("OK") || res.length > 0) showToast("✅ 連線成功！大腦已啟動");
+                else showToast("連線失敗，請檢查 Key", "error");
             };
 
-            // AI Async Handlers
             const handleManagerChat = async () => {
                 if (!managerInput.trim()) return;
                 const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() };
@@ -361,6 +280,7 @@
                 setIsAiTyping(false);
             };
 
+            // Analysis
             const targetSessions = useMemo(() => { if (analysisViewMode === 'total') return data.sessions; const targetDate = getLocalDateStr(analysisDate); return data.sessions.filter(s => s.date === targetDate); }, [data.sessions, analysisDate, analysisViewMode]);
             const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); const total = Object.values(stats).reduce((a,b) => a+b, 0); return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke })); }, [targetSessions]);
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
@@ -370,7 +290,7 @@
 
             return (
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
-                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
+                    {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : toastMessage.type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
 
                     <nav className="hidden md:flex flex-col w-64 h-screen border-r border-cream-dark p-6 bg-card fixed left-0 top-0 z-50 transition-colors duration-300">
                         <div className="flex items-center gap-3 mb-10 px-2"><div className="p-2 bg-brand-50 rounded-2xl"><IconByName name="Bot" className="w-8 h-8 text-brand-600"/></div><span className="text-xl font-extrabold tracking-tight text-text-main">MindfulTime</span></div>
@@ -403,7 +323,7 @@
                                         <h2 className="text-2xl font-extrabold text-text-main flex items-center gap-3"><IconByName name="Calendar" className="w-7 h-7 text-accent-purple" /> 時光足跡</h2>
                                         <button onClick={syncFromGoogleSheet} className="px-4 py-2 bg-cream hover:bg-brand-50 text-brand-600 rounded-2xl transition-all shadow-sm flex items-center gap-2 text-sm font-extrabold group"><IconByName name="RefreshCcw" className={`w-4 h-4 ${isSyncing?'animate-spin':''} group-hover:rotate-180 transition-transform duration-500`}/><span>更新</span></button>
                                     </div>
-                                    {groupedAggregatedSessions.length === 0 ? <div className="text-center py-16 text-text-light bg-cream rounded-3xl font-bold text-lg">還沒有紀錄喔 🍃 <br/><span className="text-sm mt-2 block font-medium">(點擊右上方「更新」按鈕匯入資料)</span></div> : 
+                                    {groupedAggregatedSessions.length === 0 ? <div className="text-center py-16 text-text-light bg-cream rounded-3xl font-bold text-lg">還沒有紀錄喔 🍃</div> : 
                                         <div className="space-y-10 relative pl-4">
                                             <div className="absolute left-8 top-4 bottom-4 w-1 bg-cream-dark hidden md:block rounded-full"></div>
                                             {groupedAggregatedSessions.map(group => (
@@ -420,7 +340,6 @@
                                                                         <div className="text-sm text-text-light font-mono font-extrabold">{formatDurationSimple(item.duration)}</div>
                                                                     </div>
                                                                 </div>
-                                                                {item.meta && item.meta.length > 0 && <div className="text-xs font-bold text-text-light bg-white p-3 rounded-xl leading-relaxed">{item.meta.join(', ')}</div>}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -491,14 +410,19 @@
                                         <div className="bg-brand-50 border-2 border-brand-100 p-8 rounded-[2.5rem]">
                                             <div className="flex items-center gap-3 font-extrabold text-brand-900 mb-4 text-lg"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</div>
                                             <p className="text-brand-900 leading-relaxed font-bold text-xl">
-                                                {dashboardStats.totalDuration > 0 ? (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/><span className="text-base mt-2 block font-medium">{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</span></>) : ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")}
+                                                你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>
+                                                <span className="text-base mt-2 block font-medium">{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</span>
                                             </p>
                                         </div>
 
                                         <div className="bg-blue-50 border-2 border-blue-100 p-8 rounded-[2.5rem]">
                                             <div className="flex items-center gap-3 font-extrabold text-rest-500 mb-4 text-lg"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</div>
                                             <p className="text-text-main leading-relaxed font-bold text-lg">
-                                                {dashboardStats.totalDuration > 0 ? (dashboardStats.knowledgeDuration > 2 * 3600 ? "今天讀書讀很久囉，眼睛酸了嗎？起來走動喝杯水吧 💧" : (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，記得早點休息 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨")) : ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")}
+                                                {dashboardStats.knowledgeDuration > 2 * 3600 
+                                                    ? "今天讀書讀很久囉，眼睛酸了嗎？起來走動喝杯水吧 💧" 
+                                                    : (dashboardStats.totalDuration > 8 * 3600 
+                                                        ? "今天已經記錄超過 8 小時了，記得早點休息 🌙" 
+                                                        : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨")}
                                             </p>
                                         </div>
 
@@ -565,10 +489,13 @@
                                     </div>
                                 </div>
 
-                                {/* API Key Input */}
                                 <div>
                                     <label className="block font-extrabold text-lg text-text-main mb-4">Gemini API Key (大腦)</label>
-                                    <input type="password" className="w-full p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} onBlur={() => localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey)} placeholder="貼上你的 API Key..." />
+                                    <div className="flex gap-3">
+                                        <input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." />
+                                        <button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button>
+                                        <button onClick={testAI} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">測試</button>
+                                    </div>
                                     <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p>
                                 </div>
                             </div>
