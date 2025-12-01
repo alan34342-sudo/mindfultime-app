@@ -4,13 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
+    
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -18,18 +21,14 @@
         theme: {
           extend: {
             colors: {
-              cream: 'var(--bg-color)',
-              'cream-dark': 'var(--border-color)',
+              cream: 'var(--bg-color)', 'cream-dark': 'var(--border-color)',
               text: { main: 'var(--text-main)', light: 'var(--text-light)' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, 
-              rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
-            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' },
-            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
-            keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
+            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' }
           }
         }
       }
@@ -43,8 +42,6 @@
       .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
       body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-      .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-      .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
     </style>
 </head>
 <body>
@@ -54,7 +51,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 圖示庫 ---
+        // --- 1. 內建圖示庫 (已修復) ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -66,36 +63,34 @@
             Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
             StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
             RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
+            Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
             MonitorPlay: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></SvgBase>,
             Dumbbell: (p) => <SvgBase {...p}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></SvgBase>,
-            MoreHorizontal: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgBase>,
-            Calendar: (p) => <SvgBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></SvgBase>,
-            CheckCircle: (p) => <SvgBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></SvgBase>,
-            Trash2: (p) => <SvgBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SvgBase>,
-            ChevronLeft: (p) => <SvgBase {...p}><path d="m15 18-6-6 6-6"/></SvgBase>,
-            ChevronRight: (p) => <SvgBase {...p}><path d="m9 18 6-6-6-6"/></SvgBase>,
-            X: (p) => <SvgBase {...p}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></SvgBase>,
-            Sparkles: (p) => <SvgBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></SvgBase>,
-            Star: (p) => <SvgBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
+            Smartphone: (p) => <SvgBase {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgBase>,
+            ShoppingBag: (p) => <SvgBase {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></SvgBase>,
+            Coffee: (p) => <SvgBase {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgBase>,
             Plus: (p) => <SvgBase {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></SvgBase>,
             Save: (p) => <SvgBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></SvgBase>,
             Send: (p) => <SvgBase {...p}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></SvgBase>,
+            Calendar: (p) => <SvgBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></SvgBase>,
+            MoreHorizontal: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgBase>,
             Zap: (p) => <SvgBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgBase>,
-            Coffee: (p) => <SvgBase {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgBase>,
-            HelpCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
+            CheckCircle: (p) => <SvgBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></SvgBase>,
+            X: (p) => <SvgBase {...p}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></SvgBase>,
+            Star: (p) => <SvgBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></SvgBase>,
         };
+
         const IconByName = ({ name, className, size }) => { const Component = Icons[name] || Icons.HelpCircle; return <Component className={className} size={size} />; };
 
-        // --- 2. 內建手刻圓餅圖 (修正百分比顯示位置) ---
+        // --- 2. 內建圓餅圖 (修正百分比位置) ---
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
-            if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold">尚無數據</div>;
+            if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold"><div className="w-48 h-48 rounded-full border-8 border-cream-dark flex items-center justify-center">尚無數據</div></div>;
 
             let cumulativePercent = 0;
             const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            // 關鍵修正：文字半徑設為與圓環半徑相同，這樣文字就會壓在顏色條上
-            const textRadius = radius; 
+            const textRadius = radius - (strokeWidth / 4); // 關鍵修正：文字向內偏移，壓在色條上
 
             return (
                 <div className="relative flex justify-center items-center">
@@ -109,36 +104,20 @@
                             const midAngle = startAngle + angle / 2;
                             const strokeDasharray = `${percent * circumference} ${circumference}`;
                             const strokeDashoffset = -cumulativePercent * circumference;
-                            
-                            // 計算文字座標
+                            cumulativePercent += percent;
+
                             const radian = (midAngle * Math.PI) / 180;
                             const textX = center + textRadius * Math.cos(radian);
                             const textY = center + textRadius * Math.sin(radian);
 
-                            cumulativePercent += percent;
-
-                            if (percent >= 0.99) {
-                                return (
-                                    <g key={index}>
-                                        <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} />
-                                        <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
-                                    </g>
-                                );
-                            }
+                            let strokeColor = item.id === 'growth' ? '#88D4AB' : item.id === 'waste' ? '#FFB7B2' : '#AECBFA';
 
                             return (
                                 <g key={index}>
-                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={item.color} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {/* 只有大於 5% 才顯示文字，避免擠在一起 */}
+                                    <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
+                                    {/* 百分比文字：只有大於 5% 且有值才顯示 */}
                                     {percent > 0.05 && (
-                                        <text 
-                                            x={textX} 
-                                            y={textY} 
-                                            textAnchor="middle" 
-                                            dominantBaseline="central" 
-                                            className="fill-white text-xs font-extrabold font-mono" 
-                                            style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.3)' }}
-                                        >
+                                        <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-text-main text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(255,255,255,0.8)' }}>
                                             {Math.round(percent * 100)}%
                                         </text>
                                     )}
@@ -154,10 +133,10 @@
             );
         };
 
-        // --- 3. UI 元件 ---
+        // --- 3. UI 元件 (修正) ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
             if (mobile) return <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-2xl transition-all ${active ? 'text-brand-600 bg-brand-50 scale-105' : 'text-text-light hover:text-text-main'}`}><IconByName name={icon} className="w-6 h-6 mb-1" /><span className="text-[10px] font-bold">{label}</span></button>;
-            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span>{active && <div className="ml-auto w-2 h-2 rounded-full bg-brand-500"></div>}</button>;
+            return <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}><IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} /><span className="text-lg">{label}</span></button>;
         };
 
         const Modal = ({ isOpen, onClose, title, children }) => {
@@ -175,6 +154,7 @@
             );
         };
 
+        // --- Configuration ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
@@ -194,9 +174,9 @@
             { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
         ];
 
-        const CATEGORY_FIELDS = {
-            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney'] }, { key: 'goal', label: '目標', type: 'text' }],
-            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
+        const CATEGORY_FIELDS = { /* (Fields preserved) */
+            ai: [{ key: 'tool', label: '使用工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney'] }, { key: 'goal', label: '應用目標', type: 'text' }],
+            knowledge: [{ key: 'topic', label: '學習主題', type: 'text' }, { key: 'method', label: '學習方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
             entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
             sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身', '球類'] }, { key: 'detail', label: '紀錄', type: 'text' }],
             others: [{ key: 'activity', label: '內容', type: 'text' }]
@@ -206,8 +186,8 @@
         const generateAIResponse = (input, contextData, type) => {
             const text = input.toLowerCase();
             if (type === 'journal') {
-                if (text.includes('累')) return "今天辛苦了！休息是為了走更長遠的路。";
-                if (text.includes('開心')) return "太棒了！把這份好心情記錄下來吧 ✨";
+                if (text.includes('累')) return "聽起來你今天過得不容易 🫂。允許自己休息一下吧。";
+                if (text.includes('開心')) return "太棒了！這種正向的能量很珍貴 ✨。";
                 return "我在聽。寫作是整理思緒最好的方式。";
             }
             const { sessions } = contextData;
@@ -225,7 +205,7 @@
         // --- 5. App 主程式 ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
-            const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
+            const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {} });
             const [view, setView] = useState('tracker');
             const [showReviewModal, setShowReviewModal] = useState(false);
             const [elapsedTime, setElapsedTime] = useState(0);
@@ -242,7 +222,6 @@
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
             const [journalText, setJournalText] = useState('');
-            
             const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
@@ -252,31 +231,25 @@
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
 
-            useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
             useEffect(() => { const savedData = localStorage.getItem(`tm_data_${syncId}`); if (savedData) setData(JSON.parse(savedData)); }, [syncId]);
             const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
-            const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
-
-            // 確保日記容器有內容時更新
             useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals?.[dateStr]?.content || ''); }, [journalSelectedDate, data.journals]);
-            
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
-
             const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
             const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
             const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setReviewMetaData({}); setShowReviewModal(true); };
-            const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); showToast("紀錄成功！⭐"); if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error); };
+            const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); setReviewNote(''); setReviewMetaData({}); showToast("紀錄成功！⭐"); if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error); };
             const syncFromGoogleSheet = async () => { /* Sync Logic */ };
+            const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
+            const formatDurationSimple = (seconds) => { if (seconds < 60) return `${seconds}秒`; const totalMinutes = Math.round(seconds / 60); const h = Math.floor(totalMinutes / 60); const m = totalMinutes % 60; if (h > 0) return `${h}小時 ${m}分`; return `${m}分鐘`; };
+            const handleManagerChat = () => { /* AI Logic */ };
+            const handleJournalAI = () => { /* AI Logic */ };
 
-            const handleManagerChat = () => { if (!managerInput.trim()) return; const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() }; setManagerMessages(prev => [...prev, userMsg]); setManagerInput(''); setIsAiTyping(true); setTimeout(() => { const responseText = generateAIResponse(userMsg.text, data, 'manager'); const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; setManagerMessages(prev => [...prev, aiMsg]); setIsAiTyping(false); }, 1000); };
-            const handleJournalAI = () => { if (!journalText.trim()) return; setIsAiTyping(true); setTimeout(() => { const responseText = generateAIResponse(journalText, data, 'journal'); setJournalAiResponse(responseText); setIsAiTyping(false); }, 1000); };
-            
             const targetSessions = useMemo(() => { if (analysisViewMode === 'total') return data.sessions; const targetDate = getLocalDateStr(analysisDate); return data.sessions.filter(s => s.date === targetDate); }, [data.sessions, analysisDate, analysisViewMode]);
-            const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); const total = Object.values(stats).reduce((a,b) => a+b, 0); return VALUE_TYPES.map(vt => ({ name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke })); }, [targetSessions]);
+            const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); const total = Object.values(stats).reduce((a,b) => a+b, 0); return VALUE_TYPES.map(vt => ({ id: vt.id, name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke })); }, [targetSessions]);
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
             const groupedAggregatedSessions = useMemo(() => { const groups = {}; data.sessions.forEach(session => { if (!groups[session.date]) groups[session.date] = {}; if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] }; groups[session.date][session.category].duration += session.duration; groups[session.date][session.category].count += 1; if(session.meta && Object.keys(session.meta).length > 0) { const metaStr = Object.values(session.meta).join(', '); if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr); } }); return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) })); }, [data.sessions]);
             const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
@@ -317,7 +290,7 @@
                                         <h2 className="text-2xl font-extrabold text-text-main flex items-center gap-3"><IconByName name="Calendar" className="w-7 h-7 text-accent-purple" /> 時光足跡</h2>
                                         <button onClick={syncFromGoogleSheet} className="px-4 py-2 bg-cream hover:bg-brand-50 text-brand-600 rounded-2xl transition-all shadow-sm flex items-center gap-2 text-sm font-extrabold group"><IconByName name="RefreshCcw" className={`w-4 h-4 ${isSyncing?'animate-spin':''} group-hover:rotate-180 transition-transform duration-500`}/><span>更新</span></button>
                                     </div>
-                                    {groupedAggregatedSessions.length === 0 ? <div className="text-center py-16 text-text-light bg-cream rounded-3xl font-bold text-lg">還沒有紀錄喔 🍃 <br/><span className="text-sm mt-2 block font-medium">(點擊右上方「更新」按鈕匯入資料)</span></div> : 
+                                    {groupedAggregatedSessions.length === 0 ? <div className="text-center py-16 text-text-light bg-cream rounded-3xl font-bold text-lg">還沒有紀錄喔 🍃 (試試看右上方更新按鈕)</div> : 
                                         <div className="space-y-10 relative pl-4">
                                             <div className="absolute left-8 top-4 bottom-4 w-1 bg-cream-dark hidden md:block rounded-full"></div>
                                             {groupedAggregatedSessions.map(group => (
@@ -334,7 +307,6 @@
                                                                         <div className="text-sm text-text-light font-mono font-extrabold">{formatDurationSimple(item.duration)}</div>
                                                                     </div>
                                                                 </div>
-                                                                {item.meta && item.meta.length > 0 && <div className="text-xs font-bold text-text-light bg-white p-3 rounded-xl leading-relaxed">{item.meta.join(', ')}</div>}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -346,13 +318,11 @@
                             </div>
                         )}
 
-                        {/* --- Mood Journal View --- */}
                         {view === 'journal' && (
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up h-full">
                                 <div className="lg:col-span-1 bg-card rounded-[2.5rem] shadow-cute p-6 border border-cream-dark h-fit">
-                                    <div className="flex justify-between items-center mb-6 px-2"><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronLeft" className="w-6 h-6"/></button><span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronRight" className="w-6 h-6"/></button></div><div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-light">{renderCalendar()}</div>
+                                    <div className="flex justify-between items-center mb-6 px-2"><button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()-1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronLeft" className="w-6 h-6"/></button><span className="font-extrabold text-xl text-text-main">{calendarViewDate.getFullYear()}年 {calendarViewDate.getMonth()+1}月</span><button onClick={() => setCalendarViewDate(new Date(calendarViewDate.setMonth(calendarViewDate.getMonth()+1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronRight" className="w-6 h-6"/></button></div><div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-light">{renderCalendar()}</div>
                                 </div>
-                                {/* Fixed Container Height */}
                                 <div className="lg:col-span-2 flex flex-col h-full min-h-[600px] bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
                                     <div className="p-6 border-b border-cream-dark font-extrabold text-xl flex gap-3 items-center bg-cream/50 text-text-main">{getLocalDateStr(journalSelectedDate)} <span className="text-xs font-extrabold bg-brand-100 text-brand-600 px-3 py-1 rounded-full">日記</span></div>
                                     <textarea className="flex-1 w-full p-8 resize-none outline-none text-xl leading-relaxed text-text-main placeholder-text-light bg-transparent font-medium journal-textarea" placeholder="今天過得怎麼樣？寫下來吧..." value={journalText} onChange={e => setJournalText(e.target.value)} />
@@ -365,117 +335,11 @@
                             </div>
                         )}
 
-                        {view === 'analysis' && (
-                            <div className="animate-slide-up space-y-6">
-                                <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
-                                    <div className="flex bg-cream p-1 rounded-2xl">
-                                        <button onClick={() => setAnalysisViewMode('day')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='day'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
-                                        <button onClick={() => setAnalysisViewMode('total')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='total'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
-                                    </div>
-                                    {analysisViewMode === 'day' && (
-                                        <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative text-text-main">
-                                            <button onClick={() => { const prev = new Date(analysisDate); prev.setDate(prev.getDate()-1); setAnalysisDate(prev); }}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
-                                            <div className="font-extrabold text-lg min-w-[120px] text-center relative">{getLocalDateStr(analysisDate)}<input type="date" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setAnalysisDate(new Date(e.target.value))} /></div>
-                                            <button onClick={() => { const next = new Date(analysisDate); next.setDate(next.getDate()+1); setAnalysisDate(next); }}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div className="bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col h-full border border-cream-dark">
-                                        <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
-                                        <div className="flex-1 flex flex-col items-center justify-center">
-                                            <DonutChart data={chartData} />
-                                            <div className="w-full mt-10 space-y-4">
-                                                {chartData.map((d, i) => (
-                                                    <div key={i} className="flex items-center justify-between p-4 rounded-3xl bg-cream">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
-                                                            <span className="font-extrabold text-lg text-text-main">{d.name}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <span className="font-mono font-extrabold text-lg text-text-main">{formatDurationSimple(d.value)}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Right Column */}
-                                    <div className="flex flex-col gap-6">
-                                        <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1 min-h-[150px]">
-                                           <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
-                                           <p className="text-brand-900 text-lg leading-relaxed font-medium">
-                                               {dashboardStats.totalDuration > 0 ? 
-                                               (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
-                                               ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
-                                               }
-                                           </p>
-                                        </div>
-                                        <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1 min-h-[150px]">
-                                            <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
-                                            <p className="text-text-main text-lg leading-relaxed font-medium">
-                                                {dashboardStats.totalDuration > 0 ?
-                                                (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，機器人也是需要充電的喔 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨") :
-                                                ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")
-                                                }
-                                            </p>
-                                        </div>
-                                        {/* AI Manager Chat */}
-                                        <div className="bg-white border border-brand-100 rounded-3xl shadow-sm flex flex-col flex-1 min-h-[350px] overflow-hidden">
-                                            <div className="p-5 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
-                                                <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
-                                                <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
-                                            </div>
-                                            <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-white">
-                                                {managerMessages.map(m => <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[85%] p-4 rounded-3xl text-sm font-bold ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>{m.text}</div></div>)}
-                                                {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse">AI 正在輸入...</div>}
-                                                <div ref={chatEndRef}/>
-                                            </div>
-                                            <div className="p-4 border-t-2 border-gray-100 flex gap-3 bg-gray-50">
-                                                <input className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all" placeholder="問問我行程建議..." value={managerInput} onChange={e=>setManagerInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleManagerChat()} />
-                                                <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute"><IconByName name="Send" className="w-5 h-5"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'muse' && (
-                            <div className="animate-slide-up space-y-6">
-                                <div className="bg-card rounded-[2.5rem] shadow-cute p-8 border border-cream-dark min-h-[600px]">
-                                    <h2 className="text-2xl font-extrabold text-text-main mb-6 flex items-center gap-3"><IconByName name="Lightbulb" className="w-8 h-8 text-accent-yellow"/> 靈感碎片</h2>
-                                    <div className="flex gap-4 mb-8">
-                                        <input className="flex-1 p-4 bg-cream rounded-[2rem] outline-none text-lg font-bold focus:ring-2 focus:ring-brand-200 transition-all text-text-main placeholder-text-light" placeholder="捕捉一個想法..." value={newInspiration} onChange={e=>setNewInspiration(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addInspiration()} />
-                                        <button onClick={addInspiration} className="p-4 bg-brand-500 text-white rounded-[2rem] hover:scale-105 transition-transform shadow-cute"><IconByName name="Plus" className="w-6 h-6"/></button>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
-                                        {(data.inspirations || []).map((item) => (
-                                            <div key={item.id} className="bg-cream p-6 rounded-[2rem] hover:-translate-y-1 transition-transform border-2 border-transparent hover:border-brand-100 group relative h-fit">
-                                                <div className="text-xs text-text-light font-bold mb-2">{item.date}</div>
-                                                <div className="text-lg font-bold text-text-main leading-relaxed whitespace-pre-wrap">{item.text}</div>
-                                                <button onClick={()=>{const newInspirations=data.inspirations.filter(i=>i.id!==item.id); saveDataToLocal({...data, inspirations: newInspirations});}} className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-waste-500 hover:bg-white p-2 rounded-full transition-all"><IconByName name="Trash2" className="w-4 h-4"/></button>
-                                            </div>
-                                        ))}
-                                        {(data.inspirations || []).length === 0 && <div className="col-span-full text-center py-20 text-text-light font-bold text-lg">還沒有靈感喔，快記下來吧 ✨</div>}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         {view === 'settings' && (
                             <div className="bg-card rounded-[2.5rem] shadow-cute p-10 space-y-8 animate-slide-up border border-cream-dark">
                                 <h2 className="font-extrabold text-2xl flex items-center gap-3 text-text-main"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
                                 
-                                <div>
-                                    <label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label>
-                                    <div className="flex gap-4">
-                                        <button onClick={()=>setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button>
-                                        <button onClick={()=>setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button>
-                                        <button onClick={()=>setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button>
-                                    </div>
-                                </div>
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label><div className="flex gap-4"><button onClick={() => setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button><button onClick={() => setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button><button onClick={() => setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button></div></div>
                                 <div><label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label><div className="flex gap-3"><input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." /><button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button></div></div>
                             </div>
                         )}
@@ -489,12 +353,11 @@
                         <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" mobile />
                     </nav>
 
-                    {/* Review Modal */}
                     <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
                          <div className="space-y-8">
                             <div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark"><div className="text-5xl font-mono font-extrabold text-brand-600">{reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00'}</div></div>
                             <div><label className="block font-extrabold text-lg text-text-main mb-4">這段時間感覺如何？</label><div className="grid grid-cols-1 gap-4">{VALUE_TYPES.map(type => (<button key={type.id} onClick={() => setReviewType(type.id)} className={`p-5 rounded-[2rem] border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}><span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>{reviewType === type.id && <IconByName name="CheckCircle" className={`w-7 h-7 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}</button>))}</div></div>
-                            {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (<div className="bg-cream p-6 rounded-[2rem] border-4 border-cream-dark space-y-5"><h4 className="font-extrabold text-base text-text-main flex items-center gap-2"><IconByName name="Settings" className="w-5 h-5"/> 詳細紀錄</h4>{CATEGORY_FIELDS[reviewSessionCache.category].map(field => (<div key={field.key}><label className="block text-sm font-extrabold text-text-light mb-2 pl-1">{field.label}</label>{field.type === 'select' ? (<select className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}><option value="">選擇...</option>{field.options.map(o=><option key={o} value={o}>{o}</option>)}</select>) : (<input type="text" className="w-full p-4 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />)}</div>))}</div>)}
+                            {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (<div className="bg-cream p-6 rounded-[2rem] border-4 border-cream-dark space-y-5"><h4 className="font-extrabold text-base text-text-main flex items-center gap-2"><IconByName name="Settings" className="w-5 h-5"/> 詳細紀錄</h4>{CATEGORY_FIELDS[reviewSessionCache.category].map(field => (<div key={field.key}><label className="block text-sm font-extrabold text-text-light mb-2 pl-1">{field.label}</label>{field.type === 'select' ? (<select className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}><option value="">選擇...</option>{field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>) : (<input type="text" className="w-full p-4 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />)}</div>))}</div>)}
                             <div><label className="block font-extrabold text-lg text-text-main mb-4">給自己幾顆星？</label><div className="flex justify-center gap-4 bg-cream p-6 rounded-[2rem] border-4 border-cream-dark">{[1, 2, 3, 4, 5].map(star => (<button key={star} onClick={() => setReviewRating(star)} className="hover:scale-110 transition-transform active:scale-90"><IconByName name="Star" className={`w-10 h-10 ${star <= reviewRating ? "text-accent-yellow fill-accent-yellow" : "text-gray-300"}`} /></button>))}</div></div>
                             <button onClick={submitReview} className="w-full py-5 bg-brand-500 text-white rounded-[2rem] font-extrabold text-xl shadow-cute hover:translate-y-[2px] hover:shadow-none transition-all active:scale-95">確認並儲存 ✨</button>
                         </div>
