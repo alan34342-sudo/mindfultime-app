@@ -840,20 +840,27 @@ const submitReview = () => {
         {reviewSessionCache && ['sports', 'others'].includes(reviewSessionCache.category) && (
             <div className="bg-brand-50 p-4 rounded-2xl border-2 border-brand-100 animate-fade-in">
                 <label className="block text-sm font-bold text-brand-900 mb-2 text-center flex items-center justify-center gap-1">
-                    <IconByName name="Zap" className="w-4 h-4"/> 實際運動多久？
+                    {/* 判斷：如果是運動顯示啞鈴，其他則顯示時鐘 */}
+                    <IconByName name={reviewSessionCache.category === 'sports' ? 'Dumbbell' : 'Clock'} className="w-4 h-4"/> 
+                    
+                    {/* 判斷：如果是運動顯示"實際運動多久"，其他顯示"這件事花了多久" */}
+                    {reviewSessionCache.category === 'sports' ? ' 實際運動多久？' : ' 這件事花了多久？'}
                 </label>
+                
                 <div className="flex items-center justify-center gap-3">
                     <input 
                         type="number" 
                         value={manualMinutes} 
                         onChange={(e) => setManualMinutes(e.target.value)}
                         className="w-32 p-3 text-center text-2xl font-bold rounded-xl border-2 border-brand-200 outline-none focus:border-brand-500 text-brand-600 bg-white shadow-sm"
-                        placeholder="30"
+                        placeholder={reviewSessionCache.category === 'sports' ? "30" : "10"}
                         autoFocus
                     />
                     <span className="font-bold text-brand-600 text-lg">分鐘</span>
                 </div>
-                <p className="text-[10px] text-center text-brand-400 mt-2 font-bold opacity-70">手機鎖屏沒計到時？直接改這裡！✨</p>
+                <p className="text-[10px] text-center text-brand-400 mt-2 font-bold opacity-70">
+                    {reviewSessionCache.category === 'sports' ? '手機鎖屏沒計到時？直接改這裡！✨' : '忘記計時了嗎？直接手動輸入吧！✨'}
+                </p>
             </div>
         )}
 
@@ -914,27 +921,6 @@ const submitReview = () => {
         </button>
     </div>
 </Modal>
-
-{/* 🔥 插入開始：手動輸入時間區塊 (只在 運動 和 其他 顯示) */}
-{reviewSessionCache && ['sports', 'others'].includes(reviewSessionCache.category) && (
-    <div className="mt-4 bg-brand-50 p-4 rounded-2xl border-2 border-brand-100 animate-fade-in">
-        <label className="block text-sm font-bold text-brand-900 mb-2 text-center">🏃‍♂️ 實際運動多久？(分鐘)</label>
-        <div className="flex items-center justify-center gap-2">
-            <input 
-                type="number" 
-                value={manualMinutes} 
-                onChange={(e) => setManualMinutes(e.target.value)}
-                className="w-24 p-3 text-center text-2xl font-bold rounded-xl border-2 border-brand-200 outline-none focus:border-brand-500 text-brand-600"
-                placeholder="0"
-            />
-            <span className="font-bold text-brand-600">分</span>
-        </div>
-        <p className="text-xs text-center text-brand-400 mt-2 font-bold">手機鎖屏沒計到時？直接改這裡！✨</p>
-    </div>
-)}
-{/* 🔥 插入結束 */}
-
-{/* ... 下面接著原本的「這段時間感覺如何？」 ... */}
                 </div>
             );
         };
