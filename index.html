@@ -4,11 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MindfulTime - 價值追蹤器</title>
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF9F5">
-    
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -21,19 +19,14 @@
         theme: {
           extend: {
             colors: {
-              cream: 'var(--bg-color)',
-              'cream-dark': 'var(--border-color)',
+              cream: 'var(--bg-color)', 'cream-dark': 'var(--border-color)',
               text: { main: 'var(--text-main)', light: 'var(--text-light)' },
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-              waste: { 500: '#FFB7B2' }, 
-              rest: { 500: '#AECBFA' },
+              waste: { 500: '#FFB7B2' }, rest: { 500: '#AECBFA' },
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
             },
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
-            boxShadow: {
-              'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
-              'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-            },
+            boxShadow: { 'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)' },
             animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
             keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
           }
@@ -51,9 +44,7 @@
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
       .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      /* 強制日記區塊高度 */
-      .journal-container { min-height: 500px; display: flex; flex-direction: column; }
-      .journal-textarea { flex: 1; width: 100%; resize: none; outline: none; background: transparent; line-height: 1.6; min-height: 300px; }
+      .journal-textarea { min-height: 300px; }
     </style>
 </head>
 <body>
@@ -63,16 +54,18 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- 1. 內建圖示庫 (SVG) ---
+        // --- 1. 穩健的圖示庫 (包含防呆機制) ---
         const SvgBase = ({ children, className, size = 24 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
+        
+        // 定義所有可能用到的圖示
         const Icons = {
             Bot: (p) => <SvgBase {...p}><rect x="4" y="10" width="16" height="12" rx="3" ry="3" /><path d="M12 4v6m-5-1a5 5 0 0 1 10 0m-9 5h.01m7.98 0h.01"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/></SvgBase>,
             Clock: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgBase>,
             Book: (p) => <SvgBase {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></SvgBase>,
             BarChart2: (p) => <SvgBase {...p}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></SvgBase>,
-            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
+            Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
             StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
             RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
             Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
@@ -106,22 +99,24 @@
             Mail: (p) => <SvgBase {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SvgBase>,
             Sun: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></SvgBase>,
             Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>,
-            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
+            Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>,
+            Check: (p) => <SvgBase {...p}><polyline points="20 6 9 17 4 12"/></SvgBase>
         };
 
+        // Icon Component
         const IconByName = ({ name, className, size }) => {
             const Component = Icons[name] || Icons.HelpCircle;
             return <Component className={className} size={size} />;
         };
 
-        // --- 2. 內建手刻圓餅圖 (修正百分比位置) ---
+        // --- 2. 圓餅圖 ---
         const DonutChart = ({ data }) => {
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
             if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold">尚無數據</div>;
 
             let cumulativePercent = 0;
             const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius; // 關鍵修正：文字壓在圓環上
+            const textRadius = radius - (strokeWidth / 4); 
 
             return (
                 <div className="relative flex justify-center items-center">
@@ -156,7 +151,6 @@
                             return (
                                 <g key={index}>
                                     <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-                                    {/* 百分比文字：壓在色條中心，且只顯示大於 5% 的項目 */}
                                     {percent > 0.05 && (
                                         <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>
                                             {Math.round(percent * 100)}%
@@ -174,7 +168,7 @@
             );
         };
 
-        // --- 3. UI 元件 ---
+        // --- 3. UI Components (Buttons & Modals) ---
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
             if (mobile) {
                 return (
@@ -213,14 +207,7 @@
         const GAS_URL_KEY = 'tm_gas_url';
         const THEME_STORAGE_KEY = 'tm_theme';
         const GEMINI_KEY_STORAGE = 'tm_gemini_key';
-
-        const CATEGORY_FIELDS = {
-            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
-            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
-            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
-            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
-            others: [{ key: 'activity', label: '內容', type: 'text' }]
-        };
+        const GEMINI_MODEL_KEY = 'tm_gemini_model';
 
         const CATEGORIES = [
           { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
@@ -235,6 +222,14 @@
             { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500', stroke: '#FFB7B2' },
             { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
         ];
+
+        const CATEGORY_FIELDS = {
+            ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
+            knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
+            entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
+            sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
+            others: [{ key: 'activity', label: '內容', type: 'text' }]
+        };
 
         // --- 4. AI Logic ---
         const callGeminiAPI = async (apiKey, prompt, model) => {
@@ -270,7 +265,7 @@
             return await callGeminiAPI(apiKey, systemPrompt, model);
         };
 
-        // --- 5. App ---
+        // --- 5. App Component ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
@@ -314,9 +309,7 @@
             const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
             const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
 
-            // 日記讀取邏輯
             useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals?.[dateStr]?.content || ''); setJournalAiResponse(''); }, [journalSelectedDate, data.journals]);
-
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
 
