@@ -317,7 +317,27 @@
             // 2. 定義完變數後，才是 Effect (副作用)
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
-            useEffect(() => { const savedData = localStorage.getItem(`tm_data_${syncId}`); if (savedData) setData(JSON.parse(savedData)); }, [syncId]);
+            useEffect(() => { 
+    const savedData = localStorage.getItem(`tm_data_${syncId}`); 
+    if (savedData) {
+        let parsedData = JSON.parse(savedData);
+        
+        // --- 關鍵修復：強制更新所有歷史資料的分類屬性 ---
+        if (parsedData.sessions) {
+            parsedData.sessions = parsedData.sessions.map(s => {
+                const catDef = CATEGORIES.find(c => c.id === s.category);
+                if (catDef) {
+                    // 如果分類是娛樂，強制改成 waste
+                    return { ...s, valueType: catDef.defaultType };
+                }
+                return s;
+            });
+        }
+        // ---------------------------------------------
+
+        setData(parsedData); 
+    }
+}, [syncId]);
             
             const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
