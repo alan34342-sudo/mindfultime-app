@@ -317,8 +317,31 @@
             // 2. 定義完變數後，才是 Effect (副作用)
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
-            useEffect(() => { 
+           // --- 這是修正後的讀取邏輯 ---
+useEffect(() => { 
     const savedData = localStorage.getItem(`tm_data_${syncId}`); 
+    if (savedData) {
+        let parsedData = JSON.parse(savedData);
+        
+        // 🔥 關鍵修復：強制檢查所有歷史資料，將 "娛樂" 的分類改為 "waste"
+        if (parsedData.sessions) {
+            parsedData.sessions = parsedData.sessions.map(s => {
+                // 找到這筆資料對應的分類設定
+                const catDef = CATEGORIES.find(c => c.id === s.category);
+                if (catDef) {
+                    // 如果這筆資料的分類 (如娛樂) 的預設類型 (waste) 
+                    // 跟它現在紀錄的類型 (rest) 不一樣，就強制更新它！
+                    if (s.valueType !== catDef.defaultType) {
+                        return { ...s, valueType: catDef.defaultType };
+                    }
+                }
+                return s;
+            });
+        }
+        
+        setData(parsedData); 
+    }
+}, [syncId]);
     if (savedData) {
         let parsedData = JSON.parse(savedData);
         
@@ -431,7 +454,7 @@
                 if (!catId) return null;
 
                 const dateStr = item.date.replace(/\//g, '-'); 
-                return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; 
+                return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'waste', note: item.appName, status: 'completed' }; 
             }).filter(s => s && s.duration > 0); 
             
             const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 0.01); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } setLastSyncTime(new Date().toLocaleTimeString()); } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
