@@ -207,7 +207,7 @@
         };
 
         // --- 4. Constants & Logic ---
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyyP_FqWOFoJcnnZBit3xc_KR3YRpatQfgOgubnngq83TFJoWuZ3Z6VKvlOUFsUX-0CwA/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxGs0h7M7QTAi4HaYopWzj4KzBvO6_wnfpE-jrSzzqX_hcgMbadAPjHmhrDrE4bl139sg/exec"; 
         const SYNC_STORAGE_KEY = 'tm_sync_id';
         const GAS_URL_KEY = 'tm_gas_url';
         const THEME_STORAGE_KEY = 'tm_theme';
@@ -319,7 +319,59 @@
             const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
             const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
             const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setReviewMetaData({}); setShowReviewModal(true); };
-            const submitReview = () => { if (!reviewSessionCache) return; const endTime = Date.now(); const startTime = reviewSessionCache.startTime; const duration = Math.floor((endTime - startTime) / 1000); const newSession = { id: Math.random().toString(36).substr(2, 9), category: reviewSessionCache.category, startTime, endTime, duration, valueType: reviewType, rating: reviewRating, note: reviewNote, meta: reviewMetaData, date: getLocalDateStr(new Date(startTime)), status: 'completed' }; saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null }); setShowReviewModal(false); setReviewNote(''); setReviewMetaData({}); showToast("紀錄成功！⭐"); if (localScriptUrl) fetch(localScriptUrl, { method: 'POST', body: JSON.stringify({ appName: CATEGORIES.find(c => c.id === newSession.category)?.label, status: 'Close' }) }).catch(console.error); };
+            const submitReview = () => {
+    if (!reviewSessionCache) return;
+    const endTime = Date.now();
+    const startTime = reviewSessionCache.startTime;
+    const duration = Math.floor((endTime - startTime) / 1000);
+    const categoryLabel = CATEGORIES.find(c => c.id === reviewSessionCache.category)?.label || '未分類';
+    
+    // 建立新資料物件
+    const newSession = {
+        id: Math.random().toString(36).substr(2, 9),
+        category: reviewSessionCache.category,
+        startTime,
+        endTime,
+        duration,
+        valueType: reviewType,
+        rating: reviewRating,
+        note: reviewNote,
+        meta: reviewMetaData,
+        date: getLocalDateStr(new Date(startTime)),
+        status: 'completed'
+    };
+
+    // 1. 儲存到本地 (原本的功能)
+    saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
+    setShowReviewModal(false);
+    setReviewNote('');
+    setReviewMetaData({});
+    showToast("紀錄成功！⭐");
+
+    // 2. 傳送到 Google Sheet (修正後的連接功能)
+    if (localScriptUrl) {
+        // 整理要傳送的資料
+        const payload = {
+            date: newSession.date,
+            appName: categoryLabel,
+            duration: duration,
+            note: reviewNote
+        };
+
+        // 使用特殊模式傳送，避免被瀏覽器擋下
+        fetch(localScriptUrl, {
+            method: 'POST',
+            mode: 'no-cors', // 關鍵：不檢查跨域權限
+            headers: {
+                'Content-Type': 'text/plain' // 關鍵：使用純文字格式騙過瀏覽器
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(() => console.log("資料已發送至雲端"))
+        .catch(error => showToast("雲端同步失敗", 'error'));
+    }
+};
+// --- 取代結束 ---
             
             // 嚴格過濾匯入資料
             const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { 
