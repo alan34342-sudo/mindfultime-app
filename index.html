@@ -915,12 +915,6 @@ const submitReview = () => {
     </div>
 </Modal>
 
-<div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark">
-    <div className="text-5xl font-mono font-extrabold text-brand-600">
-        {reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00'}
-    </div>
-</div>
-
 {/* 🔥 插入開始：手動輸入時間區塊 (只在 運動 和 其他 顯示) */}
 {reviewSessionCache && ['sports', 'others'].includes(reviewSessionCache.category) && (
     <div className="mt-4 bg-brand-50 p-4 rounded-2xl border-2 border-brand-100 animate-fade-in">
