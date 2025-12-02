@@ -501,21 +501,146 @@ const toggleTask = (taskId) => {
                         )}
 
                         {view === 'journal' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up h-full">
-                                <div className="lg:col-span-1 bg-card rounded-[2.5rem] shadow-cute p-6 border border-cream-dark h-fit">
-                                    <div className="flex justify-between items-center mb-6 px-2"><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronLeft" className="w-6 h-6"/></button><span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span><button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-cream rounded-full transition-colors"><IconByName name="ChevronRight" className="w-6 h-6"/></button></div><div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-light">{renderCalendar()}</div>
-                                </div>
-                                <div className="lg:col-span-2 flex flex-col h-full min-h-[600px] bg-card rounded-[2.5rem] shadow-cute overflow-hidden border border-cream-dark relative">
-                                    <div className="p-6 border-b border-cream-dark font-extrabold text-xl flex gap-3 items-center bg-cream/50 text-text-main">{getLocalDateStr(journalSelectedDate)} <span className="text-xs font-extrabold bg-brand-100 text-brand-600 px-3 py-1 rounded-full">日記</span></div>
-                                    <textarea className="journal-textarea p-8 text-xl text-text-main placeholder-text-light" placeholder="今天過得怎麼樣？寫下來吧..." value={journalText} onChange={e => setJournalText(e.target.value)} />
-                                    <div className="p-5 bg-cream/50 border-t border-cream-dark flex justify-end items-center">
-                                        <button onClick={handleJournalAI} className="flex items-center gap-2 text-brand-600 text-base font-extrabold hover:bg-brand-100 px-5 py-3 rounded-2xl transition-colors mr-4"><IconByName name="Sparkles" className="w-5 h-5"/> 問問 AI</button>
-                                        <button onClick={() => { saveDataToLocal({ ...data, journals: { ...data.journals, [getLocalDateStr(journalSelectedDate)]: { content: journalText } } }); showToast("日記已儲存 ✨"); }} className="flex items-center gap-2 px-10 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:scale-105 active:scale-95"><IconByName name="Save" className="w-6 h-6"/> 儲存</button>
-                                    </div>
-                                    {journalAiResponse && <div className="absolute bottom-24 left-6 right-6 bg-white p-6 rounded-3xl shadow-xl border-2 border-brand-200 animate-float z-10"><div className="flex items-center gap-2 text-brand-600 font-bold mb-2"><IconByName name="Bot" className="w-5 h-5"/> AI 陪伴回應</div><p className="text-text-main">{journalAiResponse}</p></div>}
-                                </div>
+    <div className="flex flex-col lg:flex-row gap-6 animate-slide-up h-full min-h-screen pb-20">
+        
+        {/* 左側：日曆 (依照你的截圖風格優化) */}
+        <div className="lg:w-1/3 flex flex-col gap-6">
+            <div className="bg-white rounded-[2rem] shadow-sm p-6 border border-cream-dark">
+                <div className="flex justify-between items-center mb-6 px-2">
+                    <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
+                    <span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span>
+                    <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronRight" className="w-5 h-5"/></button>
+                </div>
+                <div className="grid grid-cols-7 gap-y-4 justify-items-center font-bold text-gray-400 text-sm mb-2">
+                    <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                </div>
+                <div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-main">
+                    {renderCalendar()}
+                </div>
+            </div>
+        </div>
+
+        {/* 右側：主要內容區 (依照截圖設計) */}
+        <div className="lg:w-2/3 flex flex-col gap-6">
+            
+            {/* 標題與日期 */}
+            <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-extrabold text-text-main">{getLocalDateStr(journalSelectedDate)}</h2>
+                <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg">日記</span>
+            </div>
+
+            {/* 1. 今日任務區塊 */}
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-cream-dark">
+                <div className="flex items-center gap-2 mb-4 text-text-main font-bold">
+                    <IconByName name="CheckSquare" className="w-5 h-5"/> 今日任務
+                </div>
+                
+                {/* 任務輸入區 */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input 
+                        type="text" 
+                        placeholder="任務內容..." 
+                        className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
+                        value={taskContent}
+                        onChange={e => setTaskContent(e.target.value)}
+                    />
+                    <input 
+                        type="text" 
+                        placeholder="為什麼要做？(價值)" 
+                        className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
+                        value={taskValue}
+                        onChange={e => setTaskValue(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && addTask()}
+                    />
+                    <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
+                        <IconByName name="Plus" className="w-5 h-5"/>
+                    </button>
+                </div>
+
+                {/* 任務列表 */}
+                <div className="space-y-2">
+                    {dayTasks.map(task => (
+                        <div key={task.id} onClick={() => toggleTask(task.id)} className="flex items-center gap-3 p-3 bg-cream rounded-xl cursor-pointer hover:bg-brand-50 transition-colors group">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${task.done ? 'bg-brand-500 border-brand-500' : 'border-gray-300'}`}>
+                                {task.done && <IconByName name="Check" className="w-3 h-3 text-white"/>}
                             </div>
-                        )}
+                            <div className={`flex-1 font-bold text-sm ${task.done ? 'text-gray-400 line-through' : 'text-text-main'}`}>
+                                {task.content}
+                            </div>
+                            {task.value && <div className="text-xs text-brand-600 bg-brand-100 px-2 py-1 rounded-lg font-bold">{task.value}</div>}
+                            <button onClick={(e) => { e.stopPropagation(); setDayTasks(dayTasks.filter(t => t.id !== task.id)); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-waste-500 p-1"><IconByName name="X" className="w-4 h-4"/></button>
+                        </div>
+                    ))}
+                    {dayTasks.length === 0 && <div className="text-center text-xs text-gray-300 font-bold py-2">還沒有任務，新增一項吧！🌱</div>}
+                </div>
+            </div>
+
+            {/* 2. 暗色日記撰寫區 (仿照截圖) */}
+            <div className="flex-1 bg-slate-600 rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col">
+                <textarea 
+                    className="w-full h-full bg-transparent text-white placeholder-gray-400 text-lg leading-relaxed outline-none resize-none font-medium" 
+                    placeholder="今天過得怎麼樣？寫下來吧..." 
+                    value={journalText} 
+                    onChange={e => setJournalText(e.target.value)} 
+                />
+                
+                {/* AI 回應浮層 */}
+                {journalAiResponse && (
+                    <div className="mt-4 bg-white p-4 rounded-2xl shadow-lg animate-fade-in">
+                        <div className="flex items-center gap-2 text-brand-600 font-bold mb-2 text-sm">
+                            <IconByName name="Bot" className="w-4 h-4"/> AI 分析與建議
+                        </div>
+                        <p className="text-text-main text-sm font-bold leading-relaxed">{journalAiResponse}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* 3. 底部功能區 (AI & 儲存) */}
+            <div className="bg-cream border border-brand-100 p-4 rounded-[2rem] flex flex-col gap-4">
+                <div className="flex items-center gap-2 text-brand-600 font-bold px-2">
+                    <IconByName name="Bot" className="w-5 h-5"/> AI 重點摘要
+                </div>
+                
+                <div className="bg-white p-2 rounded-2xl border-2 border-transparent focus-within:border-brand-200 transition-colors flex items-center gap-2 shadow-sm">
+                    <input 
+                        type="text" 
+                        placeholder="寫點東西或新增任務，我才能幫你分析喔 🌱" 
+                        className="flex-1 p-2 bg-transparent outline-none text-sm font-bold text-text-main"
+                        disabled
+                    />
+                    <button 
+                        onClick={handleJournalAI}
+                        className="px-4 py-2 bg-white border border-gray-100 text-text-light text-xs font-bold rounded-xl hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all flex items-center gap-1"
+                    >
+                        <IconByName name="Sparkles" className="w-4 h-4"/> 生成分析
+                    </button>
+                </div>
+
+                <div className="flex justify-end">
+                    <button 
+                        onClick={() => { 
+                            saveDataToLocal({ 
+                                ...data, 
+                                journals: { 
+                                    ...data.journals, 
+                                    [getLocalDateStr(journalSelectedDate)]: { 
+                                        content: journalText,
+                                        tasks: dayTasks // 同步儲存任務
+                                    } 
+                                } 
+                            }); 
+                            showToast("日記與任務已儲存 ✨"); 
+                        }} 
+                        className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-2xl font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:translate-y-[-2px] active:scale-95"
+                    >
+                        <IconByName name="Save" className="w-5 h-5"/> 儲存日記
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+)}
 
                         {view === 'analysis' && (
                             <div className="animate-slide-up space-y-6">
