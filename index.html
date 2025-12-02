@@ -270,8 +270,11 @@
         };
 
         // --- 5. App ---
+        // --- 5. App ---
         const App = () => {
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
+            
+            // 1. 先定義所有的 State (變數)
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
             const [view, setView] = useState('tracker');
             const [showReviewModal, setShowReviewModal] = useState(false);
@@ -293,114 +296,110 @@
 
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
-            // --- 請加入這些新的 State ---
-const [taskContent, setTaskContent] = useState(''); // 任務內容輸入框
-const [taskValue, setTaskValue] = useState('');     // 任務價值輸入框
-const [dayTasks, setDayTasks] = useState([]);       // 儲存今天的任務列表
-
-// 當日期改變時，除了讀取日記文字，也要讀取當天的任務
-useEffect(() => {
-    const dateStr = getLocalDateStr(journalSelectedDate);
-    setJournalText(data.journals?.[dateStr]?.content || '');
-    setDayTasks(data.journals?.[dateStr]?.tasks || []); // 讀取任務
-    setJournalAiResponse('');
-}, [journalSelectedDate, data.journals]);
-
-// 新增任務的函式
-const addTask = () => {
-    if (!taskContent.trim()) return;
-    const newTask = { id: Date.now(), content: taskContent, value: taskValue, done: false };
-    setDayTasks([...dayTasks, newTask]);
-    setTaskContent('');
-    setTaskValue('');
-};
-
-// 切換任務完成狀態
-const toggleTask = (taskId) => {
-    setDayTasks(dayTasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
-};
+            
+            // --- 你的日記與 AI 相關 State (原本被你放到太下面的，我移上來了) ---
+            const [journalText, setJournalText] = useState('');
             const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
+            
+            // --- 新增的任務 State ---
+            const [taskContent, setTaskContent] = useState('');
+            const [taskValue, setTaskValue] = useState('');
+            const [dayTasks, setDayTasks] = useState([]);
+
             const chatEndRef = useRef(null);
             const [toastMessage, setToastMessage] = useState(null);
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
             const [lastSyncTime, setLastSyncTime] = useState(null);
 
+            // 2. 定義完變數後，才是 Effect (副作用)
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
             useEffect(() => { const savedData = localStorage.getItem(`tm_data_${syncId}`); if (savedData) setData(JSON.parse(savedData)); }, [syncId]);
+            
             const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
             const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
 
-            useEffect(() => { const dateStr = getLocalDateStr(journalSelectedDate); setJournalText(data.journals?.[dateStr]?.content || ''); setJournalAiResponse(''); }, [journalSelectedDate, data.journals]);
+            // --- 這裡現在安全了，因為 journalText 已經在上面定義過了 ---
+            useEffect(() => { 
+                const dateStr = getLocalDateStr(journalSelectedDate); 
+                setJournalText(data.journals?.[dateStr]?.content || ''); 
+                setDayTasks(data.journals?.[dateStr]?.tasks || []); // 讀取任務
+                setJournalAiResponse(''); 
+            }, [journalSelectedDate, data.journals]);
+
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
 
+            // 3. 定義函式
             const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
+            
+            // 新增任務的函式
+            const addTask = () => {
+                if (!taskContent.trim()) return;
+                const newTask = { id: Date.now(), content: taskContent, value: taskValue, done: false };
+                setDayTasks([...dayTasks, newTask]);
+                setTaskContent('');
+                setTaskValue('');
+            };
+
+            // 切換任務完成狀態
+            const toggleTask = (taskId) => {
+                setDayTasks(dayTasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
+            };
+
             const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
             const stopTimer = () => { if (!data.activeTimer) return; setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); setReviewMetaData({}); setShowReviewModal(true); };
-            const submitReview = () => {
-    if (!reviewSessionCache) return;
-    const endTime = Date.now();
-    const startTime = reviewSessionCache.startTime;
-    const duration = Math.floor((endTime - startTime) / 1000);
-    const categoryLabel = CATEGORIES.find(c => c.id === reviewSessionCache.category)?.label || '未分類';
-    
-    // 建立新資料物件
-    const newSession = {
-        id: Math.random().toString(36).substr(2, 9),
-        category: reviewSessionCache.category,
-        startTime,
-        endTime,
-        duration,
-        valueType: reviewType,
-        rating: reviewRating,
-        note: reviewNote,
-        meta: reviewMetaData,
-        date: getLocalDateStr(new Date(startTime)),
-        status: 'completed'
-    };
-
-    // 1. 儲存到本地 (原本的功能)
-    saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
-    setShowReviewModal(false);
-    setReviewNote('');
-    setReviewMetaData({});
-    showToast("紀錄成功！⭐");
-
-    // 2. 傳送到 Google Sheet (修正後的連接功能)
-    if (localScriptUrl) {
-        // 整理要傳送的資料
-        const payload = {
-            date: newSession.date,
-            appName: categoryLabel,
-            duration: duration,
-            note: reviewNote
-        };
-
-        // 使用特殊模式傳送，避免被瀏覽器擋下
-        fetch(localScriptUrl, {
-            method: 'POST',
-            mode: 'no-cors', // 關鍵：不檢查跨域權限
-            headers: {
-                'Content-Type': 'text/plain' // 關鍵：使用純文字格式騙過瀏覽器
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(() => console.log("資料已發送至雲端"))
-        .catch(error => showToast("雲端同步失敗", 'error'));
-    }
-};
-// --- 取代結束 ---
             
-            // 嚴格過濾匯入資料
+            const submitReview = () => {
+                if (!reviewSessionCache) return;
+                const endTime = Date.now();
+                const startTime = reviewSessionCache.startTime;
+                const duration = Math.floor((endTime - startTime) / 1000);
+                const categoryLabel = CATEGORIES.find(c => c.id === reviewSessionCache.category)?.label || '未分類';
+                
+                const newSession = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    category: reviewSessionCache.category,
+                    startTime,
+                    endTime,
+                    duration,
+                    valueType: reviewType,
+                    rating: reviewRating,
+                    note: reviewNote,
+                    meta: reviewMetaData,
+                    date: getLocalDateStr(new Date(startTime)),
+                    status: 'completed'
+                };
+
+                saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
+                setShowReviewModal(false);
+                setReviewNote('');
+                setReviewMetaData({});
+                showToast("紀錄成功！⭐");
+
+                if (localScriptUrl) {
+                    const payload = {
+                        date: newSession.date,
+                        appName: categoryLabel,
+                        duration: duration,
+                        note: reviewNote
+                    };
+                    fetch(localScriptUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify(payload)
+                    }).then(() => console.log("資料已發送至雲端")).catch(error => showToast("雲端同步失敗", 'error'));
+                }
+            };
+
             const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { 
-                // 關鍵字精準匹配
                 let catId = null;
                 const name = (item.appName || '').toLowerCase();
                 if(name.includes('學習') || name.includes('book') || name.includes('知識')) catId = 'knowledge';
@@ -410,7 +409,7 @@ const toggleTask = (taskId) => {
                 else if(name.includes('社群') || name.includes('social') || name.includes('line') || name.includes('instagram')) catId = 'others'; 
                 else if(name.includes('購物') || name.includes('shopping')) catId = 'others';
                 
-                if (!catId) return null; // 嚴格過濾：不符合任何分類則丟棄
+                if (!catId) return null;
 
                 const dateStr = item.date.replace(/\//g, '-'); 
                 return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'rest', note: item.appName, status: 'completed' }; 
@@ -430,7 +429,6 @@ const toggleTask = (taskId) => {
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
             const groupedAggregatedSessions = useMemo(() => { const groups = {}; data.sessions.forEach(session => { if (!groups[session.date]) groups[session.date] = {}; if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] }; groups[session.date][session.category].duration += session.duration; groups[session.date][session.category].count += 1; if(session.meta && Object.keys(session.meta).length > 0) { const metaStr = Object.values(session.meta).join(', '); if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr); } }); return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) })); }, [data.sessions]);
             const renderCalendar = () => { const year = calendarViewDate.getFullYear(); const month = calendarViewDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDay = new Date(year, month, 1).getDay(); const days = []; for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>); for (let d = 1; d <= daysInMonth; d++) { const dateStr = getLocalDateStr(new Date(year, month, d)); const hasEntry = !!data.journals?.[dateStr]?.content; const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month; days.push( <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))} className={`h-10 w-10 rounded-2xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}> <span className="text-sm font-bold">{d}</span> {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-brand-500 rounded-full absolute bottom-1.5"></span>} </button> ); } return days; };
-
             return (
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
                     {/* ... (Toast, Nav, Main Structure preserved) ... */}
