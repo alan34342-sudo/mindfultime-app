@@ -313,72 +313,52 @@
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
             const [lastSyncTime, setLastSyncTime] = useState(null);
-
-            // 2. 定義完變數後，才是 Effect (副作用)
+// 2. 定義完變數後，才是 Effect (副作用)
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
-           // --- 這是修正後的讀取邏輯 ---
-useEffect(() => { 
-    const savedData = localStorage.getItem(`tm_data_${syncId}`); 
-    if (savedData) {
-        let parsedData = JSON.parse(savedData);
-        
-        // 🔥 關鍵修復：強制檢查所有歷史資料，將 "娛樂" 的分類改為 "waste"
-        if (parsedData.sessions) {
-            parsedData.sessions = parsedData.sessions.map(s => {
-                // 找到這筆資料對應的分類設定
-                const catDef = CATEGORIES.find(c => c.id === s.category);
-                if (catDef) {
-                    // 如果這筆資料的分類 (如娛樂) 的預設類型 (waste) 
-                    // 跟它現在紀錄的類型 (rest) 不一樣，就強制更新它！
-                    if (s.valueType !== catDef.defaultType) {
-                        return { ...s, valueType: catDef.defaultType };
-                    }
-                }
-                return s;
-            });
-        }
-        
-        setData(parsedData); 
-    }
-}, [syncId]);
-    if (savedData) {
-        let parsedData = JSON.parse(savedData);
-        
-        // --- 關鍵修復：強制更新所有歷史資料的分類屬性 ---
-        if (parsedData.sessions) {
-            parsedData.sessions = parsedData.sessions.map(s => {
-                const catDef = CATEGORIES.find(c => c.id === s.category);
-                if (catDef) {
-                    // 如果分類是娛樂，強制改成 waste
-                    return { ...s, valueType: catDef.defaultType };
-                }
-                return s;
-            });
-        }
-        // ---------------------------------------------
-
-        setData(parsedData); 
-    }
-}, [syncId]);
             
+            // --- 這是修正後的讀取邏輯 (包含資料清洗) ---
+            useEffect(() => { 
+                const savedData = localStorage.getItem(`tm_data_${syncId}`); 
+                if (savedData) {
+                    let parsedData = JSON.parse(savedData);
+                    
+                    // 🔥 關鍵修復：強制檢查所有歷史資料，將 "娛樂" 的分類改為 "waste"
+                    if (parsedData.sessions) {
+                        parsedData.sessions = parsedData.sessions.map(s => {
+                            // 找到這筆資料對應的分類設定
+                            const catDef = CATEGORIES.find(c => c.id === s.category);
+                            if (catDef) {
+                                // 強制讓資料的 valueType 跟隨分類的 defaultType
+                                // 例如：如果以前是 'rest'，現在分類變成 'waste'，這裡就會強制改成 'waste'
+                                if (s.valueType !== catDef.defaultType) {
+                                    return { ...s, valueType: catDef.defaultType };
+                                }
+                            }
+                            return s;
+                        });
+                    }
+                    
+                    setData(parsedData); 
+                }
+            }, [syncId]);
+
             const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
             const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
 
-            // --- 這裡現在安全了，因為 journalText 已經在上面定義過了 ---
+            // 讀取日記內容與任務
             useEffect(() => { 
                 const dateStr = getLocalDateStr(journalSelectedDate); 
                 setJournalText(data.journals?.[dateStr]?.content || ''); 
-                setDayTasks(data.journals?.[dateStr]?.tasks || []); // 讀取任務
+                setDayTasks(data.journals?.[dateStr]?.tasks || []); 
                 setJournalAiResponse(''); 
             }, [journalSelectedDate, data.journals]);
 
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
-
-            // 3. 定義函式
+                        // 3. 定義函式
             const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
             
             // 新增任務的函式
