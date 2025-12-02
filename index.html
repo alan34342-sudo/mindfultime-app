@@ -293,7 +293,32 @@
 
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
-            const [journalText, setJournalText] = useState('');
+            // --- 請加入這些新的 State ---
+const [taskContent, setTaskContent] = useState(''); // 任務內容輸入框
+const [taskValue, setTaskValue] = useState('');     // 任務價值輸入框
+const [dayTasks, setDayTasks] = useState([]);       // 儲存今天的任務列表
+
+// 當日期改變時，除了讀取日記文字，也要讀取當天的任務
+useEffect(() => {
+    const dateStr = getLocalDateStr(journalSelectedDate);
+    setJournalText(data.journals?.[dateStr]?.content || '');
+    setDayTasks(data.journals?.[dateStr]?.tasks || []); // 讀取任務
+    setJournalAiResponse('');
+}, [journalSelectedDate, data.journals]);
+
+// 新增任務的函式
+const addTask = () => {
+    if (!taskContent.trim()) return;
+    const newTask = { id: Date.now(), content: taskContent, value: taskValue, done: false };
+    setDayTasks([...dayTasks, newTask]);
+    setTaskContent('');
+    setTaskValue('');
+};
+
+// 切換任務完成狀態
+const toggleTask = (taskId) => {
+    setDayTasks(dayTasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
+};
             const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
