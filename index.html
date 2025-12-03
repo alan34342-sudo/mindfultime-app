@@ -226,15 +226,16 @@
     { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
     { id: 'knowledge', label: '知識學習', icon: 'Book', color: 'bg-blue-100 text-blue-600', defaultType: 'growth' },
     { id: 'entertainment', label: '娛樂放鬆', icon: 'MonitorPlay', color: 'bg-purple-100 text-purple-600', defaultType: 'waste' },
-    { id: 'sports', label: '運動健康', icon: 'Dumbbell', color: 'bg-emerald-100 text-emerald-600', defaultType: 'growth' },
+    { id: 'sports', label: '運動健康', icon: 'Dumbbell', color: 'bg-emerald-100 text-emerald-600', defaultType: 'rest' },
     { id: 'others', label: '其他', icon: 'MoreHorizontal', color: 'bg-gray-100 text-gray-600', defaultType: 'waste' }
     ];
 
     const VALUE_TYPES = [
-    { id: 'growth', label: '投資 (高價值)', color: 'bg-brand-500', stroke: '#88D4AB' },
-    { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500', stroke: '#FFB7B2' },
-    { id: 'rest', label: '充電 (休息)', color: 'bg-rest-500', stroke: '#AECBFA' }
-    ];
+            { id: 'growth', label: '投資 (高價值)', color: 'bg-brand-500', stroke: '#88D4AB' },
+            { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500', stroke: '#FFB7B2' },
+            // 修改這一行：把 label 改成你想要的名稱
+            { id: 'rest', label: '運動 (健身)', color: 'bg-rest-500', stroke: '#AECBFA' } 
+        ];
 
     const callGeminiAPI = async (apiKey, prompt, model) => {
     const modelName = model || 'gemini-1.5-flash';
@@ -277,19 +278,20 @@
         waste: Math.round(todaySessions.filter(s => s.valueType === 'waste').reduce((a,s)=>a+s.duration,0)/60)
       };
       
+      // 修改這行文字，把 "休息" 改成 "運動"
       systemPrompt = `你是一位全能的生活管家與人生教練。你的目標是根據使用者的「真實狀態」提供建議。
-      
-      【使用者目前的狀態】
-      1. 正在寫的日記內容: "${journalContent}"
-      2. 今日任務清單: 
-      ${taskContent}
-      3. 最近的靈感: ${inspirationContent}
-      4. 今日已累積時間(分): 成長 ${stats.growth}, 休息 ${stats.rest}, 浪費 ${stats.waste}
-      
-      【使用者問題】
-      "${input}"
-      
-      請忽略官方客套話。如果日記顯示他很累，就叫他去休息；如果任務沒做完，就溫柔督促。針對上述資訊給出「具體」的下一步建議。`;
+                
+                【使用者目前的狀態】
+                1. 正在寫的日記內容: "${journalContent}"
+                2. 今日任務清單: 
+                ${taskContent}
+                3. 最近的靈感: ${inspirationContent}
+                4. 今日已累積時間(分): 成長 ${stats.growth}, 運動 ${stats.rest}, 浪費 ${stats.waste} 
+                
+                【使用者問題】
+                "${input}"
+                
+                請忽略官方客套話。如果日記顯示他很累，就叫他去休息；如果任務沒做完，就溫柔督促。針對上述資訊給出「具體」的下一步建議。`;
     }
     return await callGeminiAPI(apiKey, systemPrompt, model);
     };
