@@ -51,14 +51,33 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-      :root { --bg-color: #FFF9F5; --border-color: #F5EBE0; --text-main: #5D5F71; --text-light: #8E91A0; }
-      .theme-dark { --bg-color: #1E293B; --border-color: #334155; --text-main: #F1F5F9; --text-light: #94A3B8; }
-      .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
-      body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
-      ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-      .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      input, textarea, select { font-size: 16px !important; } /* 防止 iOS 自動縮放 */
-      .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+      :root { 
+    --bg-color: #FAFAFA; /* 更乾淨的灰白，不像原本那麼黃 */
+    --border-color: #F3F4F6; 
+    --text-main: #1F2937; 
+    --text-light: #9CA3AF; 
+}
+.theme-dark { --bg-color: #111827; --border-color: #374151; --text-main: #F9FAFB; --text-light: #6B7280; }
+.theme-paper { --bg-color: #FDFBF7; --border-color: #E5E7EB; --text-main: #4B5563; --text-light: #9CA3AF; }
+
+body { 
+    font-family: 'Nunito', sans-serif; 
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+    transition: all 0.3s ease; 
+    -webkit-tap-highlight-color: transparent; 
+    overscroll-behavior-y: none; 
+}
+
+/* 隱藏滾動條，保持介面極簡 */
+::-webkit-scrollbar { width: 0px; background: transparent; }
+
+.bg-card { background-color: white; } 
+.theme-dark .bg-card { background-color: #1F2937; }
+
+/* 讓輸入框字體大小合適，防止 iOS 自動縮放 */
+input, textarea, select { font-size: 16px !important; } 
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <body>
@@ -69,7 +88,7 @@
         const { createRoot } = ReactDOM;
 
         // --- 1. 內建圖示庫 (SVG) ---
-        const SvgBase = ({ children, className, size = 24 }) => (
+        const SvgBase = ({ children, className, size = 22 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
         const Icons = {
@@ -550,64 +569,59 @@
                         </div>}
 
                         {view === 'tracker' && (
-    <div className="space-y-6 animate-fade-in pb-20">
-        {/* 頂部歡迎語或狀態 (可選) */}
-        
-        {/* 1. 分類按鈕區：改用更緊湊的 Grid，減少圓角與邊框厚度 */}
-        <div className="grid grid-cols-2 gap-3">
-            {CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => startTimer(cat.id)} 
-                    className="relative group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 h-32 hover:border-brand-200 hover:shadow-md transition-all active:scale-95 shadow-sm">
-                    <div className={`p-3 rounded-full ${cat.color.replace('text-', 'bg-').replace('100', '50')} ${cat.color}`}>
-                        <IconByName name={cat.icon} className="w-6 h-6" />
-                    </div>
-                    <span className="font-bold text-sm text-text-main">{cat.label}</span>
-                    {/* 裝飾性的小圓點 */}
-                    <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-gray-100 group-hover:bg-brand-400 transition-colors"></div>
-                </button>
-            ))}
-        </div>
-
-        {/* 2. 統計區塊：縮小圓角，精簡排版 */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
-                    <IconByName name="Clock" className="w-5 h-5 text-brand-500" /> 今日足跡
-                </h2>
-                <button onClick={syncFromGoogleSheet} className="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
-                    <IconByName name="RefreshCcw" className={`w-3 h-3 ${isSyncing?'animate-spin':''}`}/> 更新
-                </button>
-            </div>
-            
-            {groupedAggregatedSessions.length === 0 ? 
-                <div className="text-center py-10 text-gray-400 text-sm font-medium bg-gray-50/50 rounded-xl border border-dashed border-gray-200">今天還沒開始紀錄 🌱</div> : 
-                <div className="space-y-6 relative pl-2">
-                    <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-100"></div>
-                    {groupedAggregatedSessions.map(group => (
-                        <div key={group.date} className="relative pl-8">
-                            <div className="absolute left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white border-2 border-brand-400 z-10"></div>
-                            <h3 className="font-bold text-sm text-gray-400 mb-3">{group.date}</h3>
-                            <div className="space-y-3">
-                                {group.categories.map(item => (
-                                    <div key={item.id} className="bg-gray-50/80 rounded-xl p-3 flex items-center justify-between border border-transparent hover:border-gray-200 hover:bg-white transition-all">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-white rounded-lg shadow-sm text-text-light"><IconByName name={item.def?.icon} className="w-4 h-4" /></div>
-                                            <div>
-                                                <div className="font-bold text-sm text-text-main">{item.def?.label}</div>
-                                                {item.meta && item.meta.length > 0 && <div className="text-[10px] text-gray-400 truncate max-w-[150px]">{item.meta.join(', ')}</div>}
-                                            </div>
-                                        </div>
-                                        <div className="font-mono font-bold text-sm text-brand-600">{formatDurationSimple(item.duration)}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+    <div className="space-y-6 animate-fade-in pb-24">
+    {/* 1. 分類按鈕區：更現代的網格，去除厚邊框，改用陰影 */}
+    <div className="grid grid-cols-2 gap-4">
+        {CATEGORIES.map(cat => (
+            <button key={cat.id} onClick={() => startTimer(cat.id)} 
+                className="relative group bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-3 h-32 shadow-sm border border-gray-100 hover:shadow-md hover:border-brand-200 transition-all active:scale-95">
+                <div className={`p-3 rounded-full ${cat.color.replace('text-', 'bg-').replace('100', '50')} ${cat.color} bg-opacity-20`}>
+                    <IconByName name={cat.icon} className="w-6 h-6" />
                 </div>
-            }
-        </div>
+                <span className="font-bold text-sm text-text-main tracking-wide">{cat.label}</span>
+            </button>
+        ))}
     </div>
-)}
+
+    {/* 2. 統計區塊：清爽的白色卡片 */}
+    <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
+                <IconByName name="Clock" className="w-5 h-5 text-brand-500" /> 今日足跡
+            </h2>
+            <button onClick={syncFromGoogleSheet} className="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
+                <IconByName name="RefreshCcw" className={`w-3 h-3 ${isSyncing?'animate-spin':''}`}/> 更新
+            </button>
+        </div>
+        
+        {groupedAggregatedSessions.length === 0 ? 
+            <div className="text-center py-12 text-gray-300 text-sm font-medium border-2 border-dashed border-gray-100 rounded-2xl">今天還沒開始紀錄 🌱</div> : 
+            <div className="space-y-6 relative pl-2">
+                <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-100"></div>
+                {groupedAggregatedSessions.map(group => (
+                    <div key={group.date} className="relative pl-8">
+                        <div className="absolute left-[9px] top-1.5 w-2 h-2 rounded-full bg-brand-400 ring-4 ring-white z-10"></div>
+                        <h3 className="font-bold text-xs text-gray-400 mb-3 uppercase tracking-wider">{group.date}</h3>
+                        <div className="space-y-3">
+                            {group.categories.map(item => (
+                                <div key={item.id} className="bg-gray-50 rounded-xl p-3 flex items-center justify-between border border-transparent hover:border-gray-200 transition-all">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-white rounded-lg shadow-sm text-text-light"><IconByName name={item.def?.icon} className="w-4 h-4" /></div>
+                                        <div>
+                                            <div className="font-bold text-sm text-text-main">{item.def?.label}</div>
+                                            {item.meta && item.meta.length > 0 && <div className="text-[10px] text-gray-400 truncate max-w-[150px]">{item.meta.join(', ')}</div>}
+                                        </div>
+                                    </div>
+                                    <div className="font-mono font-bold text-sm text-brand-600">{formatDurationSimple(item.duration)}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        }
+    </div>
+</div>
 
                         {view === 'journal' && (
                             <div className="flex flex-col lg:flex-row gap-6 animate-slide-up h-full min-h-screen pb-20">
@@ -640,16 +654,17 @@
                                         
                                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                                             <input 
-                                                type="text" 
-                                                placeholder="任務內容..." 
-                                                className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
-                                                value={taskContent}
-                                                onChange={e => setTaskContent(e.target.value)}
-                                            />
-                                            <input 
     type="text" 
-    placeholder="價值 (選填)" 
-    className="w-1/3 p-3 bg-gray-50 text-text-main placeholder-gray-400 rounded-xl font-medium outline-none text-sm border border-transparent focus:bg-white focus:border-brand-200 transition-all"
+    placeholder="任務內容..." 
+    className="flex-1 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all"
+    value={taskContent}
+    onChange={e => setTaskContent(e.target.value)}
+/>
+{/* 這是價值輸入框 */}
+<input 
+    type="text" 
+    placeholder="價值" 
+    className="w-24 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all text-center"
     value={taskValue}
     onChange={e => setTaskValue(e.target.value)}
     onKeyDown={e => e.key === 'Enter' && addTask()}
@@ -676,7 +691,7 @@
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 bg-slate-600 rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col">
+                                    <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col border border-cream-dark">
                                         <textarea 
         className="w-full h-full bg-transparent text-text-main placeholder-gray-400 text-base leading-relaxed outline-none resize-none font-medium" 
         placeholder="今天過得怎麼樣？寫下來吧..." 
