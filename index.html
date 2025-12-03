@@ -53,8 +53,7 @@
       body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      /* 移除 animate-float，保持介面穩定 */
-      /* .animate-float { animation: float 3s ease-in-out infinite; } */
+      
     </style>
 </head>
 <body>
@@ -254,42 +253,47 @@
         };
 
         const generateAIResponse = async (input, contextData, type, apiKey, model) => {
-            if (!apiKey) return "請先到設定頁面填入並儲存 Gemini API Key 喔！🔑";
-            
-            let systemPrompt = "";
-            const todayStr = new Date().toISOString().split('T')[0];
-            const journal = contextData.journals?.[todayStr]?.content || "今天還沒寫日記。";
-            const tasks = contextData.journals?.[todayStr]?.tasks || [];
-            const taskStr = tasks.map(t => `- ${t.content} (${t.done ? '已完成' : '未完成'})`).join('\n') || "今天沒有特別列出任務。";
-            const inspirations = (contextData.inspirations || []).slice(0, 5).map(i => i.text).join(", ") || "近期沒有紀錄靈感。";
-            
-            if (type === 'journal') {
-                systemPrompt = `你是一個溫柔的心理諮商師。使用者日記："${input}"。請給予同理心回應與簡短建議，限80字。`;
-            } else {
-                // Manager Context
-                const todaySessions = contextData.sessions.filter(s => s.date === todayStr);
-                const stats = {
-                    growth: Math.round(todaySessions.filter(s => s.valueType === 'growth').reduce((a,s)=>a+s.duration,0)/60),
-                    rest: Math.round(todaySessions.filter(s => s.valueType === 'rest').reduce((a,s)=>a+s.duration,0)/60),
-                    waste: Math.round(todaySessions.filter(s => s.valueType === 'waste').reduce((a,s)=>a+s.duration,0)/60)
-                };
-                
-                systemPrompt = `你是一位全能的生活管家與人生教練。你的目標是協助使用者規劃生活、提供建議並優化行程。
-                
-                【使用者今日數據】
-                - 心情日記: ${journal}
-                - 任務清單: 
-                ${taskStr}
-                - 最近靈感: ${inspirations}
-                - 今日時間分配(分): 成長${stats.growth}, 休息${stats.rest}, 浪費${stats.waste}
-                
-                【使用者問題】
-                "${input}"
-                
-                請綜合以上資訊，像個老朋友一樣給予具體、個人化且帶有行動呼籲的建議。如果他累了就叫他休息，如果他還有任務沒做就溫柔提醒。不要太官腔，口語化一點。`;
-            }
-            return await callGeminiAPI(apiKey, systemPrompt, model);
+    if (!apiKey) return "請先到設定頁面填入並儲存 Gemini API Key 喔！🔑";
+    
+    let systemPrompt = "";
+    
+    if (type === 'journal') {
+        systemPrompt = `你是一個溫柔的心理諮商師。使用者日記："${input}"。請給予同理心回應與簡短建議，限80字。`;
+    } else {
+        // --- 升級版大腦邏輯 ---
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        // 1. 讀取即時日記與任務
+        const journalContent = contextData.journal || "（使用者今天還沒寫日記）";
+        const taskContent = contextData.tasks && contextData.tasks.length > 0 
+            ? contextData.tasks.map(t => `- ${t.content} (${t.done ? '已完成' : '未完成'})`).join('\n') 
+            : "（目前沒有任務）";
+        const inspirationContent = (contextData.inspirations || []).slice(0, 5).map(i => i.text).join(", ");
+
+        // 2. 計算今日時間
+        const todaySessions = (contextData.sessions || []).filter(s => s.date === todayStr);
+        const stats = {
+            growth: Math.round(todaySessions.filter(s => s.valueType === 'growth').reduce((a,s)=>a+s.duration,0)/60),
+            rest: Math.round(todaySessions.filter(s => s.valueType === 'rest').reduce((a,s)=>a+s.duration,0)/60),
+            waste: Math.round(todaySessions.filter(s => s.valueType === 'waste').reduce((a,s)=>a+s.duration,0)/60)
         };
+        
+        systemPrompt = `你是一位全能的生活管家與人生教練。你的目標是根據使用者的「真實狀態」提供建議。
+        
+        【使用者目前的狀態】
+        1. 正在寫的日記內容: "${journalContent}"
+        2. 今日任務清單: 
+        ${taskContent}
+        3. 最近的靈感: ${inspirationContent}
+        4. 今日已累積時間(分): 成長 ${stats.growth}, 休息 ${stats.rest}, 浪費 ${stats.waste}
+        
+        【使用者問題】
+        "${input}"
+        
+        請忽略官方客套話。如果日記顯示他很累，就叫他去休息；如果任務沒做完，就溫柔督促。針對上述資訊給出「具體」的下一步建議。`;
+    }
+    return await callGeminiAPI(apiKey, systemPrompt, model);
+};
 
         // --- 5. App ---
         const App = () => {
@@ -391,7 +395,13 @@
             };
 
             const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
-            
+
+            // 新增：取消計時函式
+const cancelTimer = () => {
+    if (!confirm("確定要取消這次計時嗎？(不會儲存)")) return;
+    saveDataToLocal({ ...data, activeTimer: null });
+    setElapsedTime(0);
+    showToast("已取消計時", "warning");
             // 新增取消計時函式 (垃圾桶)
             const cancelTimer = () => {
                 if (!confirm("確定要取消這次計時嗎？")) return;
@@ -465,23 +475,32 @@
             
             // --- AI Manager Chat Logic (Modified) ---
             const handleManagerChat = async () => { 
-                if (!managerInput.trim()) return; 
-                
-                // 1. 馬上清空輸入框，並加入使用者訊息
-                const currentInput = managerInput;
-                setManagerInput(''); // 立即清空
-                
-                const userMsg = { id: Date.now().toString(), role: 'user', text: currentInput, timestamp: Date.now() }; 
-                setManagerMessages(prev => [...prev, userMsg]); 
-                setIsAiTyping(true); 
-                
-                // 2. 呼叫 AI
-                const responseText = await generateAIResponse(currentInput, data, 'manager', geminiKey, selectedModel); 
-                
-                const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; 
-                setManagerMessages(prev => [...prev, aiMsg]); 
-                setIsAiTyping(false); 
-            };
+    if (!managerInput.trim()) return; 
+    
+    // 1. 修正：立刻清空輸入框，避免卡住
+    const currentInput = managerInput;
+    setManagerInput(''); 
+    
+    // 2. 顯示使用者訊息
+    const userMsg = { id: Date.now().toString(), role: 'user', text: currentInput, timestamp: Date.now() }; 
+    setManagerMessages(prev => [...prev, userMsg]); 
+    setIsAiTyping(true); 
+    
+    // 3. 準備「即時」的上下文資料 (包含你正在寫還沒存檔的日記)
+    const liveContext = {
+        journal: journalText, // 抓取當前日記輸入框的字
+        tasks: dayTasks,      // 抓取當前任務列表
+        inspirations: data.inspirations || [],
+        sessions: data.sessions
+    };
+
+    // 4. 呼叫 AI (注意這裡參數變了)
+    const responseText = await generateAIResponse(currentInput, liveContext, 'manager', geminiKey, selectedModel); 
+    
+    const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; 
+    setManagerMessages(prev => [...prev, aiMsg]); 
+    setIsAiTyping(false); 
+};
             
             const handleJournalAI = async () => { if (!journalText.trim()) return; setIsAiTyping(true); const responseText = await generateAIResponse(journalText, data, 'journal', geminiKey, selectedModel); setJournalAiResponse(responseText); setIsAiTyping(false); };
             const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
@@ -523,6 +542,10 @@
                             <div className="flex gap-3 z-10 w-full sm:w-auto">
                                 {/* 新增的取消按鈕 */}
                                 <button onClick={cancelTimer} className="p-4 bg-gray-100 hover:bg-waste-500 hover:text-white text-gray-500 font-bold rounded-3xl transition-colors"><IconByName name="Trash2" className="w-6 h-6"/></button>
+                                {/* 新增的垃圾桶按鈕 */}
+<button onClick={cancelTimer} className="p-4 bg-gray-100 hover:bg-waste-500 hover:text-white text-gray-500 font-bold rounded-3xl transition-colors mr-3">
+    <IconByName name="Trash2" className="w-6 h-6"/>
+</button>
                                 <button onClick={stopTimer} className="flex-1 sm:flex-none px-8 py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-3xl shadow-sm flex items-center justify-center gap-2 transition-colors"><IconByName name="StopCircle" className="w-6 h-6"/> <span>完成</span></button>
                             </div>
                         </div>}
@@ -707,108 +730,108 @@
                         )}
 
                         {view === 'analysis' && (
-                            <div className="animate-slide-up space-y-6">
-                                {/* Header / View Switcher */}
-                                <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
-                                    <div className="flex bg-cream p-1 rounded-2xl">
-                                        <button onClick={() => setAnalysisViewMode('day')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='day'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
-                                        <button onClick={() => setAnalysisViewMode('total')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='total'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
-                                    </div>
-                                    {analysisViewMode === 'day' && (
-                                        <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative text-text-main">
-                                            <button onClick={() => { const prev = new Date(analysisDate); prev.setDate(prev.getDate()-1); setAnalysisDate(prev); }}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
-                                            <div className="font-extrabold text-lg min-w-[120px] text-center relative">{getLocalDateStr(analysisDate)}<input type="date" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setAnalysisDate(new Date(e.target.value))} /></div>
-                                            <button onClick={() => { const next = new Date(analysisDate); next.setDate(next.getDate()+1); setAnalysisDate(next); }}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
-                                        </div>
-                                    )}
-                                </div>
+    <div className="animate-slide-up space-y-6 h-full flex flex-col">
+        {/* 1. 頂部切換與日期 (保持原樣) */}
+        <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
+            <div className="flex bg-cream p-1 rounded-2xl">
+                <button onClick={() => setAnalysisViewMode('day')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='day'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
+                <button onClick={() => setAnalysisViewMode('total')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='total'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
+            </div>
+            {analysisViewMode === 'day' && (
+                <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative text-text-main">
+                    <button onClick={() => { const prev = new Date(analysisDate); prev.setDate(prev.getDate()-1); setAnalysisDate(prev); }}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
+                    <div className="font-extrabold text-lg min-w-[120px] text-center relative">{getLocalDateStr(analysisDate)}<input type="date" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setAnalysisDate(new Date(e.target.value))} /></div>
+                    <button onClick={() => { const next = new Date(analysisDate); next.setDate(next.getDate()+1); setAnalysisDate(next); }}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
+                </div>
+            )}
+        </div>
 
-                                {/* Main Grid Layout Re-structure (Matching Screenshot 3) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    {/* Left Column: Value Chart (Takes 1/3) */}
-                                    <div className="lg:col-span-1 bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col border border-cream-dark h-full">
-                                        <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
-                                        <div className="flex-1 flex flex-col items-center justify-center">
-                                            <DonutChart data={chartData} />
-                                            <div className="w-full mt-8 space-y-4">
-                                                {chartData.map((d, i) => (
-                                                    <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-cream">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-3 h-3 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
-                                                            <span className="font-extrabold text-sm text-text-main">{d.name}</span>
-                                                        </div>
-                                                        <span className="font-mono font-extrabold text-sm text-text-main">{formatDurationSimple(d.value)}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column: Insights (Takes 2/3) */}
-                                    <div className="lg:col-span-2 flex flex-col gap-6">
-                                        {/* Growth Bar */}
-                                        <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
-                                            <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
-                                            <p className="text-brand-900 text-lg leading-relaxed font-medium">
-                                                {dashboardStats.totalDuration > 0 ? 
-                                                (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
-                                                ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
-                                                }
-                                            </p>
-                                        </div>
-                                        {/* Tips */}
-                                        <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
-                                            <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
-                                            <p className="text-text-main text-lg leading-relaxed font-medium">
-                                                {dashboardStats.totalDuration > 0 ?
-                                                (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，機器人也是需要充電的喔 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨") :
-                                                ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
+        {/* 2. 新版排版：上半部 (圖表 + 洞察) */}
+        <div className="flex flex-col lg:flex-row gap-6">
+            {/* 左側：圓餅圖 (40%) */}
+            <div className="w-full lg:w-[40%] bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col border border-cream-dark">
+                <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                    <DonutChart data={chartData} />
+                    <div className="w-full mt-8 space-y-4">
+                        {chartData.map((d, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-cream">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
+                                    <span className="font-extrabold text-sm text-text-main">{d.name}</span>
                                 </div>
-
-                                {/* Bottom Row: AI Personal Manager (Full Width) */}
-                                <div className="bg-white border border-brand-100 rounded-[2.5rem] shadow-sm flex flex-col min-h-[500px] overflow-hidden">
-                                    <div className="p-6 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
-                                        <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
-                                        <div>
-                                            <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
-                                            <div className="text-xs font-bold text-brand-500 opacity-80">在線中，隨時為你調整計畫</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-white">
-                                        {managerMessages.map(m => (
-                                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                {m.role === 'ai' && <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center mr-2"><IconByName name="Bot" className="w-4 h-4 text-brand-600"/></div>}
-                                                <div className={`max-w-[70%] p-5 rounded-3xl text-sm font-bold leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>
-                                                    {m.text}
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse pl-12">AI 正在思考你的行程...</div>}
-                                        <div ref={chatEndRef}/>
-                                    </div>
-                                    <div className="p-6 border-t-2 border-gray-100 flex gap-4 bg-gray-50 items-end">
-                                        <textarea 
-                                            className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all resize-none shadow-sm" 
-                                            placeholder="告訴我你的狀態 (累了、忙碌...)，或如果有行程變動..." 
-                                            rows="2"
-                                            value={managerInput} 
-                                            onChange={e=>setManagerInput(e.target.value)} 
-                                            onKeyDown={e => {
-                                                if(e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleManagerChat();
-                                                }
-                                            }} 
-                                        />
-                                        <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute h-14 w-14 flex items-center justify-center"><IconByName name="Send" className="w-6 h-6"/></button>
-                                    </div>
-                                </div>
+                                <span className="font-mono font-extrabold text-sm text-text-main">{formatDurationSimple(d.value)}</span>
                             </div>
-                        )}
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* 右側：洞察資訊 (60%) */}
+            <div className="w-full lg:w-[60%] flex flex-col gap-6">
+                {/* 能量條 */}
+                <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
+                    <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
+                    <p className="text-brand-900 text-lg leading-relaxed font-medium">
+                        {dashboardStats.totalDuration > 0 ? 
+                        (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
+                        ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
+                        }
+                    </p>
+                </div>
+                {/* 提醒 */}
+                <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
+                    <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
+                    <p className="text-text-main text-lg leading-relaxed font-medium">
+                        {dashboardStats.totalDuration > 0 ?
+                        (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，機器人也是需要充電的喔 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨") :
+                        ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {/* 3. 新版排版：下半部 (AI 聊天室 - 全寬度) */}
+        <div className="flex-1 bg-white border border-brand-100 rounded-[2.5rem] shadow-sm flex flex-col min-h-[500px] overflow-hidden">
+            <div className="p-6 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
+                <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
+                <div>
+                    <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
+                    <div className="text-xs font-bold text-brand-500 opacity-80">在線中，隨時為你調整計畫</div>
+                </div>
+            </div>
+            <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-white">
+                {managerMessages.map(m => (
+                    <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        {m.role === 'ai' && <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center mr-2 flex-shrink-0"><IconByName name="Bot" className="w-4 h-4 text-brand-600"/></div>}
+                        <div className={`max-w-[80%] p-5 rounded-3xl text-sm font-bold leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>
+                            {m.text}
+                        </div>
+                    </div>
+                ))}
+                {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse pl-12">AI 正在思考你的行程...</div>}
+                <div ref={chatEndRef}/>
+            </div>
+            <div className="p-6 border-t-2 border-gray-100 flex gap-4 bg-gray-50 items-end">
+                <textarea 
+                    className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all resize-none shadow-sm" 
+                    placeholder="告訴我你的狀態 (累了、忙碌...)，或如果有行程變動..." 
+                    rows="2"
+                    value={managerInput} 
+                    onChange={e=>setManagerInput(e.target.value)} 
+                    onKeyDown={e => {
+                        if(e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleManagerChat();
+                        }
+                    }} 
+                />
+                <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute h-14 w-14 flex items-center justify-center flex-shrink-0"><IconByName name="Send" className="w-6 h-6"/></button>
+            </div>
+        </div>
+    </div>
+)}
 
                         {view === 'muse' && (
                             <div className="animate-slide-up space-y-6">
