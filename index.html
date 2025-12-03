@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>MindfulTime - 價值追蹤器</title>
+    <title>MindfulTime - 智能生活管家</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -34,8 +34,11 @@
               'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
               'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
             },
-            animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
-            keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
+            animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+            keyframes: { 
+                fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+                slideUp: { '0%': { opacity: 0, transform: 'translateY(20px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } }
+            }
           }
         }
       }
@@ -49,11 +52,9 @@
       .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
       body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
       ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-      .animate-float { animation: float 3s ease-in-out infinite; } @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
       .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-      /* 強制日記區塊高度 */
-      .journal-container { min-height: 500px; display: flex; flex-direction: column; }
-      .journal-textarea { flex: 1; width: 100%; resize: none; outline: none; background: transparent; line-height: 1.6; min-height: 300px; }
+      /* 移除 animate-float，保持介面穩定 */
+      /* .animate-float { animation: float 3s ease-in-out infinite; } */
     </style>
 </head>
 <body>
@@ -97,6 +98,7 @@
             Moon: (p) => <SvgBase {...p}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></SvgBase>,
             AlertTriangle: (p) => <SvgBase {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
             AlertCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></SvgBase>,
+            Check: (p) => <SvgBase {...p}><polyline points="20 6 9 17 4 12" /></SvgBase>,
             Clipboard: (p) => <SvgBase {...p}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></SvgBase>,
             Link: (p) => <SvgBase {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></SvgBase>,
             ExternalLink: (p) => <SvgBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></SvgBase>,
@@ -154,7 +156,7 @@
 
             let cumulativePercent = 0;
             const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-            const textRadius = radius; // Text centered on the ring
+            const textRadius = radius; 
 
             return (
                 <div className="relative flex justify-center items-center">
@@ -253,18 +255,38 @@
 
         const generateAIResponse = async (input, contextData, type, apiKey, model) => {
             if (!apiKey) return "請先到設定頁面填入並儲存 Gemini API Key 喔！🔑";
+            
             let systemPrompt = "";
+            const todayStr = new Date().toISOString().split('T')[0];
+            const journal = contextData.journals?.[todayStr]?.content || "今天還沒寫日記。";
+            const tasks = contextData.journals?.[todayStr]?.tasks || [];
+            const taskStr = tasks.map(t => `- ${t.content} (${t.done ? '已完成' : '未完成'})`).join('\n') || "今天沒有特別列出任務。";
+            const inspirations = (contextData.inspirations || []).slice(0, 5).map(i => i.text).join(", ") || "近期沒有紀錄靈感。";
+            
             if (type === 'journal') {
                 systemPrompt = `你是一個溫柔的心理諮商師。使用者日記："${input}"。請給予同理心回應與簡短建議，限80字。`;
             } else {
-                const todayStr = new Date().toISOString().split('T')[0];
+                // Manager Context
                 const todaySessions = contextData.sessions.filter(s => s.date === todayStr);
                 const stats = {
                     growth: Math.round(todaySessions.filter(s => s.valueType === 'growth').reduce((a,s)=>a+s.duration,0)/60),
                     rest: Math.round(todaySessions.filter(s => s.valueType === 'rest').reduce((a,s)=>a+s.duration,0)/60),
                     waste: Math.round(todaySessions.filter(s => s.valueType === 'waste').reduce((a,s)=>a+s.duration,0)/60)
                 };
-                systemPrompt = `你是嚴格又幽默的時間管理教練。使用者問："${input}"。今日數據(分)：成長${stats.growth}, 休息${stats.rest}, 浪費${stats.waste}。請根據數據給建議，限80字。`;
+                
+                systemPrompt = `你是一位全能的生活管家與人生教練。你的目標是協助使用者規劃生活、提供建議並優化行程。
+                
+                【使用者今日數據】
+                - 心情日記: ${journal}
+                - 任務清單: 
+                ${taskStr}
+                - 最近靈感: ${inspirations}
+                - 今日時間分配(分): 成長${stats.growth}, 休息${stats.rest}, 浪費${stats.waste}
+                
+                【使用者問題】
+                "${input}"
+                
+                請綜合以上資訊，像個老朋友一樣給予具體、個人化且帶有行動呼籲的建議。如果他累了就叫他休息，如果他還有任務沒做就溫柔提醒。不要太官腔，口語化一點。`;
             }
             return await callGeminiAPI(apiKey, systemPrompt, model);
         };
@@ -297,9 +319,9 @@
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
             
-            // --- 你的日記與 AI 相關 State (原本被你放到太下面的，我移上來了) ---
+            // --- 你的日記與 AI 相關 State ---
             const [journalText, setJournalText] = useState('');
-            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。', timestamp: Date.now() }]);
+            const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。今天想聊聊行程規劃嗎？', timestamp: Date.now() }]);
             const [managerInput, setManagerInput] = useState('');
             const [journalAiResponse, setJournalAiResponse] = useState('');
             const [isAiTyping, setIsAiTyping] = useState(false);
@@ -314,32 +336,25 @@
             const [analysisDate, setAnalysisDate] = useState(new Date());
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
             const [lastSyncTime, setLastSyncTime] = useState(null);
-// 2. 定義完變數後，才是 Effect (副作用)
+
+            // 2. 定義完變數後，才是 Effect (副作用)
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
             
-            // --- 這是修正後的讀取邏輯 (包含資料清洗) ---
             useEffect(() => { 
                 const savedData = localStorage.getItem(`tm_data_${syncId}`); 
                 if (savedData) {
                     let parsedData = JSON.parse(savedData);
-                    
-                    // 🔥 關鍵修復：強制檢查所有歷史資料，將 "娛樂" 的分類改為 "waste"
+                    // 修正 valueType
                     if (parsedData.sessions) {
                         parsedData.sessions = parsedData.sessions.map(s => {
-                            // 找到這筆資料對應的分類設定
                             const catDef = CATEGORIES.find(c => c.id === s.category);
-                            if (catDef) {
-                                // 強制讓資料的 valueType 跟隨分類的 defaultType
-                                // 例如：如果以前是 'rest'，現在分類變成 'waste'，這裡就會強制改成 'waste'
-                                if (s.valueType !== catDef.defaultType) {
-                                    return { ...s, valueType: catDef.defaultType };
-                                }
+                            if (catDef && s.valueType !== catDef.defaultType) {
+                                return { ...s, valueType: catDef.defaultType };
                             }
                             return s;
                         });
                     }
-                    
                     setData(parsedData); 
                 }
             }, [syncId]);
@@ -359,10 +374,10 @@
 
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
-                        // 3. 定義函式
+            
+            // 3. 定義函式
             const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
             
-            // 新增任務的函式
             const addTask = () => {
                 if (!taskContent.trim()) return;
                 const newTask = { id: Date.now(), content: taskContent, value: taskValue, done: false };
@@ -371,86 +386,64 @@
                 setTaskValue('');
             };
 
-            // 切換任務完成狀態
             const toggleTask = (taskId) => {
                 setDayTasks(dayTasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
             };
 
             const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
-            const stopTimer = () => { 
-    if (!data.activeTimer) return; 
-    
-    // 計算目前已經經過的時間 (秒)
-    const currentDurationSec = Math.floor((Date.now() - data.activeTimer.startTime) / 1000);
-    
-    setReviewSessionCache({ 
-        startTime: data.activeTimer.startTime, 
-        category: data.activeTimer.category 
-    }); 
-    
-    // 自動填入目前的預估分鐘數 (方便你修改)
-    setManualMinutes(Math.round(currentDurationSec / 60).toString());
-
-    const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); 
-    if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); 
-    
-    setReviewMetaData({}); 
-    setShowReviewModal(true); 
-};
             
-            // --- 修改後的 submitReview (支援手動時間) ---
-const submitReview = () => {
-    if (!reviewSessionCache) return;
-    const endTime = Date.now();
-    const startTime = reviewSessionCache.startTime;
-    
-    // 1. 預設使用計時器的時間
-    let duration = Math.floor((endTime - startTime) / 1000);
+            // 新增取消計時函式 (垃圾桶)
+            const cancelTimer = () => {
+                if (!confirm("確定要取消這次計時嗎？")) return;
+                saveDataToLocal({ ...data, activeTimer: null });
+                setElapsedTime(0);
+                showToast("已取消計時", "warning");
+            };
 
-    // 2. 如果是「運動」或「其他」，且有手動輸入時間，就覆寫它！
-    // 注意：這裡把分鐘轉回秒數 (* 60) 儲存
-    if (['sports', 'others'].includes(reviewSessionCache.category) && manualMinutes) {
-        duration = parseInt(manualMinutes) * 60;
-    }
-
-    const categoryLabel = CATEGORIES.find(c => c.id === reviewSessionCache.category)?.label || '未分類';
-    
-    const newSession = {
-        id: Math.random().toString(36).substr(2, 9),
-        category: reviewSessionCache.category,
-        startTime,
-        endTime,
-        duration, // 這裡會是手動修改後的時間
-        valueType: reviewType,
-        rating: reviewRating,
-        note: reviewNote,
-        meta: reviewMetaData,
-        date: getLocalDateStr(new Date(startTime)),
-        status: 'completed'
-    };
-
-    saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
-    setShowReviewModal(false);
-    setReviewNote('');
-    setReviewMetaData({});
-    setManualMinutes(''); // 清空輸入框
-    showToast("紀錄成功！⭐");
-
-    if (localScriptUrl) {
-        const payload = {
-            date: newSession.date,
-            appName: categoryLabel,
-            duration: duration,
-            note: reviewNote
-        };
-        fetch(localScriptUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-        }).then(() => console.log("資料已發送至雲端")).catch(error => showToast("雲端同步失敗", 'error'));
-    }
-};
+            const stopTimer = () => { 
+                if (!data.activeTimer) return; 
+                const currentDurationSec = Math.floor((Date.now() - data.activeTimer.startTime) / 1000);
+                setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); 
+                setManualMinutes(Math.round(currentDurationSec / 60).toString());
+                const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); 
+                if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); 
+                setReviewMetaData({}); 
+                setShowReviewModal(true); 
+            };
+            
+            const submitReview = () => {
+                if (!reviewSessionCache) return;
+                const endTime = Date.now();
+                const startTime = reviewSessionCache.startTime;
+                let duration = Math.floor((endTime - startTime) / 1000);
+                if (['sports', 'others'].includes(reviewSessionCache.category) && manualMinutes) {
+                    duration = parseInt(manualMinutes) * 60;
+                }
+                const categoryLabel = CATEGORIES.find(c => c.id === reviewSessionCache.category)?.label || '未分類';
+                const newSession = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    category: reviewSessionCache.category,
+                    startTime,
+                    endTime,
+                    duration,
+                    valueType: reviewType,
+                    rating: reviewRating,
+                    note: reviewNote,
+                    meta: reviewMetaData,
+                    date: getLocalDateStr(new Date(startTime)),
+                    status: 'completed'
+                };
+                saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
+                setShowReviewModal(false);
+                setReviewNote('');
+                setReviewMetaData({});
+                setManualMinutes(''); 
+                showToast("紀錄成功！⭐");
+                if (localScriptUrl) {
+                    const payload = { date: newSession.date, appName: categoryLabel, duration: duration, note: reviewNote };
+                    fetch(localScriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }).then(() => console.log("資料已發送至雲端")).catch(error => showToast("雲端同步失敗", 'error'));
+                }
+            };
 
             const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { 
                 let catId = null;
@@ -461,18 +454,35 @@ const submitReview = () => {
                 else if(name.includes('娛樂') || name.includes('youtube') || name.includes('netflix')) catId = 'entertainment';
                 else if(name.includes('社群') || name.includes('social') || name.includes('line') || name.includes('instagram')) catId = 'others'; 
                 else if(name.includes('購物') || name.includes('shopping')) catId = 'others';
-                
                 if (!catId) return null;
-
                 const dateStr = item.date.replace(/\//g, '-'); 
                 return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'waste', note: item.appName, status: 'completed' }; 
             }).filter(s => s && s.duration > 0); 
-            
             const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 0.01); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } setLastSyncTime(new Date().toLocaleTimeString()); } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
             
             const saveKey = () => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey); showToast("API Key 已儲存！"); };
             const detectModels = async () => { if (!geminiKey) return showToast("請先輸入 API Key", "error"); showToast("偵測模型中...", "warning"); try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`); const data = await res.json(); if (data.models) { const contentModels = data.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace('models/', '')); setAvailableModels(contentModels); if (contentModels.length > 0 && !contentModels.includes(selectedModel)) { setSelectedModel(contentModels[0]); } showToast(`找到 ${contentModels.length} 個可用模型`, "success"); } else { throw new Error(data.error?.message || "無回應"); } } catch (e) { showToast("偵測失敗: " + e.message, "error"); } };
-            const handleManagerChat = async () => { if (!managerInput.trim()) return; const userMsg = { id: Date.now().toString(), role: 'user', text: managerInput, timestamp: Date.now() }; setManagerMessages(prev => [...prev, userMsg]); setManagerInput(''); setIsAiTyping(true); const responseText = await generateAIResponse(userMsg.text, data, 'manager', geminiKey, selectedModel); const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; setManagerMessages(prev => [...prev, aiMsg]); setIsAiTyping(false); };
+            
+            // --- AI Manager Chat Logic (Modified) ---
+            const handleManagerChat = async () => { 
+                if (!managerInput.trim()) return; 
+                
+                // 1. 馬上清空輸入框，並加入使用者訊息
+                const currentInput = managerInput;
+                setManagerInput(''); // 立即清空
+                
+                const userMsg = { id: Date.now().toString(), role: 'user', text: currentInput, timestamp: Date.now() }; 
+                setManagerMessages(prev => [...prev, userMsg]); 
+                setIsAiTyping(true); 
+                
+                // 2. 呼叫 AI
+                const responseText = await generateAIResponse(currentInput, data, 'manager', geminiKey, selectedModel); 
+                
+                const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; 
+                setManagerMessages(prev => [...prev, aiMsg]); 
+                setIsAiTyping(false); 
+            };
+            
             const handleJournalAI = async () => { if (!journalText.trim()) return; setIsAiTyping(true); const responseText = await generateAIResponse(journalText, data, 'journal', geminiKey, selectedModel); setJournalAiResponse(responseText); setIsAiTyping(false); };
             const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
 
@@ -482,6 +492,7 @@ const submitReview = () => {
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
             const groupedAggregatedSessions = useMemo(() => { const groups = {}; data.sessions.forEach(session => { if (!groups[session.date]) groups[session.date] = {}; if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] }; groups[session.date][session.category].duration += session.duration; groups[session.date][session.category].count += 1; if(session.meta && Object.keys(session.meta).length > 0) { const metaStr = Object.values(session.meta).join(', '); if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr); } }); return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) })); }, [data.sessions]);
             const renderCalendar = () => { const year = calendarViewDate.getFullYear(); const month = calendarViewDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDay = new Date(year, month, 1).getDay(); const days = []; for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>); for (let d = 1; d <= daysInMonth; d++) { const dateStr = getLocalDateStr(new Date(year, month, d)); const hasEntry = !!data.journals?.[dateStr]?.content; const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month; days.push( <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))} className={`h-10 w-10 rounded-2xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}> <span className="text-sm font-bold">{d}</span> {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-brand-500 rounded-full absolute bottom-1.5"></span>} </button> ); } return days; };
+            
             return (
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
                     {/* ... (Toast, Nav, Main Structure preserved) ... */}
@@ -499,14 +510,28 @@ const submitReview = () => {
                     </nav>
 
                     <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64 transition-colors duration-300 min-h-screen">
-                        {/* ... (Header & Timer Banner) ... */}
+                        {/* Header */}
                         <header className="md:hidden flex justify-between items-center mb-6"><span className="font-extrabold text-brand-900 flex items-center gap-2 text-xl"><IconByName name="Bot" className="w-7 h-7"/> MindfulTime</span><button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button></header>
-                        {data.activeTimer && <div className="bg-card text-text-main border-2 border-brand-100 rounded-[2.5rem] p-6 shadow-2xl flex items-center justify-between gap-6 mb-8 relative overflow-hidden"><div className="flex items-center gap-4 z-10"><div className="p-3 bg-brand-50 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div><div><div className="text-brand-600 text-xs font-bold uppercase mb-1">正在專注</div><div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div></div></div><div className="font-mono text-5xl font-extrabold tracking-tight z-10 tabular-nums text-brand-600">{formatTime(elapsedTime)}</div><button onClick={stopTimer} className="px-8 py-4 bg-waste-500 hover:bg-rose-400 text-white font-bold rounded-3xl shadow-sm flex items-center gap-2 z-10 transition-colors"><IconByName name="StopCircle" className="w-6 h-6"/> <span>完成</span></button></div>}
+                        
+                        {/* 計時器橫幅 (加入垃圾桶按鈕) */}
+                        {data.activeTimer && <div className="bg-card text-text-main border-2 border-brand-100 rounded-[2.5rem] p-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-6 mb-8 relative overflow-hidden">
+                            <div className="flex items-center gap-4 z-10 w-full sm:w-auto">
+                                <div className="p-3 bg-brand-50 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div>
+                                <div><div className="text-brand-600 text-xs font-bold uppercase mb-1">正在專注</div><div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div></div>
+                            </div>
+                            <div className="font-mono text-5xl font-extrabold tracking-tight z-10 tabular-nums text-brand-600">{formatTime(elapsedTime)}</div>
+                            <div className="flex gap-3 z-10 w-full sm:w-auto">
+                                {/* 新增的取消按鈕 */}
+                                <button onClick={cancelTimer} className="p-4 bg-gray-100 hover:bg-waste-500 hover:text-white text-gray-500 font-bold rounded-3xl transition-colors"><IconByName name="Trash2" className="w-6 h-6"/></button>
+                                <button onClick={stopTimer} className="flex-1 sm:flex-none px-8 py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-3xl shadow-sm flex items-center justify-center gap-2 transition-colors"><IconByName name="StopCircle" className="w-6 h-6"/> <span>完成</span></button>
+                            </div>
+                        </div>}
 
                         {view === 'tracker' && (
-                            <div className="space-y-8 animate-float">
+                            <div className="space-y-8 animate-fade-in">
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                     {CATEGORIES.map(cat => (
+                                        // 移除 animate-float
                                         <button key={cat.id} onClick={() => startTimer(cat.id)} className="group bg-card border-b-[6px] border-r-[6px] border-cream-dark rounded-[2.5rem] p-6 flex flex-col items-center justify-center gap-5 h-44 hover:-translate-y-1 transition-all active:border-b-[2px] active:border-r-[2px] active:translate-y-1">
                                             <div className="p-5 bg-cream rounded-3xl group-hover:scale-110 transition-transform"><IconByName name={cat.icon} className="w-10 h-10 text-brand-600" /></div>
                                             <span className="font-extrabold text-lg text-text-main">{cat.label}</span>
@@ -552,149 +577,138 @@ const submitReview = () => {
                         )}
 
                         {view === 'journal' && (
-    <div className="flex flex-col lg:flex-row gap-6 animate-slide-up h-full min-h-screen pb-20">
-        
-        {/* 左側：日曆 (依照你的截圖風格優化) */}
-        <div className="lg:w-1/3 flex flex-col gap-6">
-            <div className="bg-white rounded-[2rem] shadow-sm p-6 border border-cream-dark">
-                <div className="flex justify-between items-center mb-6 px-2">
-                    <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
-                    <span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span>
-                    <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronRight" className="w-5 h-5"/></button>
-                </div>
-                <div className="grid grid-cols-7 gap-y-4 justify-items-center font-bold text-gray-400 text-sm mb-2">
-                    <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
-                </div>
-                <div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-main">
-                    {renderCalendar()}
-                </div>
-            </div>
-        </div>
+                            <div className="flex flex-col lg:flex-row gap-6 animate-slide-up h-full min-h-screen pb-20">
+                                <div className="lg:w-1/3 flex flex-col gap-6">
+                                    <div className="bg-white rounded-[2rem] shadow-sm p-6 border border-cream-dark">
+                                        <div className="flex justify-between items-center mb-6 px-2">
+                                            <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
+                                            <span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span>
+                                            <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronRight" className="w-5 h-5"/></button>
+                                        </div>
+                                        <div className="grid grid-cols-7 gap-y-4 justify-items-center font-bold text-gray-400 text-sm mb-2">
+                                            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                                        </div>
+                                        <div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-main">
+                                            {renderCalendar()}
+                                        </div>
+                                    </div>
+                                </div>
 
-        {/* 右側：主要內容區 (依照截圖設計) */}
-        <div className="lg:w-2/3 flex flex-col gap-6">
-            
-            {/* 標題與日期 */}
-            <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-extrabold text-text-main">{getLocalDateStr(journalSelectedDate)}</h2>
-                <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg">日記</span>
-            </div>
+                                <div className="lg:w-2/3 flex flex-col gap-6">
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-2xl font-extrabold text-text-main">{getLocalDateStr(journalSelectedDate)}</h2>
+                                        <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg">日記</span>
+                                    </div>
 
-            {/* 1. 今日任務區塊 */}
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-cream-dark">
-                <div className="flex items-center gap-2 mb-4 text-text-main font-bold">
-                    <IconByName name="CheckSquare" className="w-5 h-5"/> 今日任務
-                </div>
-                
-                {/* 任務輸入區 */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                    <input 
-                        type="text" 
-                        placeholder="任務內容..." 
-                        className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
-                        value={taskContent}
-                        onChange={e => setTaskContent(e.target.value)}
-                    />
-                    <input 
-                        type="text" 
-                        placeholder="為什麼要做？(價值)" 
-                        className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
-                        value={taskValue}
-                        onChange={e => setTaskValue(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && addTask()}
-                    />
-                    <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
-                        <IconByName name="Plus" className="w-5 h-5"/>
-                    </button>
-                </div>
+                                    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-cream-dark">
+                                        <div className="flex items-center gap-2 mb-4 text-text-main font-bold">
+                                            <IconByName name="CheckSquare" className="w-5 h-5"/> 今日任務
+                                        </div>
+                                        
+                                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                                            <input 
+                                                type="text" 
+                                                placeholder="任務內容..." 
+                                                className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
+                                                value={taskContent}
+                                                onChange={e => setTaskContent(e.target.value)}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                placeholder="為什麼要做？(價值)" 
+                                                className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
+                                                value={taskValue}
+                                                onChange={e => setTaskValue(e.target.value)}
+                                                onKeyDown={e => e.key === 'Enter' && addTask()}
+                                            />
+                                            <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
+                                                <IconByName name="Plus" className="w-5 h-5"/>
+                                            </button>
+                                        </div>
 
-                {/* 任務列表 */}
-                <div className="space-y-2">
-                    {dayTasks.map(task => (
-                        <div key={task.id} onClick={() => toggleTask(task.id)} className="flex items-center gap-3 p-3 bg-cream rounded-xl cursor-pointer hover:bg-brand-50 transition-colors group">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${task.done ? 'bg-brand-500 border-brand-500' : 'border-gray-300'}`}>
-                                {task.done && <IconByName name="Check" className="w-3 h-3 text-white"/>}
+                                        <div className="space-y-2">
+                                            {dayTasks.map(task => (
+                                                <div key={task.id} onClick={() => toggleTask(task.id)} className="flex items-center gap-3 p-3 bg-cream rounded-xl cursor-pointer hover:bg-brand-50 transition-colors group">
+                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${task.done ? 'bg-brand-500 border-brand-500' : 'border-gray-300'}`}>
+                                                        {task.done && <IconByName name="Check" className="w-3 h-3 text-white"/>}
+                                                    </div>
+                                                    <div className={`flex-1 font-bold text-sm ${task.done ? 'text-gray-400 line-through' : 'text-text-main'}`}>
+                                                        {task.content}
+                                                    </div>
+                                                    {task.value && <div className="text-xs text-brand-600 bg-brand-100 px-2 py-1 rounded-lg font-bold">{task.value}</div>}
+                                                    <button onClick={(e) => { e.stopPropagation(); setDayTasks(dayTasks.filter(t => t.id !== task.id)); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-waste-500 p-1"><IconByName name="X" className="w-4 h-4"/></button>
+                                                </div>
+                                            ))}
+                                            {dayTasks.length === 0 && <div className="text-center text-xs text-gray-300 font-bold py-2">還沒有任務，新增一項吧！🌱</div>}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 bg-slate-600 rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col">
+                                        <textarea 
+                                            className="w-full h-full bg-transparent text-white placeholder-gray-400 text-lg leading-relaxed outline-none resize-none font-medium" 
+                                            placeholder="今天過得怎麼樣？寫下來吧..." 
+                                            value={journalText} 
+                                            onChange={e => setJournalText(e.target.value)} 
+                                        />
+                                        
+                                        {journalAiResponse && (
+                                            <div className="mt-4 bg-white p-4 rounded-2xl shadow-lg animate-fade-in">
+                                                <div className="flex items-center gap-2 text-brand-600 font-bold mb-2 text-sm">
+                                                    <IconByName name="Bot" className="w-4 h-4"/> AI 分析與建議
+                                                </div>
+                                                <p className="text-text-main text-sm font-bold leading-relaxed">{journalAiResponse}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="bg-cream border border-brand-100 p-4 rounded-[2rem] flex flex-col gap-4">
+                                        <div className="flex items-center gap-2 text-brand-600 font-bold px-2">
+                                            <IconByName name="Bot" className="w-5 h-5"/> AI 重點摘要
+                                        </div>
+                                        
+                                        <div className="bg-white p-2 rounded-2xl border-2 border-transparent focus-within:border-brand-200 transition-colors flex items-center gap-2 shadow-sm">
+                                            <input 
+                                                type="text" 
+                                                placeholder="寫點東西或新增任務，我才能幫你分析喔 🌱" 
+                                                className="flex-1 p-2 bg-transparent outline-none text-sm font-bold text-text-main"
+                                                disabled
+                                            />
+                                            <button 
+                                                onClick={handleJournalAI}
+                                                className="px-4 py-2 bg-white border border-gray-100 text-text-light text-xs font-bold rounded-xl hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all flex items-center gap-1"
+                                            >
+                                                <IconByName name="Sparkles" className="w-4 h-4"/> 生成分析
+                                            </button>
+                                        </div>
+
+                                        <div className="flex justify-end">
+                                            <button 
+                                                onClick={() => { 
+                                                    saveDataToLocal({ 
+                                                        ...data, 
+                                                        journals: { 
+                                                            ...data.journals, 
+                                                            [getLocalDateStr(journalSelectedDate)]: { 
+                                                                content: journalText,
+                                                                tasks: dayTasks 
+                                                            } 
+                                                        } 
+                                                    }); 
+                                                    showToast("日記與任務已儲存 ✨"); 
+                                                }} 
+                                                className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-2xl font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:translate-y-[-2px] active:scale-95"
+                                            >
+                                                <IconByName name="Save" className="w-5 h-5"/> 儲存日記
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className={`flex-1 font-bold text-sm ${task.done ? 'text-gray-400 line-through' : 'text-text-main'}`}>
-                                {task.content}
-                            </div>
-                            {task.value && <div className="text-xs text-brand-600 bg-brand-100 px-2 py-1 rounded-lg font-bold">{task.value}</div>}
-                            <button onClick={(e) => { e.stopPropagation(); setDayTasks(dayTasks.filter(t => t.id !== task.id)); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-waste-500 p-1"><IconByName name="X" className="w-4 h-4"/></button>
-                        </div>
-                    ))}
-                    {dayTasks.length === 0 && <div className="text-center text-xs text-gray-300 font-bold py-2">還沒有任務，新增一項吧！🌱</div>}
-                </div>
-            </div>
-
-            {/* 2. 暗色日記撰寫區 (仿照截圖) */}
-            <div className="flex-1 bg-slate-600 rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col">
-                <textarea 
-                    className="w-full h-full bg-transparent text-white placeholder-gray-400 text-lg leading-relaxed outline-none resize-none font-medium" 
-                    placeholder="今天過得怎麼樣？寫下來吧..." 
-                    value={journalText} 
-                    onChange={e => setJournalText(e.target.value)} 
-                />
-                
-                {/* AI 回應浮層 */}
-                {journalAiResponse && (
-                    <div className="mt-4 bg-white p-4 rounded-2xl shadow-lg animate-fade-in">
-                        <div className="flex items-center gap-2 text-brand-600 font-bold mb-2 text-sm">
-                            <IconByName name="Bot" className="w-4 h-4"/> AI 分析與建議
-                        </div>
-                        <p className="text-text-main text-sm font-bold leading-relaxed">{journalAiResponse}</p>
-                    </div>
-                )}
-            </div>
-
-            {/* 3. 底部功能區 (AI & 儲存) */}
-            <div className="bg-cream border border-brand-100 p-4 rounded-[2rem] flex flex-col gap-4">
-                <div className="flex items-center gap-2 text-brand-600 font-bold px-2">
-                    <IconByName name="Bot" className="w-5 h-5"/> AI 重點摘要
-                </div>
-                
-                <div className="bg-white p-2 rounded-2xl border-2 border-transparent focus-within:border-brand-200 transition-colors flex items-center gap-2 shadow-sm">
-                    <input 
-                        type="text" 
-                        placeholder="寫點東西或新增任務，我才能幫你分析喔 🌱" 
-                        className="flex-1 p-2 bg-transparent outline-none text-sm font-bold text-text-main"
-                        disabled
-                    />
-                    <button 
-                        onClick={handleJournalAI}
-                        className="px-4 py-2 bg-white border border-gray-100 text-text-light text-xs font-bold rounded-xl hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all flex items-center gap-1"
-                    >
-                        <IconByName name="Sparkles" className="w-4 h-4"/> 生成分析
-                    </button>
-                </div>
-
-                <div className="flex justify-end">
-                    <button 
-                        onClick={() => { 
-                            saveDataToLocal({ 
-                                ...data, 
-                                journals: { 
-                                    ...data.journals, 
-                                    [getLocalDateStr(journalSelectedDate)]: { 
-                                        content: journalText,
-                                        tasks: dayTasks // 同步儲存任務
-                                    } 
-                                } 
-                            }); 
-                            showToast("日記與任務已儲存 ✨"); 
-                        }} 
-                        className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-2xl font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:translate-y-[-2px] active:scale-95"
-                    >
-                        <IconByName name="Save" className="w-5 h-5"/> 儲存日記
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-)}
+                        )}
 
                         {view === 'analysis' && (
                             <div className="animate-slide-up space-y-6">
+                                {/* Header / View Switcher */}
                                 <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
                                     <div className="flex bg-cream p-1 rounded-2xl">
                                         <button onClick={() => setAnalysisViewMode('day')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='day'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
@@ -709,37 +723,40 @@ const submitReview = () => {
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div className="bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col h-full border border-cream-dark">
+                                {/* Main Grid Layout Re-structure (Matching Screenshot 3) */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    {/* Left Column: Value Chart (Takes 1/3) */}
+                                    <div className="lg:col-span-1 bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col border border-cream-dark h-full">
                                         <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
                                         <div className="flex-1 flex flex-col items-center justify-center">
                                             <DonutChart data={chartData} />
-                                            <div className="w-full mt-10 space-y-4">
+                                            <div className="w-full mt-8 space-y-4">
                                                 {chartData.map((d, i) => (
-                                                    <div key={i} className="flex items-center justify-between p-4 rounded-3xl bg-cream">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
-                                                            <span className="font-extrabold text-lg text-text-main">{d.name}</span>
+                                                    <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-cream">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-3 h-3 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
+                                                            <span className="font-extrabold text-sm text-text-main">{d.name}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <span className="font-mono font-extrabold text-lg text-text-main">{formatDurationSimple(d.value)}</span>
-                                                        </div>
+                                                        <span className="font-mono font-extrabold text-sm text-text-main">{formatDurationSimple(d.value)}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
-                                    {/* ... Insights & AI Manager ... */}
-                                    <div className="flex flex-col gap-6">
+
+                                    {/* Right Column: Insights (Takes 2/3) */}
+                                    <div className="lg:col-span-2 flex flex-col gap-6">
+                                        {/* Growth Bar */}
                                         <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
-                                           <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
-                                           <p className="text-brand-900 text-lg leading-relaxed font-medium">
-                                               {dashboardStats.totalDuration > 0 ? 
-                                               (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
-                                               ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
-                                               }
-                                           </p>
+                                            <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
+                                            <p className="text-brand-900 text-lg leading-relaxed font-medium">
+                                                {dashboardStats.totalDuration > 0 ? 
+                                                (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
+                                                ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
+                                                }
+                                            </p>
                                         </div>
+                                        {/* Tips */}
                                         <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
                                             <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
                                             <p className="text-text-main text-lg leading-relaxed font-medium">
@@ -749,21 +766,45 @@ const submitReview = () => {
                                                 }
                                             </p>
                                         </div>
-                                        <div className="bg-white border border-brand-100 rounded-3xl shadow-sm flex flex-col flex-1 min-h-[350px] overflow-hidden">
-                                            <div className="p-5 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
-                                                <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
-                                                <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
-                                            </div>
-                                            <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-white">
-                                                {managerMessages.map(m => <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[85%] p-4 rounded-3xl text-sm font-bold ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>{m.text}</div></div>)}
-                                                {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse">AI 正在輸入...</div>}
-                                                <div ref={chatEndRef}/>
-                                            </div>
-                                            <div className="p-4 border-t-2 border-gray-100 flex gap-3 bg-gray-50">
-                                                <input className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all" placeholder="問問我行程建議..." value={managerInput} onChange={e=>setManagerInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleManagerChat()} />
-                                                <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute"><IconByName name="Send" className="w-5 h-5"/></button>
-                                            </div>
+                                    </div>
+                                </div>
+
+                                {/* Bottom Row: AI Personal Manager (Full Width) */}
+                                <div className="bg-white border border-brand-100 rounded-[2.5rem] shadow-sm flex flex-col min-h-[500px] overflow-hidden">
+                                    <div className="p-6 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
+                                        <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
+                                        <div>
+                                            <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
+                                            <div className="text-xs font-bold text-brand-500 opacity-80">在線中，隨時為你調整計畫</div>
                                         </div>
+                                    </div>
+                                    <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-white">
+                                        {managerMessages.map(m => (
+                                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                {m.role === 'ai' && <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center mr-2"><IconByName name="Bot" className="w-4 h-4 text-brand-600"/></div>}
+                                                <div className={`max-w-[70%] p-5 rounded-3xl text-sm font-bold leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>
+                                                    {m.text}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse pl-12">AI 正在思考你的行程...</div>}
+                                        <div ref={chatEndRef}/>
+                                    </div>
+                                    <div className="p-6 border-t-2 border-gray-100 flex gap-4 bg-gray-50 items-end">
+                                        <textarea 
+                                            className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all resize-none shadow-sm" 
+                                            placeholder="告訴我你的狀態 (累了、忙碌...)，或如果有行程變動..." 
+                                            rows="2"
+                                            value={managerInput} 
+                                            onChange={e=>setManagerInput(e.target.value)} 
+                                            onKeyDown={e => {
+                                                if(e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleManagerChat();
+                                                }
+                                            }} 
+                                        />
+                                        <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute h-14 w-14 flex items-center justify-center"><IconByName name="Send" className="w-6 h-6"/></button>
                                     </div>
                                 </div>
                             </div>
@@ -820,107 +861,96 @@ const submitReview = () => {
                         <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" mobile />
                     </nav>
 
-                    {/* --- 請複製這整段 Modal，取代你原本的 Modal --- */}
-<Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
-    <div className="space-y-6">
-        {/* 1. 大數字時間顯示 */}
-        <div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark relative overflow-hidden">
-            <div className="text-5xl font-mono font-extrabold text-brand-600 relative z-10">
-                {/* 如果有手動輸入，就顯示手動的時間；否則顯示計時器的時間 */}
-                {manualMinutes 
-                    ? `${manualMinutes.padStart(2, '0')}:00` 
-                    : (reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00')
-                }
-            </div>
-            {/* 裝飾用的背景圖示 */}
-            <IconByName name="Clock" className="absolute -bottom-4 -right-4 w-24 h-24 text-brand-100 opacity-50 rotate-12"/>
-        </div>
+                    {/* Review Modal */}
+                    <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
+                        <div className="space-y-6">
+                            <div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark relative overflow-hidden">
+                                <div className="text-5xl font-mono font-extrabold text-brand-600 relative z-10">
+                                    {manualMinutes 
+                                        ? `${manualMinutes.padStart(2, '0')}:00` 
+                                        : (reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00')
+                                    }
+                                </div>
+                                <IconByName name="Clock" className="absolute -bottom-4 -right-4 w-24 h-24 text-brand-100 opacity-50 rotate-12"/>
+                            </div>
 
-        {/* 🔥 2. 手動輸入時間區塊 (只在 運動 和 其他 顯示) 🔥 */}
-        {reviewSessionCache && ['sports', 'others'].includes(reviewSessionCache.category) && (
-            <div className="bg-brand-50 p-4 rounded-2xl border-2 border-brand-100 animate-fade-in">
-                <label className="block text-sm font-bold text-brand-900 mb-2 text-center flex items-center justify-center gap-1">
-                    {/* 判斷：如果是運動顯示啞鈴，其他則顯示時鐘 */}
-                    <IconByName name={reviewSessionCache.category === 'sports' ? 'Dumbbell' : 'Clock'} className="w-4 h-4"/> 
-                    
-                    {/* 判斷：如果是運動顯示"實際運動多久"，其他顯示"這件事花了多久" */}
-                    {reviewSessionCache.category === 'sports' ? ' 實際運動多久？' : ' 這件事花了多久？'}
-                </label>
-                
-                <div className="flex items-center justify-center gap-3">
-                    <input 
-                        type="number" 
-                        value={manualMinutes} 
-                        onChange={(e) => setManualMinutes(e.target.value)}
-                        className="w-32 p-3 text-center text-2xl font-bold rounded-xl border-2 border-brand-200 outline-none focus:border-brand-500 text-brand-600 bg-white shadow-sm"
-                        placeholder={reviewSessionCache.category === 'sports' ? "30" : "10"}
-                        autoFocus
-                    />
-                    <span className="font-bold text-brand-600 text-lg">分鐘</span>
-                </div>
-                <p className="text-[10px] text-center text-brand-400 mt-2 font-bold opacity-70">
-                    {reviewSessionCache.category === 'sports' ? '手機鎖屏沒計到時？直接改這裡！✨' : '忘記計時了嗎？直接手動輸入吧！✨'}
-                </p>
-            </div>
-        )}
+                            {reviewSessionCache && ['sports', 'others'].includes(reviewSessionCache.category) && (
+                                <div className="bg-brand-50 p-4 rounded-2xl border-2 border-brand-100 animate-fade-in">
+                                    <label className="block text-sm font-bold text-brand-900 mb-2 text-center flex items-center justify-center gap-1">
+                                        <IconByName name={reviewSessionCache.category === 'sports' ? 'Dumbbell' : 'Clock'} className="w-4 h-4"/> 
+                                        {reviewSessionCache.category === 'sports' ? ' 實際運動多久？' : ' 這件事花了多久？'}
+                                    </label>
+                                    
+                                    <div className="flex items-center justify-center gap-3">
+                                        <input 
+                                            type="number" 
+                                            value={manualMinutes} 
+                                            onChange={(e) => setManualMinutes(e.target.value)}
+                                            className="w-32 p-3 text-center text-2xl font-bold rounded-xl border-2 border-brand-200 outline-none focus:border-brand-500 text-brand-600 bg-white shadow-sm"
+                                            placeholder={reviewSessionCache.category === 'sports' ? "30" : "10"}
+                                            autoFocus
+                                        />
+                                        <span className="font-bold text-brand-600 text-lg">分鐘</span>
+                                    </div>
+                                    <p className="text-[10px] text-center text-brand-400 mt-2 font-bold opacity-70">
+                                        {reviewSessionCache.category === 'sports' ? '手機鎖屏沒計到時？直接改這裡！✨' : '忘記計時了嗎？直接手動輸入吧！✨'}
+                                    </p>
+                                </div>
+                            )}
 
-        {/* 3. 價值分類選擇 (投資/消耗/充電) */}
-        <div>
-            <label className="block font-extrabold text-lg text-text-main mb-4 pl-2">這段時間感覺如何？</label>
-            <div className="grid grid-cols-1 gap-3">
-                {VALUE_TYPES.map(type => (
-                    <button 
-                        key={type.id} 
-                        onClick={() => setReviewType(type.id)} 
-                        className={`p-4 rounded-[1.5rem] border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}
-                    >
-                        <span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>
-                        {reviewType === type.id && <IconByName name="CheckCircle" className={`w-6 h-6 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}
-                    </button>
-                ))}
-            </div>
-        </div>
+                            <div>
+                                <label className="block font-extrabold text-lg text-text-main mb-4 pl-2">這段時間感覺如何？</label>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {VALUE_TYPES.map(type => (
+                                        <button 
+                                            key={type.id} 
+                                            onClick={() => setReviewType(type.id)} 
+                                            className={`p-4 rounded-[1.5rem] border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}
+                                        >
+                                            <span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>
+                                            {reviewType === type.id && <IconByName name="CheckCircle" className={`w-6 h-6 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-        {/* 4. 詳細紀錄 (如果是 AI/知識/娛樂/運動) */}
-        {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (
-            <div className="bg-cream p-5 rounded-[2rem] border-4 border-cream-dark space-y-4">
-                <h4 className="font-extrabold text-base text-text-main flex items-center gap-2">
-                    <IconByName name="Settings" className="w-5 h-5"/> 詳細紀錄
-                </h4>
-                {CATEGORY_FIELDS[reviewSessionCache.category].map(field => (
-                    <div key={field.key}>
-                        <label className="block text-sm font-extrabold text-text-light mb-2 pl-1">{field.label}</label>
-                        {field.type === 'select' ? (
-                            <select className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}>
-                                <option value="">選擇...</option>
-                                {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                            </select>
-                        ) : (
-                            <input type="text" className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />
-                        )}
-                    </div>
-                ))}
-            </div>
-        )}
+                            {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (
+                                <div className="bg-cream p-5 rounded-[2rem] border-4 border-cream-dark space-y-4">
+                                    <h4 className="font-extrabold text-base text-text-main flex items-center gap-2">
+                                        <IconByName name="Settings" className="w-5 h-5"/> 詳細紀錄
+                                    </h4>
+                                    {CATEGORY_FIELDS[reviewSessionCache.category].map(field => (
+                                        <div key={field.key}>
+                                            <label className="block text-sm font-extrabold text-text-light mb-2 pl-1">{field.label}</label>
+                                            {field.type === 'select' ? (
+                                                <select className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}>
+                                                    <option value="">選擇...</option>
+                                                    {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                                </select>
+                                            ) : (
+                                                <input type="text" className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-        {/* 5. 評分星星 */}
-        <div>
-            <label className="block font-extrabold text-lg text-text-main mb-4 pl-2">給自己幾顆星？</label>
-            <div className="flex justify-center gap-2 bg-cream p-4 rounded-[2rem] border-4 border-cream-dark">
-                {[1, 2, 3, 4, 5].map(star => (
-                    <button key={star} onClick={() => setReviewRating(star)} className="hover:scale-110 transition-transform active:scale-90 p-1">
-                        <IconByName name="Star" className={`w-8 h-8 ${star <= reviewRating ? "text-accent-yellow fill-accent-yellow" : "text-gray-300"}`} />
-                    </button>
-                ))}
-            </div>
-        </div>
+                            <div>
+                                <label className="block font-extrabold text-lg text-text-main mb-4 pl-2">給自己幾顆星？</label>
+                                <div className="flex justify-center gap-2 bg-cream p-4 rounded-[2rem] border-4 border-cream-dark">
+                                    {[1, 2, 3, 4, 5].map(star => (
+                                        <button key={star} onClick={() => setReviewRating(star)} className="hover:scale-110 transition-transform active:scale-90 p-1">
+                                            <IconByName name="Star" className={`w-8 h-8 ${star <= reviewRating ? "text-accent-yellow fill-accent-yellow" : "text-gray-300"}`} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-        {/* 6. 確認按鈕 */}
-        <button onClick={submitReview} className="w-full py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold text-xl shadow-cute hover:translate-y-[2px] hover:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2">
-            <IconByName name="Save" className="w-6 h-6"/> 確認並儲存 ✨
-        </button>
-    </div>
-</Modal>
+                            <button onClick={submitReview} className="w-full py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold text-xl shadow-cute hover:translate-y-[2px] hover:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2">
+                                <IconByName name="Save" className="w-6 h-6"/> 確認並儲存 ✨
+                            </button>
+                        </div>
+                    </Modal>
                 </div>
             );
         };
