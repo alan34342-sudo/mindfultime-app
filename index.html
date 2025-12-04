@@ -624,29 +624,31 @@ input, textarea, select { font-size: 16px !important; }
 </div>
 )}
 
-<div className="flex flex-col sm:flex-row gap-3 mb-4">
-    <input 
-        type="text" 
-        placeholder="任務內容..." 
-        className="flex-1 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all"
-        value={taskContent}
-        onChange={e => setTaskContent(e.target.value)}
-    />
-    
-    {/* 這是你新增的價值輸入框 */}
-    <input 
-        type="text" 
-        placeholder="價值" 
-        className="w-24 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all text-center"
-        value={taskValue}
-        onChange={e => setTaskValue(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && addTask()}
-    />
+        {/* 1. 開頭：確保這行存在 */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <input 
+                type="text" 
+                placeholder="任務內容..." 
+                className="flex-1 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all"
+                value={taskContent}
+                onChange={e => setTaskContent(e.target.value)}
+            />
 
-    <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
-        <IconByName name="Plus" className="w-5 h-5"/>
-    </button>
-</div>  {/* <--- 檢查你的程式碼裡，是不是少加上了這個結尾的 div？ */}
+            <input 
+                type="text" 
+                placeholder="價值" 
+                className="w-24 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all text-center"
+                value={taskValue}
+                onChange={e => setTaskValue(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addTask()}
+            />
+
+            <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
+                <IconByName name="Plus" className="w-5 h-5"/>
+            </button>
+        </div> {/* 2. 結尾：這裡只能有一個 </div>，不能多也不能少 */}
+
+        {/* 下面接著是 <div className="space-y-2"> ... 不要動它 */}
 
                                         <div className="space-y-2">
                                             {dayTasks.map(task => (
