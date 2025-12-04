@@ -860,50 +860,49 @@ input, textarea, select { font-size: 16px !important; }
                         )}
 
                         {view === 'muse' && (
-    <div className="animate-slide-up space-y-4 h-full flex flex-col">
-        <div className="bg-card rounded-2xl shadow-sm p-5 border border-cream-dark flex-1 flex flex-col">
-            <h2 className="text-xl font-bold text-text-main mb-4 flex items-center gap-2">
-                <IconByName name="Lightbulb" className="w-6 h-6 text-accent-yellow"/> 靈感碎片
-            </h2>
-            
-            <div className="flex gap-3 mb-6">
-                <input 
-                    className="flex-1 px-4 py-3 bg-gray-50 rounded-xl outline-none text-sm font-medium focus:ring-1 focus:ring-brand-500 transition-all text-text-main placeholder-gray-400" 
-                    placeholder="捕捉一個想法..." 
-                    value={newInspiration} 
-                    onChange={e=>setNewInspiration(e.target.value)} 
-                    onKeyDown={e=>e.key==='Enter'&&addInspiration()} 
-                />
-                <button onClick={addInspiration} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors shadow-sm active:scale-95">
-                    <IconByName name="Plus" className="w-5 h-5"/>
-                </button>
-            </div>
+                            <div className="animate-slide-up space-y-4 h-full flex flex-col">
+                                <div className="bg-card rounded-2xl shadow-sm p-5 border border-cream-dark flex-1 flex flex-col">
+                                    <h2 className="text-xl font-bold text-text-main mb-4 flex items-center gap-2">
+                                        <IconByName name="Lightbulb" className="w-6 h-6 text-accent-yellow"/> 靈感碎片
+                                    </h2>
+                                    
+                                    <div className="flex gap-3 mb-6">
+                                        <input 
+                                            className="flex-1 px-4 py-3 bg-gray-50 rounded-xl outline-none text-sm font-medium focus:ring-1 focus:ring-brand-500 transition-all text-text-main placeholder-gray-400" 
+                                            placeholder="捕捉一個想法..." 
+                                            value={newInspiration} 
+                                            onChange={e=>setNewInspiration(e.target.value)} 
+                                            onKeyDown={e=>e.key==='Enter'&&addInspiration()} 
+                                        />
+                                        <button onClick={addInspiration} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors shadow-sm active:scale-95">
+                                            <IconByName name="Plus" className="w-5 h-5"/>
+                                        </button>
+                                    </div>
 
-            <div className="grid grid-cols-1 gap-3 overflow-y-auto">
-                {(data.inspirations || []).map((item) => (
-                    <div key={item.id} className="bg-cream/50 p-4 rounded-xl border border-transparent hover:border-brand-200 group relative transition-all">
-                        <div className="text-[10px] text-text-light font-medium mb-1">{item.date}</div>
-                        <div className="text-sm font-medium text-text-main leading-relaxed whitespace-pre-wrap pr-6">{item.text}</div>
-                        <button onClick={()=>{const newInspirations=data.inspirations.filter(i=>i.id!==item.id); saveDataToLocal({...data, inspirations: newInspirations});}} className="absolute top-3 right-3 text-gray-300 hover:text-waste-500 transition-colors">
-                            <IconByName name="Trash2" className="w-4 h-4"/>
-                        </button>
-                    </div>
-                ))}
-                {(data.inspirations || []).length === 0 && (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-50">
-                        <IconByName name="Sparkles" className="w-12 h-12 text-gray-300 mb-2"/>
-                        <div className="text-sm text-text-light font-medium">還沒有靈感喔，快記下來吧 ✨</div>
-                    </div>
-                )}
-            </div>
-        </div>
-    </div>
-)}
+                                    <div className="grid grid-cols-1 gap-3 overflow-y-auto">
+                                        {(data.inspirations || []).map((item) => (
+                                            <div key={item.id} className="bg-cream/50 p-4 rounded-xl border border-transparent hover:border-brand-200 group relative transition-all">
+                                                <div className="text-[10px] text-text-light font-medium mb-1">{item.date}</div>
+                                                <div className="text-sm font-medium text-text-main leading-relaxed whitespace-pre-wrap pr-6">{item.text}</div>
+                                                <button onClick={()=>{const newInspirations=data.inspirations.filter(i=>i.id!==item.id); saveDataToLocal({...data, inspirations: newInspirations});}} className="absolute top-3 right-3 text-gray-300 hover:text-waste-500 transition-colors">
+                                                    <IconByName name="Trash2" className="w-4 h-4"/>
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {(data.inspirations || []).length === 0 && (
+                                            <div className="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-50">
+                                                <IconByName name="Sparkles" className="w-12 h-12 text-gray-300 mb-2"/>
+                                                <div className="text-sm text-text-light font-medium">還沒有靈感喔，快記下來吧 ✨</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {view === 'settings' && (
                             <div className="bg-card rounded-[2.5rem] shadow-cute p-10 space-y-8 animate-slide-up border border-cream-dark">
                                 <h2 className="font-extrabold text-2xl flex items-center gap-3 text-text-main"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
-                                {/* ... (Settings Preserved) ... */}
                                 <div><label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label><div className="flex gap-4"><button onClick={()=>setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button><button onClick={()=>setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button><button onClick={()=>setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button></div></div>
                                 <div><label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label><div className="flex gap-3"><input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." /><button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button></div></div>
                                 <div><label className="block font-extrabold text-lg text-text-main mb-4">Gemini API Key (大腦)</label><div className="flex gap-3"><input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." /><button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button><button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button></div>
@@ -915,7 +914,7 @@ input, textarea, select { font-size: 16px !important; }
                                         </select>
                                     </div>
                                 )}
-                                <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p></div>
+                                <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p>
                             </div>
                         )}
                     </main>
