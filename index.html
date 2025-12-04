@@ -1,2023 +1,1032 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
-
 <head>
-
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-
     <title>MindfulTime</title>
-
     
-
     <meta name="apple-mobile-web-app-capable" content="yes">
-
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <meta name="theme-color" content="#FFF9F5">
-
     
-
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
-
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
-
-
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
     
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script>
-
       tailwind.config = {
-
         darkMode: 'class',
-
         theme: {
-
           extend: {
-
             colors: {
-
               cream: 'var(--bg-color)',
-
               'cream-dark': 'var(--border-color)',
-
               text: { main: 'var(--text-main)', light: 'var(--text-light)' },
-
               brand: { 50: '#F2FCF5', 100: '#E1F7E7', 500: '#88D4AB', 600: '#6FC295', 900: '#2D5B45' },
-
               waste: { 500: '#FFB7B2' }, 
-
               rest: { 500: '#AECBFA' },
-
               accent: { yellow: '#FDE68A', purple: '#E9D5FF' }
-
             },
-
             fontFamily: { sans: ['Nunito', 'sans-serif'] },
-
             boxShadow: {
-
               'cute': '4px 4px 0px 0px rgba(0,0,0,0.05)',
-
               'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-
             },
-
             animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
-
             keyframes: { 
-
                 fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
-
                 slideUp: { '0%': { opacity: 0, transform: 'translateY(20px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } }
-
             },
-
             screens: {
-
                 'xs': '375px',
-
             }
-
           }
-
         }
-
       }
-
     </script>
-
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-
-
     <style>
+      :root { 
+    --bg-color: #FAFAFA; /* 更乾淨的灰白，不像原本那麼黃 */
+    --border-color: #F3F4F6; 
+    --text-main: #1F2937; 
+    --text-light: #9CA3AF; 
+}
+.theme-dark { --bg-color: #111827; --border-color: #374151; --text-main: #F9FAFB; --text-light: #6B7280; }
+.theme-paper { --bg-color: #FDFBF7; --border-color: #E5E7EB; --text-main: #4B5563; --text-light: #9CA3AF; }
 
-      :root { --bg-color: #FFF9F5; --border-color: #F5EBE0; --text-main: #5D5F71; --text-light: #8E91A0; }
+body { 
+    font-family: 'Nunito', sans-serif; 
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+    transition: all 0.3s ease; 
+    -webkit-tap-highlight-color: transparent; 
+    overscroll-behavior-y: none; 
+}
 
-      .theme-dark { --bg-color: #1E293B; --border-color: #334155; --text-main: #F1F5F9; --text-light: #94A3B8; }
+/* 隱藏滾動條，保持介面極簡 */
+::-webkit-scrollbar { width: 0px; background: transparent; }
 
-      .theme-paper { --bg-color: #FEFBF6; --border-color: #E5E0D8; --text-main: #4A4A4A; --text-light: #8C8C8C; }
+.bg-card { background-color: white; } 
+.theme-dark .bg-card { background-color: #1F2937; }
 
-      body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
-
-      ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-
-      .bg-card { background-color: white; } .theme-dark .bg-card { background-color: #0F172A; }
-
-      input, textarea, select { font-size: 16px !important; } /* 防止 iOS 自動縮放 */
-
-      .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-
+/* 讓輸入框字體大小合適，防止 iOS 自動縮放 */
+input, textarea, select { font-size: 16px !important; } 
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
-
 </head>
-
 <body>
-
     <div id="root"></div>
 
-
-
     <script type="text/babel">
-
         const { useState, useEffect, useMemo, useRef } = React;
-
         const { createRoot } = ReactDOM;
 
-
-
         // --- 1. 內建圖示庫 (SVG) ---
-
-        const SvgBase = ({ children, className, size = 24 }) => (
-
+        const SvgBase = ({ children, className, size = 22 }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
-
         );
-
         const Icons = {
-
             Bot: (p) => <SvgBase {...p}><rect x="4" y="10" width="16" height="12" rx="3" ry="3" /><path d="M12 4v6m-5-1a5 5 0 0 1 10 0m-9 5h.01m7.98 0h.01"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/></SvgBase>,
-
             Clock: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgBase>,
-
             Book: (p) => <SvgBase {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></SvgBase>,
-
             BarChart2: (p) => <SvgBase {...p}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></SvgBase>,
-
             Settings: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></SvgBase>,
-
             StopCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><rect width="6" height="6" x="9" y="9"/></SvgBase>,
-
             RefreshCcw: (p) => <SvgBase {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></SvgBase>,
-
             Briefcase: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></SvgBase>,
-
             MonitorPlay: (p) => <SvgBase {...p}><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 16 11 10 14 10 8"/></SvgBase>,
-
             Dumbbell: (p) => <SvgBase {...p}><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></SvgBase>,
-
             Smartphone: (p) => <SvgBase {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgBase>,
-
             ShoppingBag: (p) => <SvgBase {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></SvgBase>,
-
             Coffee: (p) => <SvgBase {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></SvgBase>,
-
             Plus: (p) => <SvgBase {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></SvgBase>,
-
             Save: (p) => <SvgBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></SvgBase>,
-
             Send: (p) => <SvgBase {...p}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></SvgBase>,
-
             Calendar: (p) => <SvgBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></SvgBase>,
-
             CheckSquare: (p) => <SvgBase {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></SvgBase>,
-
             CheckCircle: (p) => <SvgBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></SvgBase>,
-
             Trash2: (p) => <SvgBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SvgBase>,
-
             ChevronLeft: (p) => <SvgBase {...p}><path d="m15 18-6-6 6-6"/></SvgBase>,
-
             ChevronRight: (p) => <SvgBase {...p}><path d="m9 18 6-6-6-6"/></SvgBase>,
-
             X: (p) => <SvgBase {...p}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></SvgBase>,
-
             Sparkles: (p) => <SvgBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></SvgBase>,
-
             Circle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/></SvgBase>,
-
             Star: (p) => <SvgBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></SvgBase>,
-
             Moon: (p) => <SvgBase {...p}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></SvgBase>,
-
             AlertTriangle: (p) => <SvgBase {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
-
             AlertCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></SvgBase>,
-
             Check: (p) => <SvgBase {...p}><polyline points="20 6 9 17 4 12" /></SvgBase>,
-
             Clipboard: (p) => <SvgBase {...p}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></SvgBase>,
-
             Link: (p) => <SvgBase {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></SvgBase>,
-
             ExternalLink: (p) => <SvgBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></SvgBase>,
-
             HelpCircle: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></SvgBase>,
-
             MoreHorizontal: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></SvgBase>,
-
             Zap: (p) => <SvgBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgBase>,
-
             Mail: (p) => <SvgBase {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></SvgBase>,
-
             Sun: (p) => <SvgBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></SvgBase>,
-
             Key: (p) => <SvgBase {...p}><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></SvgBase>,
-
             Lightbulb: (p) => <SvgBase {...p}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></SvgBase>
-
         };
-
-
 
         const IconByName = ({ name, className, size }) => {
-
             const Component = Icons[name] || Icons.HelpCircle;
-
             return <Component className={className} size={size} />;
-
         };
-
-
 
         // --- 2. UI Components ---
-
         const NavButton = ({ active, onClick, icon, label, mobile }) => {
-
     if (mobile) {
-
         return (
-
             <button onClick={onClick} className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${active ? 'text-brand-600' : 'text-gray-400 hover:text-gray-600'}`}>
-
                 <div className={`mb-1 transition-all ${active ? '-translate-y-1' : ''}`}>
-
                     <IconByName name={icon} className="w-6 h-6" />
-
                 </div>
-
                 {/* 選中時顯示一個小圓點，而不顯示文字，看起來更高級，或者顯示極小的文字 */}
-
                 <span className={`text-[10px] font-bold ${active ? 'opacity-100' : 'opacity-0 hidden'} transition-opacity`}>{label}</span>
-
                 {active && <div className="w-1 h-1 bg-brand-500 rounded-full mt-1"></div>}
-
             </button>
-
         )
-
     }
-
             return (
-
                 <button onClick={onClick} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-200 ${active ? 'bg-brand-50 text-brand-600 font-extrabold shadow-inner-soft' : 'text-text-light hover:bg-cream hover:text-text-main'}`}>
-
                     <IconByName name={icon} className={active ? 'text-brand-600' : 'text-text-light'} />
-
                     <span className="text-lg">{label}</span>
-
                 </button>
-
             );
-
         };
-
-
 
         const Modal = ({ isOpen, onClose, title, children }) => {
-
             if (!isOpen) return null;
-
             return (
-
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-
                     <div className="bg-card rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border-4 border-white ring-4 ring-brand-100 max-h-[90vh] flex flex-col">
-
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-cream">
-
                             <h3 className="text-xl font-extrabold text-text-main flex items-center gap-2"><IconByName name="Sparkles" className="text-accent-yellow fill-accent-yellow w-6 h-6" />{title}</h3>
-
                             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-text-light"><IconByName name="X" className="w-5 h-5" /></button>
-
                         </div>
-
                         <div className="p-6 overflow-y-auto bg-card">{children}</div>
-
                     </div>
-
                 </div>
-
             );
-
         };
 
-
-
         // --- 3. Donut Chart ---
-
         const DonutChart = ({ data }) => {
-
             const total = data.reduce((acc, cur) => acc + cur.value, 0);
-
             if (total === 0) return <div className="flex h-full items-center justify-center text-text-light font-bold">尚無數據</div>;
 
-
-
             let cumulativePercent = 0;
-
             const size = 220; const center = size / 2; const radius = 80; const strokeWidth = 20; const circumference = 2 * Math.PI * radius;
-
             const textRadius = radius; 
 
-
-
             return (
-
                 <div className="relative flex justify-center items-center">
-
                     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-
                         <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border-color)" strokeWidth={strokeWidth} opacity="0.3" />
-
                         {data.map((item, index) => {
-
                             const percent = item.value / total;
-
                             if (percent === 0) return null;
-
                             const startAngle = (cumulativePercent * 360) - 90;
-
                             const angle = percent * 360;
-
                             const midAngle = startAngle + angle / 2;
-
                             const strokeDasharray = `${percent * circumference} ${circumference}`;
-
                             const strokeDashoffset = -cumulativePercent * circumference;
-
                             
-
                             const radian = (midAngle * Math.PI) / 180;
-
                             const textX = center + textRadius * Math.cos(radian);
-
                             const textY = center + textRadius * Math.sin(radian);
-
-
 
                             cumulativePercent += percent;
 
-
-
                             let strokeColor = item.name === '投資 (高價值)' ? '#88D4AB' : item.name === '消耗 (浪費)' ? '#FFB7B2' : '#AECBFA';
 
-
-
                             if (percent >= 0.99) {
-
                                 return (
-
                                     <g key={index}>
-
                                         <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} />
-
                                         <text x={center} y={center + radius + 35} textAnchor="middle" className="fill-text-light text-xs font-bold">100%</text>
-
                                     </g>
-
                                 );
-
                             }
-
-
 
                             return (
-
                                 <g key={index}>
-
                                     <circle cx={center} cy={center} r={radius} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} transform={`rotate(-90 ${center} ${center})`} className="transition-all duration-1000 ease-out" />
-
                                     {percent > 0.05 && (
-
                                         <text x={textX} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-white text-xs font-extrabold font-mono" style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>
-
                                             {Math.round(percent * 100)}%
-
                                         </text>
-
                                     )}
-
                                 </g>
-
                             );
-
                         })}
-
                     </svg>
-
                     <div className="absolute text-center pointer-events-none">
-
                         <div className="text-3xl font-extrabold text-text-main leading-none">{Math.round(total/3600*10)/10}</div>
-
                         <div className="text-xs text-text-light font-bold mt-1">小時</div>
-
                     </div>
-
                 </div>
-
             );
-
         };
-
-
 
         // --- 4. Constants & Logic ---
-
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxGs0h7M7QTAi4HaYopWzj4KzBvO6_wnfpE-jrSzzqX_hcgMbadAPjHmhrDrE4bl139sg/exec"; 
-
         const SYNC_STORAGE_KEY = 'tm_sync_id';
-
         const GAS_URL_KEY = 'tm_gas_url';
-
         const THEME_STORAGE_KEY = 'tm_theme';
-
         const GEMINI_KEY_STORAGE = 'tm_gemini_key';
-
         const GEMINI_MODEL_KEY = 'tm_gemini_model';
 
-
-
         const CATEGORY_FIELDS = {
-
             ai: [{ key: 'tool', label: '工具', type: 'select', options: ['ChatGPT', 'Claude', 'Midjourney', 'Github Copilot'] }, { key: 'goal', label: '目標', type: 'text' }],
-
             knowledge: [{ key: 'topic', label: '主題', type: 'text' }, { key: 'method', label: '方式', type: 'select', options: ['閱讀', '課程', '實作'] }],
-
             entertainment: [{ key: 'content', label: '內容', type: 'text' }, { key: 'type', label: '類型', type: 'select', options: ['追劇', '電影', '遊戲'] }],
-
             sports: [{ key: 'activity', label: '項目', type: 'select', options: ['跑步', '健身重訓', '籃球', '羽球'] }, { key: 'detail', label: '紀錄', type: 'text' }],
-
             others: [{ key: 'activity', label: '內容', type: 'text' }]
-
         };
-
-
 
         const CATEGORIES = [
-
           { id: 'ai', label: 'AI 工具', icon: 'Bot', color: 'bg-indigo-100 text-indigo-600', defaultType: 'growth' },
-
           { id: 'knowledge', label: '知識學習', icon: 'Book', color: 'bg-blue-100 text-blue-600', defaultType: 'growth' },
-
           { id: 'entertainment', label: '娛樂放鬆', icon: 'MonitorPlay', color: 'bg-purple-100 text-purple-600', defaultType: 'waste' },
-
           { id: 'sports', label: '運動健康', icon: 'Dumbbell', color: 'bg-emerald-100 text-emerald-600', defaultType: 'rest' },
-
           { id: 'others', label: '其他', icon: 'MoreHorizontal', color: 'bg-gray-100 text-gray-600', defaultType: 'waste' }
-
         ];
-
-
 
         const VALUE_TYPES = [
-
             { id: 'growth', label: '投資 (高價值)', color: 'bg-brand-500', stroke: '#88D4AB' },
-
             { id: 'waste', label: '消耗 (浪費)', color: 'bg-waste-500', stroke: '#FFB7B2' },
-
             { id: 'rest', label: '運動 (健身)', color: 'bg-rest-500', stroke: '#AECBFA' }
-
         ];
 
-
-
         const callGeminiAPI = async (apiKey, prompt, model) => {
-
             const modelName = model || 'gemini-1.5-flash';
-
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-
             const payload = { contents: [{ parts: [{ text: prompt }] }] };
-
             try {
-
                 const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
                 const data = await response.json();
-
                 if (data.error) throw new Error(data.error.message);
-
                 return data.candidates[0].content.parts[0].text;
-
             } catch (error) {
-
                 console.error("AI Error:", error);
-
                 return `連線失敗 (${modelName}): ${error.message}`;
-
             }
-
         };
-
-
 
         const generateAIResponse = async (input, contextData, type, apiKey, model) => {
-
             if (!apiKey) return "請先到設定頁面填入並儲存 Gemini API Key 喔！🔑";
-
             
-
             let systemPrompt = "";
-
             
-
             if (type === 'journal') {
-
                 systemPrompt = `你是一個溫柔的心理諮商師。使用者日記："${input}"。請給予同理心回應與簡短建議，限80字。`;
-
             } else {
-
                 // --- 升級版大腦邏輯 ---
-
                 const todayStr = new Date().toISOString().split('T')[0];
-
                 
-
                 // 1. 讀取即時日記與任務
-
                 const journalContent = contextData.journal || "（使用者今天還沒寫日記）";
-
                 const taskContent = contextData.tasks && contextData.tasks.length > 0 
-
                     ? contextData.tasks.map(t => `- ${t.content} (${t.done ? '已完成' : '未完成'})`).join('\n') 
-
                     : "（目前沒有任務）";
-
                 const inspirationContent = (contextData.inspirations || []).slice(0, 5).map(i => i.text).join(", ");
 
-
-
                 // 2. 計算今日時間
-
                 const todaySessions = (contextData.sessions || []).filter(s => s.date === todayStr);
-
                 const stats = {
-
                     growth: Math.round(todaySessions.filter(s => s.valueType === 'growth').reduce((a,s)=>a+s.duration,0)/60),
-
                     rest: Math.round(todaySessions.filter(s => s.valueType === 'rest').reduce((a,s)=>a+s.duration,0)/60),
-
                     waste: Math.round(todaySessions.filter(s => s.valueType === 'waste').reduce((a,s)=>a+s.duration,0)/60)
-
                 };
-
                 
-
                 systemPrompt = `你是一位全能的生活管家與人生教練。你的目標是根據使用者的「真實狀態」提供建議。
-
                 
-
                 【使用者目前的狀態】
-
                 1. 正在寫的日記內容: "${journalContent}"
-
                 2. 今日任務清單: 
-
                 ${taskContent}
-
                 3. 最近的靈感: ${inspirationContent}
-
                 4. 今日已累積時間(分): 成長 ${stats.growth}, 運動 ${stats.rest}, 浪費 ${stats.waste}
-
                 
-
                 【使用者問題】
-
                 "${input}"
-
                 
-
                 請忽略官方客套話。如果日記顯示他很累，就叫他去休息；如果任務沒做完，就溫柔督促。針對上述資訊給出「具體」的下一步建議。`;
-
             }
-
             return await callGeminiAPI(apiKey, systemPrompt, model);
-
         };
-
-
 
         // --- 5. App ---
-
         const App = () => {
-
             const [syncId, setSyncId] = useState(localStorage.getItem(SYNC_STORAGE_KEY));
-
             
-
             // 1. 先定義所有的 State (變數)
-
             const [data, setData] = useState({ sessions: [], journals: {}, activeTimer: null, settings: {}, inspirations: [] });
-
             const [view, setView] = useState('tracker');
-
             const [showReviewModal, setShowReviewModal] = useState(false);
-
             const [elapsedTime, setElapsedTime] = useState(0);
-
             const [isSyncing, setIsSyncing] = useState(false);
-
             const [localScriptUrl, setLocalScriptUrl] = useState(localStorage.getItem(GAS_URL_KEY) || GAS_URL);
-
             const [theme, setTheme] = useState(localStorage.getItem(THEME_STORAGE_KEY) || 'default');
-
             const [geminiKey, setGeminiKey] = useState(localStorage.getItem(GEMINI_KEY_STORAGE) || '');
-
             
-
             const [availableModels, setAvailableModels] = useState([]);
-
             const [selectedModel, setSelectedModel] = useState(localStorage.getItem(GEMINI_MODEL_KEY) || 'gemini-1.5-flash');
 
-
-
             const [reviewRating, setReviewRating] = useState(3);
-
             const [reviewType, setReviewType] = useState('growth');
-
             const [reviewNote, setReviewNote] = useState('');
-
             const [manualMinutes, setManualMinutes] = useState('');
-
             const [reviewMetaData, setReviewMetaData] = useState({});
-
             const [reviewSessionCache, setReviewSessionCache] = useState(null);
-
             const [newInspiration, setNewInspiration] = useState('');
 
-
-
             const [journalSelectedDate, setJournalSelectedDate] = useState(new Date());
-
             const [calendarViewDate, setCalendarViewDate] = useState(new Date());
-
             
-
             // --- 你的日記與 AI 相關 State ---
-
             const [journalText, setJournalText] = useState('');
-
             const [managerMessages, setManagerMessages] = useState([{ id: 'init', role: 'ai', text: '👋 嗨！我是你的 AI 生活管家。今天想聊聊行程規劃嗎？', timestamp: Date.now() }]);
-
             const [managerInput, setManagerInput] = useState('');
-
             const [journalAiResponse, setJournalAiResponse] = useState('');
-
             const [isAiTyping, setIsAiTyping] = useState(false);
-
             
-
             // --- 新增的任務 State ---
-
             const [taskContent, setTaskContent] = useState('');
-
             const [taskValue, setTaskValue] = useState('');
-
             const [dayTasks, setDayTasks] = useState([]);
 
-
-
             const chatEndRef = useRef(null);
-
             const [toastMessage, setToastMessage] = useState(null);
-
             const [analysisDate, setAnalysisDate] = useState(new Date());
-
             const [analysisViewMode, setAnalysisViewMode] = useState('day');
-
             const [lastSyncTime, setLastSyncTime] = useState(null);
 
-
-
             // 2. 定義完變數後，才是 Effect (副作用)
-
             useEffect(() => { document.body.className = theme === 'dark' ? 'theme-dark' : theme === 'paper' ? 'theme-paper' : ''; localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
-
             useEffect(() => { if (!syncId) { const newId = Math.random().toString(36).substr(2, 9); localStorage.setItem(SYNC_STORAGE_KEY, newId); setSyncId(newId); } }, [syncId]);
-
             
-
             useEffect(() => { 
-
                 const savedData = localStorage.getItem(`tm_data_${syncId}`); 
-
                 if (savedData) {
-
                     let parsedData = JSON.parse(savedData);
-
                     // 修正 valueType
-
                     if (parsedData.sessions) {
-
                         parsedData.sessions = parsedData.sessions.map(s => {
-
                             const catDef = CATEGORIES.find(c => c.id === s.category);
-
                             if (catDef && s.valueType !== catDef.defaultType) {
-
                                 return { ...s, valueType: catDef.defaultType };
-
                             }
-
                             return s;
-
                         });
-
                     }
-
                     setData(parsedData); 
-
                 }
-
             }, [syncId]);
 
-
-
             const saveDataToLocal = (newData) => { setData(newData); localStorage.setItem(`tm_data_${syncId}`, JSON.stringify(newData)); }
-
             const getLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-
             const formatTime = (s) => { const m = Math.floor(s / 60); const sec = s % 60; return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; };
-
             const formatDurationSimple = (s) => { const m = Math.round(s/60); return `${m}m`; };
 
-
-
             // 讀取日記內容與任務
-
             useEffect(() => { 
-
                 const dateStr = getLocalDateStr(journalSelectedDate); 
-
                 setJournalText(data.journals?.[dateStr]?.content || ''); 
-
                 setDayTasks(data.journals?.[dateStr]?.tasks || []); 
-
                 setJournalAiResponse(''); 
-
             }, [journalSelectedDate, data.journals]);
 
-
-
             useEffect(() => { let interval; if (data.activeTimer?.isRunning) { interval = setInterval(() => { setElapsedTime(Math.floor((Date.now() - data.activeTimer.startTime) / 1000)); }, 1000); } else { setElapsedTime(0); } return () => clearInterval(interval); }, [data.activeTimer]);
-
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [managerMessages, isAiTyping]);
-
             
-
             // 3. 定義函式
-
             const showToast = (msg, type='success') => { setToastMessage({ text: msg, type }); setTimeout(() => setToastMessage(null), 3000); };
-
             
-
             const addTask = () => {
-
                 if (!taskContent.trim()) return;
-
                 const newTask = { id: Date.now(), content: taskContent, value: taskValue, done: false };
-
                 setDayTasks([...dayTasks, newTask]);
-
                 setTaskContent('');
-
                 setTaskValue('');
-
             };
-
-
 
             const toggleTask = (taskId) => {
-
                 setDayTasks(dayTasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
-
             };
-
-
 
             const startTimer = (catId) => { if (data.activeTimer) return; saveDataToLocal({ ...data, activeTimer: { startTime: Date.now(), category: catId, isRunning: true } }); };
-
             
-
             // 新增取消計時函式 (垃圾桶)
-
             const cancelTimer = () => {
-
                 if (!confirm("確定要取消這次計時嗎？")) return;
-
                 saveDataToLocal({ ...data, activeTimer: null });
-
                 setElapsedTime(0);
-
                 showToast("已取消計時", "warning");
-
             };
-
-
 
             const stopTimer = () => { 
-
                 if (!data.activeTimer) return; 
-
                 const currentDurationSec = Math.floor((Date.now() - data.activeTimer.startTime) / 1000);
-
                 setReviewSessionCache({ startTime: data.activeTimer.startTime, category: data.activeTimer.category }); 
-
                 setManualMinutes(Math.round(currentDurationSec / 60).toString());
-
                 const categoryDef = CATEGORIES.find(c => c.id === data.activeTimer.category); 
-
                 if (categoryDef?.defaultType) setReviewType(categoryDef.defaultType); 
-
                 setReviewMetaData({}); 
-
                 setShowReviewModal(true); 
-
             };
-
             
-
             const submitReview = () => {
-
                 if (!reviewSessionCache) return;
-
                 const endTime = Date.now();
-
                 const startTime = reviewSessionCache.startTime;
-
                 let duration = Math.floor((endTime - startTime) / 1000);
-
                 if (['sports', 'others'].includes(reviewSessionCache.category) && manualMinutes) {
-
                     duration = parseInt(manualMinutes) * 60;
-
                 }
-
                 const categoryLabel = CATEGORIES.find(c => c.id === reviewSessionCache.category)?.label || '未分類';
-
                 const newSession = {
-
                     id: Math.random().toString(36).substr(2, 9),
-
                     category: reviewSessionCache.category,
-
                     startTime,
-
                     endTime,
-
                     duration,
-
                     valueType: reviewType,
-
                     rating: reviewRating,
-
                     note: reviewNote,
-
                     meta: reviewMetaData,
-
                     date: getLocalDateStr(new Date(startTime)),
-
                     status: 'completed'
-
                 };
-
                 saveDataToLocal({ ...data, sessions: [newSession, ...data.sessions], activeTimer: null });
-
                 setShowReviewModal(false);
-
                 setReviewNote('');
-
                 setReviewMetaData({});
-
                 setManualMinutes(''); 
-
                 showToast("紀錄成功！⭐");
-
                 if (localScriptUrl) {
-
                     const payload = { date: newSession.date, appName: categoryLabel, duration: duration, note: reviewNote };
-
                     fetch(localScriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }).then(() => console.log("資料已發送至雲端")).catch(error => showToast("雲端同步失敗", 'error'));
-
                 }
-
             };
-
-
 
             const syncFromGoogleSheet = async () => { const url = localScriptUrl; if (!url) return showToast("請先設定 URL", 'error'); setIsSyncing(true); try { const res = await fetch(url + (url.includes('?') ? '&mode=json' : '?mode=json') + `&t=${Date.now()}`); const json = await res.json(); if(Array.isArray(json)) { const newSessions = json.map(item => { 
-
                 let catId = null;
-
                 const name = (item.appName || '').toLowerCase();
-
                 if(name.includes('學習') || name.includes('book') || name.includes('知識')) catId = 'knowledge';
-
                 else if(name.includes('ai') || name.includes('gpt')) catId = 'ai';
-
                 else if(name.includes('運動') || name.includes('gym') || name.includes('健身')) catId = 'sports';
-
                 else if(name.includes('娛樂') || name.includes('youtube') || name.includes('netflix')) catId = 'entertainment';
-
                 else if(name.includes('社群') || name.includes('social') || name.includes('line') || name.includes('instagram')) catId = 'others'; 
-
                 else if(name.includes('購物') || name.includes('shopping')) catId = 'others';
-
                 if (!catId) return null;
-
                 const dateStr = item.date.replace(/\//g, '-'); 
-
                 return { id: `imp-${dateStr}-${name}-${item.duration}`, category: catId, duration: parseInt(item.duration) || 0, date: dateStr, valueType: CATEGORIES.find(c=>c.id===catId)?.defaultType || 'waste', note: item.appName, status: 'completed' }; 
-
             }).filter(s => s && s.duration > 0); 
-
             const uniqueNewSessions = newSessions.filter(newS => { return !data.sessions.some(oldS => oldS.date === newS.date && oldS.note === newS.note && Math.abs(oldS.duration - newS.duration) < 0.01); }); if (uniqueNewSessions.length === 0) showToast("沒有新的資料需匯入", 'success'); else { saveDataToLocal({ ...data, sessions: [...data.sessions, ...uniqueNewSessions] }); showToast(`成功匯入 ${uniqueNewSessions.length} 筆新資料`, 'success'); } setLastSyncTime(new Date().toLocaleTimeString()); } } catch(e) { showToast("連線失敗", 'error'); } finally { setIsSyncing(false); } };
-
             
-
             const saveKey = () => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey); showToast("API Key 已儲存！"); };
-
             const detectModels = async () => { if (!geminiKey) return showToast("請先輸入 API Key", "error"); showToast("偵測模型中...", "warning"); try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`); const data = await res.json(); if (data.models) { const contentModels = data.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace('models/', '')); setAvailableModels(contentModels); if (contentModels.length > 0 && !contentModels.includes(selectedModel)) { setSelectedModel(contentModels[0]); } showToast(`找到 ${contentModels.length} 個可用模型`, "success"); } else { throw new Error(data.error?.message || "無回應"); } } catch (e) { showToast("偵測失敗: " + e.message, "error"); } };
-
             
-
             // --- AI Manager Chat Logic (Modified) ---
-
             const handleManagerChat = async () => { 
-
                 if (!managerInput.trim()) return; 
-
                 
-
                 // 1. 修正：立刻清空輸入框，避免卡住
-
                 const currentInput = managerInput;
-
                 setManagerInput(''); 
-
                 
-
                 // 2. 顯示使用者訊息
-
                 const userMsg = { id: Date.now().toString(), role: 'user', text: currentInput, timestamp: Date.now() }; 
-
                 setManagerMessages(prev => [...prev, userMsg]); 
-
                 setIsAiTyping(true); 
-
                 
-
                 // 3. 準備「即時」的上下文資料 (包含你正在寫還沒存檔的日記)
-
                 const liveContext = {
-
                     journal: journalText, // 抓取當前日記輸入框的字
-
                     tasks: dayTasks,      // 抓取當前任務列表
-
                     inspirations: data.inspirations || [],
-
                     sessions: data.sessions
-
                 };
 
-
-
                 // 4. 呼叫 AI (注意這裡參數變了)
-
                 const responseText = await generateAIResponse(currentInput, liveContext, 'manager', geminiKey, selectedModel); 
-
                 
-
                 const aiMsg = { id: (Date.now()+1).toString(), role: 'ai', text: responseText, timestamp: Date.now() }; 
-
                 setManagerMessages(prev => [...prev, aiMsg]); 
-
                 setIsAiTyping(false); 
-
             };
-
             
-
             const handleJournalAI = async () => { if (!journalText.trim()) return; setIsAiTyping(true); const responseText = await generateAIResponse(journalText, data, 'journal', geminiKey, selectedModel); setJournalAiResponse(responseText); setIsAiTyping(false); };
-
             const addInspiration = () => { if(!newInspiration.trim()) return; const newItem = { id: Date.now(), text: newInspiration, date: getLocalDateStr(new Date()) }; const newData = { ...data, inspirations: [newItem, ...(data.inspirations || [])] }; saveDataToLocal(newData); setNewInspiration(''); showToast("靈感已捕捉 ✨"); };
 
-
-
             // Calculations
-
             const targetSessions = useMemo(() => { if (analysisViewMode === 'total') return data.sessions; const targetDate = getLocalDateStr(analysisDate); return data.sessions.filter(s => s.date === targetDate); }, [data.sessions, analysisDate, analysisViewMode]);
-
             const chartData = useMemo(() => { const stats = { growth: 0, waste: 0, rest: 0 }; targetSessions.forEach(s => { if(stats[s.valueType] !== undefined) stats[s.valueType] += s.duration; }); const total = Object.values(stats).reduce((a,b) => a+b, 0); return VALUE_TYPES.map(vt => ({ id: vt.id, name: vt.label, value: stats[vt.id] || 0, percent: total > 0 ? ((stats[vt.id] || 0) / total * 100).toFixed(0) : 0, color: vt.stroke })); }, [targetSessions]);
-
             const dashboardStats = useMemo(() => { const totalDuration = targetSessions.reduce((acc, s) => acc + s.duration, 0); const growthDuration = targetSessions.filter(s => s.valueType === 'growth').reduce((acc, s) => acc + s.duration, 0); const growthPercent = totalDuration > 0 ? Math.round((growthDuration / totalDuration) * 100) : 0; const knowledgeDuration = targetSessions.filter(s => s.category === 'knowledge').reduce((acc, s) => acc + s.duration, 0); return { totalDuration, growthDuration, growthPercent, knowledgeDuration }; }, [targetSessions]);
-
             const groupedAggregatedSessions = useMemo(() => { const groups = {}; data.sessions.forEach(session => { if (!groups[session.date]) groups[session.date] = {}; if (!groups[session.date][session.category]) groups[session.date][session.category] = { duration: 0, count: 0, meta: [] }; groups[session.date][session.category].duration += session.duration; groups[session.date][session.category].count += 1; if(session.meta && Object.keys(session.meta).length > 0) { const metaStr = Object.values(session.meta).join(', '); if(!groups[session.date][session.category].meta.includes(metaStr)) groups[session.date][session.category].meta.push(metaStr); } }); return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([date, cats]) => ({ date, categories: Object.entries(cats).map(([catId, stats]) => ({ id: catId, ...stats, def: CATEGORIES.find(c => c.id === catId) })) })); }, [data.sessions]);
-
             const renderCalendar = () => { const year = calendarViewDate.getFullYear(); const month = calendarViewDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDay = new Date(year, month, 1).getDay(); const days = []; for (let i = 0; i < firstDay; i++) days.push(<div key={`pad-${i}`} className="h-10"></div>); for (let d = 1; d <= daysInMonth; d++) { const dateStr = getLocalDateStr(new Date(year, month, d)); const hasEntry = !!data.journals?.[dateStr]?.content; const isSelected = journalSelectedDate.getDate() === d && journalSelectedDate.getMonth() === month; days.push( <button key={d} onClick={() => setJournalSelectedDate(new Date(year, month, d))} className={`h-10 w-10 rounded-2xl flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand-500 text-white shadow-cute' : 'text-text-main hover:bg-white'}`}> <span className="text-sm font-bold">{d}</span> {hasEntry && !isSelected && <span className="w-1.5 h-1.5 bg-brand-500 rounded-full absolute bottom-1.5"></span>} </button> ); } return days; };
-
             
-
             return (
-
                 <div className="flex min-h-screen bg-cream font-sans transition-colors duration-300">
-
                     {/* ... (Toast, Nav, Main Structure preserved) ... */}
-
                     {toastMessage && <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-6 py-4 rounded-full shadow-xl animate-fade-in border-2 border-white ${toastMessage.type === 'error' ? 'bg-waste-500 text-white' : toastMessage.type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-brand-500 text-white'}`}><div className="font-bold px-4">{toastMessage.text}</div></div>}
 
-
-
                     <nav className="hidden md:flex flex-col w-64 h-screen border-r border-cream-dark p-6 bg-card fixed left-0 top-0 z-50 transition-colors duration-300">
-
                         <div className="flex items-center gap-3 mb-10 px-2"><div className="p-2 bg-brand-50 rounded-2xl"><IconByName name="Bot" className="w-8 h-8 text-brand-600"/></div><span className="text-xl font-extrabold tracking-tight text-text-main">MindfulTime</span></div>
-
                         <div className="space-y-2">
-
                             <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光花園" />
-
                             <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="心情日記" />
-
                             <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon="BarChart2" label="成長洞察" />
-
                             <NavButton active={view === 'muse'} onClick={() => setView('muse')} icon="Lightbulb" label="靈感碎片" />
-
                             <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" />
-
                         </div>
-
                     </nav>
-
-
 
                     <main className="flex-1 p-4 pb-24 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto md:ml-64 transition-colors duration-300 min-h-screen">
-
                         {/* Header */}
-
                         <header className="md:hidden flex justify-between items-center mb-6"><span className="font-extrabold text-brand-900 flex items-center gap-2 text-xl"><IconByName name="Bot" className="w-7 h-7"/> MindfulTime</span><button onClick={() => setView('settings')}><IconByName name="Settings" className="w-6 h-6 text-text-light"/></button></header>
-
                         
-
                         {/* 計時器橫幅 (加入垃圾桶按鈕) */}
-
                         {data.activeTimer && <div className="bg-card text-text-main border-2 border-brand-100 rounded-[2.5rem] p-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-6 mb-8 relative overflow-hidden">
-
                             <div className="flex items-center gap-4 z-10 w-full sm:w-auto">
-
                                 <div className="p-3 bg-brand-50 rounded-2xl"><IconByName name="Clock" className="w-8 h-8 text-brand-500"/></div>
-
                                 <div><div className="text-brand-600 text-xs font-bold uppercase mb-1">正在專注</div><div className="text-2xl font-bold">{CATEGORIES.find(c => c.id === data.activeTimer.category)?.label}</div></div>
-
                             </div>
-
                             <div className="font-mono text-5xl font-extrabold tracking-tight z-10 tabular-nums text-brand-600">{formatTime(elapsedTime)}</div>
-
                             <div className="flex gap-3 z-10 w-full sm:w-auto">
-
                                 {/* 新增的取消按鈕 */}
-
                                 <button onClick={cancelTimer} className="p-4 bg-gray-100 hover:bg-waste-500 hover:text-white text-gray-500 font-bold rounded-3xl transition-colors"><IconByName name="Trash2" className="w-6 h-6"/></button>
-
                                 <button onClick={stopTimer} className="flex-1 sm:flex-none px-8 py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-3xl shadow-sm flex items-center justify-center gap-2 transition-colors"><IconByName name="StopCircle" className="w-6 h-6"/> <span>完成</span></button>
-
                             </div>
-
                         </div>}
 
-
-
                         {view === 'tracker' && (
-
-    <div className="space-y-6 animate-fade-in pb-20">
-
-        {/* 頂部歡迎語或狀態 (可選) */}
-
-        
-
-        {/* 1. 分類按鈕區：改用更緊湊的 Grid，減少圓角與邊框厚度 */}
-
-        <div className="grid grid-cols-2 gap-3">
-
-            {CATEGORIES.map(cat => (
-
-                <button key={cat.id} onClick={() => startTimer(cat.id)} 
-
-                    className="relative group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 h-32 hover:border-brand-200 hover:shadow-md transition-all active:scale-95 shadow-sm">
-
-                    <div className={`p-3 rounded-full ${cat.color.replace('text-', 'bg-').replace('100', '50')} ${cat.color}`}>
-
-                        <IconByName name={cat.icon} className="w-6 h-6" />
-
-                    </div>
-
-                    <span className="font-bold text-sm text-text-main">{cat.label}</span>
-
-                    {/* 裝飾性的小圓點 */}
-
-                    <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-gray-100 group-hover:bg-brand-400 transition-colors"></div>
-
-                </button>
-
-            ))}
-
-        </div>
-
-
-
-        {/* 2. 統計區塊：縮小圓角，精簡排版 */}
-
-        <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-
-            <div className="flex items-center justify-between mb-4">
-
-                <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
-
-                    <IconByName name="Clock" className="w-5 h-5 text-brand-500" /> 今日足跡
-
-                </h2>
-
-                <button onClick={syncFromGoogleSheet} className="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
-
-                    <IconByName name="RefreshCcw" className={`w-3 h-3 ${isSyncing?'animate-spin':''}`}/> 更新
-
-                </button>
-
-            </div>
-
-            
-
-            {groupedAggregatedSessions.length === 0 ? 
-
-                <div className="text-center py-10 text-gray-400 text-sm font-medium bg-gray-50/50 rounded-xl border border-dashed border-gray-200">今天還沒開始紀錄 🌱</div> : 
-
-                <div className="space-y-6 relative pl-2">
-
-                    <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-100"></div>
-
-                    {groupedAggregatedSessions.map(group => (
-
-                        <div key={group.date} className="relative pl-8">
-
-                            <div className="absolute left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white border-2 border-brand-400 z-10"></div>
-
-                            <h3 className="font-bold text-sm text-gray-400 mb-3">{group.date}</h3>
-
-                            <div className="space-y-3">
-
-                                {group.categories.map(item => (
-
-                                    <div key={item.id} className="bg-gray-50/80 rounded-xl p-3 flex items-center justify-between border border-transparent hover:border-gray-200 hover:bg-white transition-all">
-
-                                        <div className="flex items-center gap-3">
-
-                                            <div className="p-2 bg-white rounded-lg shadow-sm text-text-light"><IconByName name={item.def?.icon} className="w-4 h-4" /></div>
-
-                                            <div>
-
-                                                <div className="font-bold text-sm text-text-main">{item.def?.label}</div>
-
-                                                {item.meta && item.meta.length > 0 && <div className="text-[10px] text-gray-400 truncate max-w-[150px]">{item.meta.join(', ')}</div>}
-
-                                            </div>
-
-                                        </div>
-
-                                        <div className="font-mono font-bold text-sm text-brand-600">{formatDurationSimple(item.duration)}</div>
-
-                                    </div>
-
-                                ))}
-
-                            </div>
-
-                        </div>
-
-                    ))}
-
+    <div className="space-y-6 animate-fade-in pb-24">
+    {/* 1. 分類按鈕區：更現代的網格，去除厚邊框，改用陰影 */}
+    <div className="grid grid-cols-2 gap-4">
+        {CATEGORIES.map(cat => (
+            <button key={cat.id} onClick={() => startTimer(cat.id)} 
+                className="relative group bg-white rounded-2xl p-5 flex flex-col items-center justify-center gap-3 h-32 shadow-sm border border-gray-100 hover:shadow-md hover:border-brand-200 transition-all active:scale-95">
+                <div className={`p-3 rounded-full ${cat.color.replace('text-', 'bg-').replace('100', '50')} ${cat.color} bg-opacity-20`}>
+                    <IconByName name={cat.icon} className="w-6 h-6" />
                 </div>
-
-            }
-
-        </div>
-
+                <span className="font-bold text-sm text-text-main tracking-wide">{cat.label}</span>
+            </button>
+        ))}
     </div>
 
+    {/* 2. 統計區塊：清爽的白色卡片 */}
+    <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
+                <IconByName name="Clock" className="w-5 h-5 text-brand-500" /> 今日足跡
+            </h2>
+            <button onClick={syncFromGoogleSheet} className="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
+                <IconByName name="RefreshCcw" className={`w-3 h-3 ${isSyncing?'animate-spin':''}`}/> 更新
+            </button>
+        </div>
+        
+        {groupedAggregatedSessions.length === 0 ? 
+            <div className="text-center py-12 text-gray-300 text-sm font-medium border-2 border-dashed border-gray-100 rounded-2xl">今天還沒開始紀錄 🌱</div> : 
+            <div className="space-y-6 relative pl-2">
+                <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-100"></div>
+                {groupedAggregatedSessions.map(group => (
+                    <div key={group.date} className="relative pl-8">
+                        <div className="absolute left-[9px] top-1.5 w-2 h-2 rounded-full bg-brand-400 ring-4 ring-white z-10"></div>
+                        <h3 className="font-bold text-xs text-gray-400 mb-3 uppercase tracking-wider">{group.date}</h3>
+                        <div className="space-y-3">
+                            {group.categories.map(item => (
+                                <div key={item.id} className="bg-gray-50 rounded-xl p-3 flex items-center justify-between border border-transparent hover:border-gray-200 transition-all">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-white rounded-lg shadow-sm text-text-light"><IconByName name={item.def?.icon} className="w-4 h-4" /></div>
+                                        <div>
+                                            <div className="font-bold text-sm text-text-main">{item.def?.label}</div>
+                                            {item.meta && item.meta.length > 0 && <div className="text-[10px] text-gray-400 truncate max-w-[150px]">{item.meta.join(', ')}</div>}
+                                        </div>
+                                    </div>
+                                    <div className="font-mono font-bold text-sm text-brand-600">{formatDurationSimple(item.duration)}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        }
+    </div>
+</div>
 )}
 
+{view === 'journal' && (
+    <div className="animate-slide-up space-y-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+            {/* 左側：日曆 */}
+            <div className="w-full lg:w-1/3 bg-card rounded-[2.5rem] shadow-cute p-6 border border-cream-dark">
+                <div className="flex justify-between items-center mb-6">
+                    <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1))}>
+                        <IconByName name="ChevronLeft" className="w-5 h-5 text-text-light" />
+                    </button>
+                    <div className="font-extrabold text-text-main">
+                        {calendarViewDate.getFullYear()}年{calendarViewDate.getMonth() + 1}月
+                    </div>
+                    <button onClick={() => setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1))}>
+                        <IconByName name="ChevronRight" className="w-5 h-5 text-text-light" />
+                    </button>
+                </div>
+                <div className="grid grid-cols-7 gap-1 text-center text-xs text-text-light font-bold mb-2">
+                    {['日', '一', '二', '三', '四', '五', '六'].map(day => <div key={day}>{day}</div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                    {renderCalendar()}
+                </div>
+            </div>
 
+            {/* 右側：日記和任務 */}
+            <div className="w-full lg:w-2/3 space-y-6">
+                {/* 任務區域 */}
+                <div className="space-y-6">
+                    {/* 任務輸入 */}
+                    <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                        <input 
+                            type="text" 
+                            placeholder="任務內容..." 
+                            className="flex-1 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all"
+                            value={taskContent}
+                            onChange={e => setTaskContent(e.target.value)}
+                        />
 
-                        {view === 'journal' && (
+                        <input 
+                            type="text" 
+                            placeholder="價值" 
+                            className="w-24 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all text-center"
+                            value={taskValue}
+                            onChange={e => setTaskValue(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && addTask()}
+                        />
 
-                            <div className="flex flex-col lg:flex-row gap-6 animate-slide-up h-full min-h-screen pb-20">
+                        <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
+                            <IconByName name="Plus" className="w-5 h-5"/>
+                        </button>
+                    </div>
 
-                                <div className="lg:w-1/3 flex flex-col gap-6">
-
-                                    <div className="bg-white rounded-[2rem] shadow-sm p-6 border border-cream-dark">
-
-                                        <div className="flex justify-between items-center mb-6 px-2">
-
-                                            <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()-1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
-
-                                            <span className="font-extrabold text-xl text-text-main">{journalSelectedDate.getFullYear()}年 {journalSelectedDate.getMonth()+1}月</span>
-
-                                            <button onClick={() => setJournalSelectedDate(new Date(journalSelectedDate.setMonth(journalSelectedDate.getMonth()+1)))} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-text-light"><IconByName name="ChevronRight" className="w-5 h-5"/></button>
-
-                                        </div>
-
-                                        <div className="grid grid-cols-7 gap-y-4 justify-items-center font-bold text-gray-400 text-sm mb-2">
-
-                                            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
-
-                                        </div>
-
-                                        <div className="grid grid-cols-7 gap-y-3 justify-items-center font-bold text-text-main">
-
-                                            {renderCalendar()}
-
-                                        </div>
-
-                                    </div>
-
+                    {/* 任務列表 */}
+                    <div className="space-y-2">
+                        {dayTasks.map(task => (
+                            <div key={task.id} onClick={() => toggleTask(task.id)} className="flex items-center gap-3 p-3 bg-cream rounded-xl cursor-pointer hover:bg-brand-50 transition-colors group">
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${task.done ? 'bg-brand-500 border-brand-500' : 'border-gray-300'}`}>
+                                    {task.done && <IconByName name="Check" className="w-3 h-3 text-white"/>}
                                 </div>
-
-
-
-                                <div className="lg:w-2/3 flex flex-col gap-6">
-
-                                    <div className="flex items-center gap-3">
-
-                                        <h2 className="text-2xl font-extrabold text-text-main">{getLocalDateStr(journalSelectedDate)}</h2>
-
-                                        <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg">日記</span>
-
-                                    </div>
-
-
-
-                                    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-cream-dark">
-
-                                        <div className="flex items-center gap-2 mb-4 text-text-main font-bold">
-
-                                            <IconByName name="CheckSquare" className="w-5 h-5"/> 今日任務
-
-                                        </div>
-
-                                        
-
-                                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-
-                                            <input 
-
-                                                type="text" 
-
-                                                placeholder="任務內容..." 
-
-                                                className="flex-1 p-3 bg-gray-600 text-white placeholder-gray-400 rounded-xl font-bold outline-none text-sm"
-
-                                                value={taskContent}
-
-                                                onChange={e => setTaskContent(e.target.value)}
-
-                                            />
-
-                                            <input 
-
-    type="text" 
-
-    placeholder="價值 (選填)" 
-
-    className="w-1/3 p-3 bg-gray-50 text-text-main placeholder-gray-400 rounded-xl font-medium outline-none text-sm border border-transparent focus:bg-white focus:border-brand-200 transition-all"
-
-    value={taskValue}
-
-    onChange={e => setTaskValue(e.target.value)}
-
-    onKeyDown={e => e.key === 'Enter' && addTask()}
-
-/>
-
-                                            <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
-
-                                                <IconByName name="Plus" className="w-5 h-5"/>
-
-                                            </button>
-
-                                        </div>
-
-
-
-                                        <div className="space-y-2">
-
-                                            {dayTasks.map(task => (
-
-                                                <div key={task.id} onClick={() => toggleTask(task.id)} className="flex items-center gap-3 p-3 bg-cream rounded-xl cursor-pointer hover:bg-brand-50 transition-colors group">
-
-                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${task.done ? 'bg-brand-500 border-brand-500' : 'border-gray-300'}`}>
-
-                                                        {task.done && <IconByName name="Check" className="w-3 h-3 text-white"/>}
-
-                                                    </div>
-
-                                                    <div className={`flex-1 font-bold text-sm ${task.done ? 'text-gray-400 line-through' : 'text-text-main'}`}>
-
-                                                        {task.content}
-
-                                                    </div>
-
-                                                    {task.value && <div className="text-xs text-brand-600 bg-brand-100 px-2 py-1 rounded-lg font-bold">{task.value}</div>}
-
-                                                    <button onClick={(e) => { e.stopPropagation(); setDayTasks(dayTasks.filter(t => t.id !== task.id)); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-waste-500 p-1"><IconByName name="X" className="w-4 h-4"/></button>
-
-                                                </div>
-
-                                            ))}
-
-                                            {dayTasks.length === 0 && <div className="text-center text-xs text-gray-300 font-bold py-2">還沒有任務，新增一項吧！🌱</div>}
-
-                                        </div>
-
-                                    </div>
-
-
-
-                                    <div className="flex-1 bg-slate-600 rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col">
-
-                                        <textarea 
-
-        className="w-full h-full bg-transparent text-text-main placeholder-gray-400 text-base leading-relaxed outline-none resize-none font-medium" 
-
-        placeholder="今天過得怎麼樣？寫下來吧..." 
-
-        value={journalText} 
-
-        onChange={e => setJournalText(e.target.value)}
-
-                                        />
-
-                                        
-
-                                        {journalAiResponse && (
-
-                                            <div className="mt-4 bg-white p-4 rounded-2xl shadow-lg animate-fade-in">
-
-                                                <div className="flex items-center gap-2 text-brand-600 font-bold mb-2 text-sm">
-
-                                                    <IconByName name="Bot" className="w-4 h-4"/> AI 分析與建議
-
-                                                </div>
-
-                                                <p className="text-text-main text-sm font-bold leading-relaxed">{journalAiResponse}</p>
-
-                                            </div>
-
-                                        )}
-
-                                    </div>
-
-
-
-                                    <div className="bg-cream border border-brand-100 p-4 rounded-[2rem] flex flex-col gap-4">
-
-                                        <div className="flex items-center gap-2 text-brand-600 font-bold px-2">
-
-                                            <IconByName name="Bot" className="w-5 h-5"/> AI 重點摘要
-
-                                        </div>
-
-                                        
-
-                                        <div className="bg-white p-2 rounded-2xl border-2 border-transparent focus-within:border-brand-200 transition-colors flex items-center gap-2 shadow-sm">
-
-                                            <input 
-
-                                                type="text" 
-
-                                                placeholder="寫點東西或新增任務，我才能幫你分析喔 🌱" 
-
-                                                className="flex-1 p-2 bg-transparent outline-none text-sm font-bold text-text-main"
-
-                                                disabled
-
-                                            />
-
-                                            <button 
-
-                                                onClick={handleJournalAI}
-
-                                                className="px-4 py-2 bg-white border border-gray-100 text-text-light text-xs font-bold rounded-xl hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all flex items-center gap-1"
-
-                                            >
-
-                                                <IconByName name="Sparkles" className="w-4 h-4"/> 生成分析
-
-                                            </button>
-
-                                        </div>
-
-
-
-                                        <div className="flex justify-end">
-
-                                            <button 
-
-                                                onClick={() => { 
-
-                                                    saveDataToLocal({ 
-
-                                                        ...data, 
-
-                                                        journals: { 
-
-                                                            ...data.journals, 
-
-                                                            [getLocalDateStr(journalSelectedDate)]: { 
-
-                                                                content: journalText,
-
-                                                                tasks: dayTasks 
-
-                                                            } 
-
-                                                        } 
-
-                                                    }); 
-
-                                                    showToast("日記與任務已儲存 ✨"); 
-
-                                                }} 
-
-                                                className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-2xl font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:translate-y-[-2px] active:scale-95"
-
-                                            >
-
-                                                <IconByName name="Save" className="w-5 h-5"/> 儲存日記
-
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-
+                                <div className={`flex-1 font-bold text-sm ${task.done ? 'text-gray-400 line-through' : 'text-text-main'}`}>
+                                    {task.content}
                                 </div>
-
+                                {task.value && <div className="text-xs text-brand-600 bg-brand-100 px-2 py-1 rounded-lg font-bold">{task.value}</div>}
+                                <button onClick={(e) => { e.stopPropagation(); setDayTasks(dayTasks.filter(t => t.id !== task.id)); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-waste-500 p-1"><IconByName name="X" className="w-4 h-4"/></button>
                             </div>
+                        ))}
+                        {dayTasks.length === 0 && <div className="text-center text-xs text-gray-300 font-bold py-2">還沒有任務，新增一項吧！🌱</div>}
+                    </div>
+                </div>
 
-                        )}
+                {/* 日記輸入區域 */}
+                <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-6 relative min-h-[300px] flex flex-col border border-cream-dark">
+                    <textarea 
+                        className="w-full h-full bg-transparent text-text-main placeholder-gray-400 text-base leading-relaxed outline-none resize-none font-medium" 
+                        placeholder="今天過得怎麼樣？寫下來吧..." 
+                        value={journalText} 
+                        onChange={e => setJournalText(e.target.value)}
+                    />
+                    
+                    {journalAiResponse && (
+                        <div className="mt-4 bg-white p-4 rounded-2xl shadow-lg animate-fade-in">
+                            <div className="flex items-center gap-2 text-brand-600 font-bold mb-2 text-sm">
+                                <IconByName name="Bot" className="w-4 h-4"/> AI 分析與建議
+                            </div>
+                            <p className="text-text-main text-sm font-bold leading-relaxed">{journalAiResponse}</p>
+                        </div>
+                    )}
+                </div>
 
+                {/* AI 摘要和保存按鈕 */}
+                <div className="bg-cream border border-brand-100 p-4 rounded-[2rem] flex flex-col gap-4">
+                    <div className="flex items-center gap-2 text-brand-600 font-bold px-2">
+                        <IconByName name="Bot" className="w-5 h-5"/> AI 重點摘要
+                    </div>
+                    
+                    <div className="bg-white p-2 rounded-2xl border-2 border-transparent focus-within:border-brand-200 transition-colors flex items-center gap-2 shadow-sm">
+                        <input 
+                            type="text" 
+                            placeholder="寫點東西或新增任務，我才能幫你分析喔 🌱" 
+                            className="flex-1 p-2 bg-transparent outline-none text-sm font-bold text-text-main"
+                            disabled
+                        />
+                        <button 
+                            onClick={handleJournalAI}
+                            className="px-4 py-2 bg-white border border-gray-100 text-text-light text-xs font-bold rounded-xl hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all flex items-center gap-1"
+                        >
+                            <IconByName name="Sparkles" className="w-4 h-4"/> 生成分析
+                        </button>
+                    </div>
 
+                    <div className="flex justify-end">
+                        <button 
+                            onClick={() => { 
+                                saveDataToLocal({ 
+                                    ...data, 
+                                    journals: { 
+                                        ...data.journals, 
+                                        [getLocalDateStr(journalSelectedDate)]: { 
+                                            content: journalText,
+                                            tasks: dayTasks 
+                                        } 
+                                    } 
+                                }); 
+                                showToast("日記與任務已儲存 ✨"); 
+                            }} 
+                            className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-2xl font-extrabold shadow-cute hover:bg-brand-600 transition-all hover:translate-y-[-2px] active:scale-95"
+                        >
+                            <IconByName name="Save" className="w-5 h-5"/> 儲存日記
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
 
                         {view === 'analysis' && (
-
-                            <div className="animate-slide-up space-y-6 h-full flex flex-col">
-
-                                {/* 1. 頂部切換與日期 */}
-
-                                <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
-
-                                    <div className="flex bg-cream p-1 rounded-2xl">
-
-                                        <button onClick={() => setAnalysisViewMode('day')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='day'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
-
-                                        <button onClick={() => setAnalysisViewMode('total')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='total'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
-
-                                    </div>
-
-                                    {analysisViewMode === 'day' && (
-
-                                        <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative text-text-main">
-
-                                            <button onClick={() => { const prev = new Date(analysisDate); prev.setDate(prev.getDate()-1); setAnalysisDate(prev); }}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
-
-                                            <div className="font-extrabold text-lg min-w-[120px] text-center relative">{getLocalDateStr(analysisDate)}<input type="date" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setAnalysisDate(new Date(e.target.value))} /></div>
-
-                                            <button onClick={() => { const next = new Date(analysisDate); next.setDate(next.getDate()+1); setAnalysisDate(next); }}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
-
-                                        </div>
-
-                                    )}
-
-                                </div>
-
-
-
-                                {/* 2. 新版排版：上半部 (圖表 + 洞察) */}
-
-                                <div className="flex flex-col lg:flex-row gap-6">
-
-                                    {/* 左側：圓餅圖 (40%) */}
-
-                                    <div className="w-full lg:w-[40%] bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col border border-cream-dark">
-
-                                        <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
-
-                                        <div className="flex-1 flex flex-col items-center justify-center">
-
-                                            <DonutChart data={chartData} />
-
-                                            <div className="w-full mt-8 space-y-4">
-
-                                                {chartData.map((d, i) => (
-
-                                                    <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-cream">
-
-                                                        <div className="flex items-center gap-2">
-
-                                                            <div className="w-3 h-3 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
-
-                                                            <span className="font-extrabold text-sm text-text-main">{d.name}</span>
-
-                                                        </div>
-
-                                                        <span className="font-mono font-extrabold text-sm text-text-main">{formatDurationSimple(d.value)}</span>
-
-                                                    </div>
-
-                                                ))}
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-
-
-                                    {/* 右側：洞察資訊 (60%) */}
-
-                                    <div className="w-full lg:w-[60%] flex flex-col gap-6">
-
-                                        {/* 能量條 */}
-
-                                        <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
-
-                                            <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
-
-                                            <p className="text-brand-900 text-lg leading-relaxed font-medium">
-
-                                                {dashboardStats.totalDuration > 0 ? 
-
-                                                (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
-
-                                                ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
-
-                                                }
-
-                                            </p>
-
-                                        </div>
-
-                                        {/* 提醒 */}
-
-                                        <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
-
-                                            <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
-
-                                            <p className="text-text-main text-lg leading-relaxed font-medium">
-
-                                                {dashboardStats.totalDuration > 0 ?
-
-                                                (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，機器人也是需要充電的喔 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨") :
-
-                                                ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")
-
-                                                }
-
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-
-
-                                {/* 3. 新版排版：下半部 (AI 聊天室 - 全寬度) */}
-
-                                <div className="flex-1 bg-white border border-brand-100 rounded-[2.5rem] shadow-sm flex flex-col min-h-[500px] overflow-hidden">
-
-                                    <div className="p-6 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
-
-                                        <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
-
-                                        <div>
-
-                                            <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
-
-                                            <div className="text-xs font-bold text-brand-500 opacity-80">在線中，隨時為你調整計畫</div>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-white">
-
-                                        {managerMessages.map(m => (
-
-                                            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-
-                                                {m.role === 'ai' && <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center mr-2 flex-shrink-0"><IconByName name="Bot" className="w-4 h-4 text-brand-600"/></div>}
-
-                                                <div className={`max-w-[80%] p-5 rounded-3xl text-sm font-bold leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>
-
-                                                    {m.text}
-
-                                                </div>
-
-                                            </div>
-
-                                        ))}
-
-                                        {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse pl-12">AI 正在思考你的行程...</div>}
-
-                                        <div ref={chatEndRef}/>
-
-                                    </div>
-
-                                    <div className="p-6 border-t-2 border-gray-100 flex gap-4 bg-gray-50 items-end">
-
-                                        <textarea 
-
-                                            className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all resize-none shadow-sm" 
-
-                                            placeholder="告訴我你的狀態 (累了、忙碌...)，或如果有行程變動..." 
-
-                                            rows="2"
-
-                                            value={managerInput} 
-
-                                            onChange={e=>setManagerInput(e.target.value)} 
-
-                                            onKeyDown={e => {
-
-                                                if(e.key === 'Enter' && !e.shiftKey) {
-
-                                                    e.preventDefault();
-
-                                                    handleManagerChat();
-
-                                                }
-
-                                            }} 
-
-                                        />
-
-                                        <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute h-14 w-14 flex items-center justify-center flex-shrink-0"><IconByName name="Send" className="w-6 h-6"/></button>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        )}
-
-
-
-                        {view === 'muse' && (
-
-    <div className="animate-slide-up space-y-4 h-full flex flex-col">
-
-        <div className="bg-card rounded-2xl shadow-sm p-5 border border-cream-dark flex-1 flex flex-col">
-
-            <h2 className="text-xl font-bold text-text-main mb-4 flex items-center gap-2">
-
-                <IconByName name="Lightbulb" className="w-6 h-6 text-accent-yellow"/> 靈感碎片
-
-            </h2>
-
-            
-
-            <div className="flex gap-3 mb-6">
-
-                <input 
-
-                    className="flex-1 px-4 py-3 bg-gray-50 rounded-xl outline-none text-sm font-medium focus:ring-1 focus:ring-brand-500 transition-all text-text-main placeholder-gray-400" 
-
-                    placeholder="捕捉一個想法..." 
-
-                    value={newInspiration} 
-
-                    onChange={e=>setNewInspiration(e.target.value)} 
-
-                    onKeyDown={e=>e.key==='Enter'&&addInspiration()} 
-
-                />
-
-                <button onClick={addInspiration} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors shadow-sm active:scale-95">
-
-                    <IconByName name="Plus" className="w-5 h-5"/>
-
-                </button>
-
-            </div>
-
-
-
-            <div className="grid grid-cols-1 gap-3 overflow-y-auto">
-
-                {(data.inspirations || []).map((item) => (
-
-                    <div key={item.id} className="bg-cream/50 p-4 rounded-xl border border-transparent hover:border-brand-200 group relative transition-all">
-
-                        <div className="text-[10px] text-text-light font-medium mb-1">{item.date}</div>
-
-                        <div className="text-sm font-medium text-text-main leading-relaxed whitespace-pre-wrap pr-6">{item.text}</div>
-
-                        <button onClick={()=>{const newInspirations=data.inspirations.filter(i=>i.id!==item.id); saveDataToLocal({...data, inspirations: newInspirations});}} className="absolute top-3 right-3 text-gray-300 hover:text-waste-500 transition-colors">
-
-                            <IconByName name="Trash2" className="w-4 h-4"/>
-
-                        </button>
-
-                    </div>
-
-                ))}
-
-                {(data.inspirations || []).length === 0 && (
-
-                    <div className="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-50">
-
-                        <IconByName name="Sparkles" className="w-12 h-12 text-gray-300 mb-2"/>
-
-                        <div className="text-sm text-text-light font-medium">還沒有靈感喔，快記下來吧 ✨</div>
-
-                    </div>
-
-                )}
-
-            </div>
-
+  <div className="animate-slide-up space-y-6 h-full flex flex-col">
+    {/* 1. 頂部切換與日期 */}
+    <div className="bg-card rounded-[2.5rem] shadow-cute p-4 flex items-center justify-between border border-cream-dark">
+      <div className="flex bg-cream p-1 rounded-2xl">
+        <button onClick={() => setAnalysisViewMode('day')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='day'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>📅 單日</button>
+        <button onClick={() => setAnalysisViewMode('total')} className={`px-6 py-3 rounded-xl text-sm font-extrabold transition-all ${analysisViewMode==='total'?'bg-card shadow-sm text-brand-600':'text-text-light'}`}>♾️ 全時段</button>
+      </div>
+      {analysisViewMode === 'day' && (
+        <div className="flex items-center gap-4 bg-cream px-4 py-2 rounded-2xl relative text-text-main">
+          <button onClick={() => { const prev = new Date(analysisDate); prev.setDate(prev.getDate()-1); setAnalysisDate(prev); }}><IconByName name="ChevronLeft" className="w-5 h-5"/></button>
+          <div className="font-extrabold text-lg min-w-[120px] text-center relative">{getLocalDateStr(analysisDate)}<input type="date" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setAnalysisDate(new Date(e.target.value))} /></div>
+          <button onClick={() => { const next = new Date(analysisDate); next.setDate(next.getDate()+1); setAnalysisDate(next); }}><IconByName name="ChevronRight" className="w-5 h-5"/></button>
         </div>
-
+      )}
     </div>
 
+    {/* 2. 新版排版：上半部 (圖表 + 洞察) */}
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* 左側：圓餅圖 (40%) */}
+      <div className="w-full lg:w-[40%] bg-card p-8 rounded-[2.5rem] shadow-cute flex flex-col border border-cream-dark">
+        <h3 className="font-extrabold text-text-main mb-6 text-2xl flex items-center gap-3"><IconByName name="BarChart2" className="w-6 h-6 text-rest-500"/> 價值分佈</h3>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <DonutChart data={chartData} />
+          <div className="w-full mt-8 space-y-4">
+            {chartData.map((d, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-cream">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full shadow-sm" style={{backgroundColor: d.color}}></div>
+                  <span className="font-extrabold text-sm text-text-main">{d.name}</span>
+                </div>
+                <span className="font-mono font-extrabold text-sm text-text-main">{formatDurationSimple(d.value)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 右側：洞察資訊 (60%) */}
+      <div className="w-full lg:w-[60%] flex flex-col gap-6">
+        {/* 能量條 */}
+        <div className="bg-brand-50 border border-brand-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
+          <h3 className="font-extrabold text-brand-900 mb-4 text-xl flex items-center gap-2"><IconByName name="Zap" className="w-6 h-6"/> 成長能量條</h3>
+          <p className="text-brand-900 text-lg leading-relaxed font-medium">
+            {dashboardStats.totalDuration > 0 ? 
+            (<>你花了 <span className="text-3xl font-extrabold">{dashboardStats.growthPercent}%</span> 的時間在讓自己變強！<br/>{dashboardStats.growthPercent > 50 ? "哇！這段時間你簡直是學習小怪獸 🦖，太厲害了！" : "一步一步來，累積就是力量 🌱"}</>) : 
+            ("還沒有足夠的數據來分析你的能量，今天開始紀錄一點成長的時光吧！✨")
+            }
+          </p>
+        </div>
+        {/* 提醒 */}
+        <div className="bg-blue-50 border border-blue-100 p-8 rounded-[2.5rem] shadow-sm flex-1">
+          <h3 className="font-extrabold text-rest-500 mb-4 text-xl flex items-center gap-2"><IconByName name="Coffee" className="w-6 h-6"/> 溫馨小提醒</h3>
+          <p className="text-text-main text-lg leading-relaxed font-medium">
+            {dashboardStats.totalDuration > 0 ?
+            (dashboardStats.totalDuration > 8 * 3600 ? "今天已經記錄超過 8 小時了，機器人也是需要充電的喔 🌙" : "記得給自己一點「無所事事」的時間，那是靈感的來源 ✨") :
+            ("別忘了，休息也是一種投資。準備好開始今天的旅程了嗎？🚀")
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* 3. 新版排版：下半部 (AI 聊天室 - 全寬度) */}
+    <div className="flex-1 bg-white border border-brand-100 rounded-[2.5rem] shadow-sm flex flex-col min-h-[500px] overflow-hidden">
+      <div className="p-6 bg-brand-50 border-b-2 border-brand-100 flex items-center gap-3">
+        <div className="p-2 bg-white rounded-xl shadow-sm"><IconByName name="Bot" className="w-6 h-6 text-brand-600"/></div>
+        <div>
+          <div className="font-extrabold text-lg text-brand-900">AI 生活私人管家</div>
+          <div className="text-xs font-bold text-brand-500 opacity-80">在線中，隨時為你調整計畫</div>
+        </div>
+      </div>
+      <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-white">
+        {managerMessages.map(m => (
+          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            {m.role === 'ai' && <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center mr-2 flex-shrink-0"><IconByName name="Bot" className="w-4 h-4 text-brand-600"/></div>}
+            <div className={`max-w-[80%] p-5 rounded-3xl text-sm font-bold leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-brand-500 text-white rounded-br-none' : 'bg-gray-100 text-text-main rounded-bl-none'}`}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        {isAiTyping && <div className="text-xs font-bold text-text-light p-2 animate-pulse pl-12">AI 正在思考你的行程...</div>}
+        <div ref={chatEndRef}/>
+      </div>
+      <div className="p-6 border-t-2 border-gray-100 flex gap-4 bg-gray-50 items-end">
+        <textarea 
+          className="flex-1 p-4 bg-white rounded-3xl outline-none text-sm font-bold border-2 border-transparent focus:border-brand-300 transition-all resize-none shadow-sm" 
+          placeholder="告訴我你的狀態 (累了、忙碌...)，或如果有行程變動..." 
+          rows="2"
+          value={managerInput} 
+          onChange={e=>setManagerInput(e.target.value)} 
+          onKeyDown={e => {
+            if(e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleManagerChat();
+            }
+          }} 
+        />
+        <button onClick={handleManagerChat} className="p-4 bg-brand-500 text-white rounded-3xl hover:bg-brand-600 transition-colors shadow-cute h-14 w-14 flex items-center justify-center flex-shrink-0"><IconByName name="Send" className="w-6 h-6"/></button>
+      </div>
+    </div>
+  </div>
 )}
 
-
-
-                        {view === 'settings' && (
-
-                            <div className="bg-card rounded-[2.5rem] shadow-cute p-10 space-y-8 animate-slide-up border border-cream-dark">
-
-                                <h2 className="font-extrabold text-2xl flex items-center gap-3 text-text-main"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
-
-                                {/* ... (Settings Preserved) ... */}
-
-                                <div><label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label><div className="flex gap-4"><button onClick={()=>setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button><button onClick={()=>setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button><button onClick={()=>setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button></div></div>
-
-                                <div><label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label><div className="flex gap-3"><input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." /><button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button></div></div>
-
-                                <div><label className="block font-extrabold text-lg text-text-main mb-4">Gemini API Key (大腦)</label><div className="flex gap-3"><input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." /><button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button><button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button></div>
-
-                                {availableModels.length > 0 && (
-
-                                    <div className="mt-4">
-
-                                        <label className="block font-bold text-sm text-text-light mb-2">選擇模型 (Model)</label>
-
-                                        <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem(GEMINI_MODEL_KEY, e.target.value); }} className="w-full p-4 rounded-[2rem] border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500">
-
-                                            {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
-
-                                        </select>
-
+                        {view === 'muse' && (
+                            <div className="animate-slide-up space-y-4 h-full flex flex-col">
+                                <div className="bg-card rounded-2xl shadow-sm p-5 border border-cream-dark flex-1 flex flex-col">
+                                    <h2 className="text-xl font-bold text-text-main mb-4 flex items-center gap-2">
+                                        <IconByName name="Lightbulb" className="w-6 h-6 text-accent-yellow"/> 靈感碎片
+                                    </h2>
+                                    
+                                    <div className="flex gap-3 mb-6">
+                                        <input 
+                                            className="flex-1 px-4 py-3 bg-gray-50 rounded-xl outline-none text-sm font-medium focus:ring-1 focus:ring-brand-500 transition-all text-text-main placeholder-gray-400" 
+                                            placeholder="捕捉一個想法..." 
+                                            value={newInspiration} 
+                                            onChange={e=>setNewInspiration(e.target.value)} 
+                                            onKeyDown={e=>e.key==='Enter'&&addInspiration()} 
+                                        />
+                                        <button onClick={addInspiration} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors shadow-sm active:scale-95">
+                                            <IconByName name="Plus" className="w-5 h-5"/>
+                                        </button>
                                     </div>
 
-                                )}
-
-                                <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p></div>
-
+                                    <div className="grid grid-cols-1 gap-3 overflow-y-auto">
+                                        {(data.inspirations || []).map((item) => (
+                                            <div key={item.id} className="bg-cream/50 p-4 rounded-xl border border-transparent hover:border-brand-200 group relative transition-all">
+                                                <div className="text-[10px] text-text-light font-medium mb-1">{item.date}</div>
+                                                <div className="text-sm font-medium text-text-main leading-relaxed whitespace-pre-wrap pr-6">{item.text}</div>
+                                                <button onClick={()=>{const newInspirations=data.inspirations.filter(i=>i.id!==item.id); saveDataToLocal({...data, inspirations: newInspirations});}} className="absolute top-3 right-3 text-gray-300 hover:text-waste-500 transition-colors">
+                                                    <IconByName name="Trash2" className="w-4 h-4"/>
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {(data.inspirations || []).length === 0 && (
+                                            <div className="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-50">
+                                                <IconByName name="Sparkles" className="w-12 h-12 text-gray-300 mb-2"/>
+                                                <div className="text-sm text-text-light font-medium">還沒有靈感喔，快記下來吧 ✨</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-
                         )}
 
+                        {view === 'settings' && (
+                            <div className="bg-card rounded-[2.5rem] shadow-cute p-10 space-y-8 animate-slide-up border border-cream-dark">
+                                <h2 className="font-extrabold text-2xl flex items-center gap-3 text-text-main"><IconByName name="Settings" className="w-8 h-8"/> 設定</h2>
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">時光濾鏡 (Theme)</label><div className="flex gap-4"><button onClick={()=>setTheme('default')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='default'?'border-brand-500 bg-cream text-brand-600':'border-cream-dark bg-white text-text-light'}`}>晨曦 (預設)</button><button onClick={()=>setTheme('dark')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='dark'?'border-brand-500 bg-slate-800 text-white':'border-cream-dark bg-slate-100 text-text-light'}`}>深夜</button><button onClick={()=>setTheme('paper')} className={`flex-1 p-4 rounded-2xl font-bold border-4 transition-all ${theme==='paper'?'border-brand-500 bg-[#FEFBF6] text-[#4A4A4A]':'border-cream-dark bg-white text-text-light'}`}>手寫</button></div></div>
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">GAS 連結 (資料同步)</label><div className="flex gap-3"><input type="text" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={localScriptUrl} onChange={e => setLocalScriptUrl(e.target.value)} onBlur={() => localStorage.setItem(GAS_URL_KEY, localScriptUrl)} placeholder="貼上 Google Script 網址..." /><button onClick={syncFromGoogleSheet} className="px-8 py-4 bg-text-main text-white rounded-[2rem] font-extrabold flex items-center gap-3 hover:bg-text-light transition-colors shadow-cute"><IconByName name="RefreshCcw" className={`w-5 h-5 ${isSyncing?'animate-spin':''}`}/> 匯入</button></div></div>
+                                <div><label className="block font-extrabold text-lg text-text-main mb-4">Gemini API Key (大腦)</label><div className="flex gap-3"><input type="password" className="flex-1 p-4 border-4 border-cream-dark rounded-[2rem] outline-none focus:border-brand-500 font-bold text-text-main transition-colors bg-transparent" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="貼上你的 API Key..." /><button onClick={saveKey} className="px-6 py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold hover:bg-brand-600 transition-colors shadow-cute">儲存</button><button onClick={detectModels} className="px-6 py-4 bg-cream border-2 border-brand-100 text-brand-600 rounded-[2rem] font-extrabold hover:bg-brand-50 transition-colors">偵測模型</button></div>
+                                {availableModels.length > 0 && (
+                                    <div className="mt-4">
+                                        <label className="block font-bold text-sm text-text-light mb-2">選擇模型 (Model)</label>
+                                        <select value={selectedModel} onChange={(e) => { setSelectedModel(e.target.value); localStorage.setItem(GEMINI_MODEL_KEY, e.target.value); }} className="w-full p-4 rounded-[2rem] border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500">
+                                            {availableModels.map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                    </div>
+                                )}
+                                <p className="text-text-light text-sm font-bold mt-2 pl-2">🔒 Key 僅儲存在瀏覽器中，不會傳送到其他伺服器。</p>
+                            </div>
+                        )}
                     </main>
 
-
-
-                    <nav className="md:hidden fixed bottom-0 w-full bg-card border-t-2 border-cream-dark flex justify-around items-center p-3 pb-safe z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-[2rem] transition-colors duration-300">
-
+                    <nav className="md:hidden fixed bottom-0 w-full bg-card border-t-2 border-cream-dark flex justify-around items-center p-3 pb-safe z-40 shadow-[0_-4px_6px_-1px rgba(0,0,0,0.05)] rounded-t-[2rem] transition-colors duration-300">
                         <NavButton active={view === 'tracker'} onClick={() => setView('tracker')} icon="Clock" label="時光" mobile />
-
                         <NavButton active={view === 'journal'} onClick={() => setView('journal')} icon="Book" label="日記" mobile />
-
                         <NavButton active={view === 'analysis'} onClick={() => setView('analysis')} icon="BarChart2" label="洞察" mobile />
-
                         <NavButton active={view === 'muse'} onClick={() => setView('muse')} icon="Lightbulb" label="靈感" mobile />
-
                         <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon="Settings" label="設定" mobile />
-
                     </nav>
 
-
-
                     {/* Review Modal */}
-
                     <Modal isOpen={showReviewModal} onClose={() => setShowReviewModal(false)} title="記錄這段時光">
-
                         <div className="space-y-6">
-
                             <div className="text-center bg-cream p-6 rounded-[2rem] border-4 border-cream-dark relative overflow-hidden">
-
                                 <div className="text-5xl font-mono font-extrabold text-brand-600 relative z-10">
-
                                     {manualMinutes 
-
                                         ? `${manualMinutes.padStart(2, '0')}:00` 
-
                                         : (reviewSessionCache ? formatTime(Math.floor((Date.now() - reviewSessionCache.startTime) / 1000)) : '00:00')
-
                                     }
-
                                 </div>
-
                                 <IconByName name="Clock" className="absolute -bottom-4 -right-4 w-24 h-24 text-brand-100 opacity-50 rotate-12"/>
-
                             </div>
-
-
 
                             {reviewSessionCache && ['sports', 'others'].includes(reviewSessionCache.category) && (
-
                                 <div className="bg-brand-50 p-4 rounded-2xl border-2 border-brand-100 animate-fade-in">
-
                                     <label className="block text-sm font-bold text-brand-900 mb-2 text-center flex items-center justify-center gap-1">
-
                                         <IconByName name={reviewSessionCache.category === 'sports' ? 'Dumbbell' : 'Clock'} className="w-4 h-4"/> 
-
                                         {reviewSessionCache.category === 'sports' ? ' 實際運動多久？' : ' 這件事花了多久？'}
-
                                     </label>
-
                                     
-
                                     <div className="flex items-center justify-center gap-3">
-
                                         <input 
-
                                             type="number" 
-
                                             value={manualMinutes} 
-
                                             onChange={(e) => setManualMinutes(e.target.value)}
-
                                             className="w-32 p-3 text-center text-2xl font-bold rounded-xl border-2 border-brand-200 outline-none focus:border-brand-500 text-brand-600 bg-white shadow-sm"
-
                                             placeholder={reviewSessionCache.category === 'sports' ? "30" : "10"}
-
                                             autoFocus
-
                                         />
-
                                         <span className="font-bold text-brand-600 text-lg">分鐘</span>
-
                                     </div>
-
                                     <p className="text-[10px] text-center text-brand-400 mt-2 font-bold opacity-70">
-
                                         {reviewSessionCache.category === 'sports' ? '手機鎖屏沒計到時？直接改這裡！✨' : '忘記計時了嗎？直接手動輸入吧！✨'}
-
                                     </p>
-
                                 </div>
-
                             )}
 
-
-
                             <div>
-
                                 <label className="block font-extrabold text-lg text-text-main mb-4 pl-2">這段時間感覺如何？</label>
-
                                 <div className="grid grid-cols-1 gap-3">
-
                                     {VALUE_TYPES.map(type => (
-
                                         <button 
-
                                             key={type.id} 
-
                                             onClick={() => setReviewType(type.id)} 
-
                                             className={`p-4 rounded-[1.5rem] border-4 font-extrabold flex items-center justify-between transition-all ${reviewType === type.id ? (type.id==='growth'?'border-brand-500 bg-brand-50':type.id==='rest'?'border-rest-500 bg-blue-50':'border-waste-500 bg-red-50') : 'border-cream-dark bg-white hover:border-brand-200'}`}
-
                                         >
-
                                             <span className={`text-lg ${reviewType===type.id ? 'text-text-main' : 'text-text-light'}`}>{type.label}</span>
-
                                             {reviewType === type.id && <IconByName name="CheckCircle" className={`w-6 h-6 ${type.id==='growth'?'text-brand-500':type.id==='rest'?'text-rest-500':'text-waste-500'}`} />}
-
                                         </button>
-
                                     ))}
-
                                 </div>
-
                             </div>
-
-
 
                             {reviewSessionCache && CATEGORY_FIELDS[reviewSessionCache.category] && (
-
                                 <div className="bg-cream p-5 rounded-[2rem] border-4 border-cream-dark space-y-4">
-
                                     <h4 className="font-extrabold text-base text-text-main flex items-center gap-2">
-
                                         <IconByName name="Settings" className="w-5 h-5"/> 詳細紀錄
-
                                     </h4>
-
                                     {CATEGORY_FIELDS[reviewSessionCache.category].map(field => (
-
                                         <div key={field.key}>
-
                                             <label className="block text-sm font-extrabold text-text-light mb-2 pl-1">{field.label}</label>
-
                                             {field.type === 'select' ? (
-
                                                 <select className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})}>
-
                                                     <option value="">選擇...</option>
-
                                                     {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-
                                                 </select>
-
                                             ) : (
-
                                                 <input type="text" className="w-full p-3 rounded-2xl border-2 border-cream-dark bg-white text-base font-bold outline-none focus:border-brand-500 transition-colors" placeholder={field.placeholder} onChange={e => setReviewMetaData({...reviewMetaData, [field.key]: e.target.value})} />
-
                                             )}
-
                                         </div>
-
                                     ))}
-
                                 </div>
-
                             )}
 
-
-
                             <div>
-
                                 <label className="block font-extrabold text-lg text-text-main mb-4 pl-2">給自己幾顆星？</label>
-
                                 <div className="flex justify-center gap-2 bg-cream p-4 rounded-[2rem] border-4 border-cream-dark">
-
                                     {[1, 2, 3, 4, 5].map(star => (
-
                                         <button key={star} onClick={() => setReviewRating(star)} className="hover:scale-110 transition-transform active:scale-90 p-1">
-
                                             <IconByName name="Star" className={`w-8 h-8 ${star <= reviewRating ? "text-accent-yellow fill-accent-yellow" : "text-gray-300"}`} />
-
                                         </button>
-
                                     ))}
-
                                 </div>
-
                             </div>
 
-
-
                             <button onClick={submitReview} className="w-full py-4 bg-brand-500 text-white rounded-[2rem] font-extrabold text-xl shadow-cute hover:translate-y-[2px] hover:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2">
-
                                 <IconByName name="Save" className="w-6 h-6"/> 確認並儲存 ✨
-
                             </button>
-
                         </div>
-
                     </Modal>
-
                 </div>
-
             );
-
         };
-
         const root = createRoot(document.getElementById('root'));
-
         root.render(<App />);
-
     </script>
-
 </body>
-
 </html>
