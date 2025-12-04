@@ -624,31 +624,32 @@ input, textarea, select { font-size: 16px !important; }
 </div>
 )}
 
-        {/* 任務輸入區域 - 修正：確保標籤正確配對 */}
-<div className="space-y-6">
-    {/* 任務輸入 */}
-    <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <input 
-            type="text" 
-            placeholder="任務內容..." 
-            className="flex-1 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all"
-            value={taskContent}
-            onChange={e => setTaskContent(e.target.value)}
-        />
+        <div className="w-full lg:w-2/3 space-y-6">
+                {/* 任務區域 - 已經修復的部分 */}
+                <div className="space-y-6">
+                    {/* 任務輸入 */}
+                    <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                        <input 
+                            type="text" 
+                            placeholder="任務內容..." 
+                            className="flex-1 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all"
+                            value={taskContent}
+                            onChange={e => setTaskContent(e.target.value)}
+                        />
 
-        <input 
-            type="text" 
-            placeholder="價值" 
-            className="w-24 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all text-center"
-            value={taskValue}
-            onChange={e => setTaskValue(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTask()}
-        />
+                        <input 
+                            type="text" 
+                            placeholder="價值" 
+                            className="w-24 p-4 bg-gray-50 text-text-main placeholder-gray-400 rounded-2xl font-medium outline-none text-sm focus:bg-white focus:ring-2 focus:ring-brand-100 transition-all text-center"
+                            value={taskValue}
+                            onChange={e => setTaskValue(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && addTask()}
+                        />
 
-        <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
-            <IconByName name="Plus" className="w-5 h-5"/>
-        </button>
-    </div>
+                        <button onClick={addTask} className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors">
+                            <IconByName name="Plus" className="w-5 h-5"/>
+                        </button>
+                    </div>
 
     {/* 任務列表 */}
     <div className="space-y-2">
